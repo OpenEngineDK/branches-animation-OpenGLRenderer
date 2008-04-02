@@ -10,6 +10,7 @@
 
 #define printinfo false
 #include <Resources/GLSLResource.h>
+#include <Resources/DirectoryManager.h>
 #include <Resources/ResourceManager.h>
 #include <Resources/File.h>
 #include <Resources/ITextureResource.h>
@@ -78,9 +79,9 @@ void GLSLResource::Reload() {
     try {
         filename = resource;
         new_timestamp = last_write_time(filename);
-        filename = ResourceManager::FindFileInPath(vertexShader);
+        filename = DirectoryManager::FindFileInPath(vertexShader);
         new_vertex_file_timestamp = last_write_time(filename);
-        filename = ResourceManager::FindFileInPath(fragmentShader);
+        filename = DirectoryManager::FindFileInPath(fragmentShader);
         new_fragment_file_timestamp = last_write_time(filename);
     } catch (...) {
         throw ResourceException("Error taking time stamp from file: " + filename);
@@ -174,7 +175,7 @@ void GLSLResource::LoadShaderResource(string resource) {
                 }
                 string texname = string(fileandname,seperator);
                 string texfile = string(fileandname+seperator+1);
-                ITextureResourcePtr t = ResourceManager::CreateTexture(texfile);
+                ITextureResourcePtr t = ResourceManager<ITextureResource>::Create(texfile);
                 if (t != NULL)
                     textures[texname] = t;
                 else
@@ -200,9 +201,9 @@ void GLSLResource::LoadShaderResource(string resource) {
     try {
         filename = resource;
         timestamp = last_write_time(filename);
-        filename = ResourceManager::FindFileInPath(vertexShader);
+        filename = DirectoryManager::FindFileInPath(vertexShader);
         vertex_file_timestamp = last_write_time(filename);
-        filename = ResourceManager::FindFileInPath(fragmentShader);
+        filename = DirectoryManager::FindFileInPath(fragmentShader);
         fragment_file_timestamp = last_write_time(filename);
     } catch (...) {
         throw ResourceException("Error taking time stamp from file: " + filename);
@@ -258,7 +259,7 @@ void GLSLResource::GLSL20Resource::Load(GLSLResource& self) {
 GLuint GLSLResource::GLSL20Resource::LoadShader(string filename,int type) {
     // Load shader
     GLuint shader=glCreateShader(type);
-    const GLchar* Shader= File::ReadShader<GLchar>(ResourceManager::FindFileInPath(filename));
+    const GLchar* Shader= File::ReadShader<GLchar>(DirectoryManager::FindFileInPath(filename));
     if (Shader==NULL) return 0;
     glShaderSource(shader, 1, &Shader, NULL);
 
@@ -285,7 +286,7 @@ GLuint GLSLResource::GLSL20Resource::LoadShader(string filename,int type) {
  */
 GLhandleARB GLSLResource::GLSL14Resource::LoadShader(string filename, int type) {
     GLhandleARB handle = glCreateShaderObjectARB(type);
-    const GLcharARB* str = File::ReadShader<GLcharARB>(ResourceManager::FindFileInPath(filename));
+    const GLcharARB* str = File::ReadShader<GLcharARB>(DirectoryManager::FindFileInPath(filename));
 
     GLint compiled = 0;
     glShaderSourceARB(handle, 1, &str, NULL);

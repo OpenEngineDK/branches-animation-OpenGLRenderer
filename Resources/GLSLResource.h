@@ -13,6 +13,7 @@
 
 #include <Resources/IShaderResource.h>
 #include <Resources/ITextureResource.h>
+#include <Resources/ResourcePlugin.h>
 #include <GL/glew.h>
 #include <Meta/OpenGL.h>
 #include "boost/timer.hpp"
@@ -117,7 +118,7 @@ public:
  *
  * @class GLSLPlugin GLSLResource.h Resources/GLSLResource.h
  */
-class GLSLPlugin : public IShaderResourcePlugin {
+class GLSLPlugin : public ResourcePlugin<IShaderResource> {
 public:
 	GLSLPlugin();
     IShaderResourcePtr CreateResource(string file);
