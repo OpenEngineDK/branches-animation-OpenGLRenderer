@@ -1,14 +1,11 @@
+SET( EXTENSION_NAME "Extensions_OpenGLRenderer")
+
 SUBDIRS(Renderers/OpenGL)
 
-ADD_LIBRARY(Extensions_OpenGLRenderer
+ADD_LIBRARY( ${EXTENSION_NAME}
   Resources/GLSLResource.cpp
 )
 
-TARGET_LINK_LIBRARIES(Extensions_OpenGLRenderer
-
+TARGET_LINK_LIBRARIES( ${EXTENSION_NAME}
    ${SDL_LIBRARY}
 )
-
-
-
-
