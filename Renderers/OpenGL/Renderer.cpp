@@ -17,10 +17,13 @@
 #include <Core/IGameEngine.h>
 #include <Logging/Logger.h>
 #include <Meta/OpenGL.h>
+#include <Math/Math.h>
 
 namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
+
+using namespace OpenEngine::Math;
 
 using OpenEngine::Core::IGameEngine;
 using OpenEngine::Display::Viewport;
@@ -142,9 +145,19 @@ void Renderer::Process(const float deltaTime, const float percent) {
         // Reset The Projection Matrix
         glLoadIdentity();
 
-        // @todo: dont hardcode pers. angle, near/far clipping plane 
-        // Calculate The Aspect Ratio Of The Window
-        gluPerspective(45.0f, (GLfloat)(d[2])/(GLfloat)(d[3]), 10.0f, 33000.0f);
+         float fov = volume->GetFOV()/PI*180;
+         IViewingVolume::ProjectionMode projectionMode = volume->GetProjectionMode();
+         if ( projectionMode == IViewingVolume::OE_PERSPECTIVE ) {
+            // Projection, e.g. Frustum
+            gluPerspective(fov, volume->GetAspect(), volume->GetNear(), volume->GetFar());            
+         } else if ( projectionMode == IViewingVolume::OE_ORTHOGONAL ) {
+            // Orthogonal, e.g. Orthotope
+            glOrtho(-(volume->GetAspect()*fov),(volume->GetAspect()*fov),-fov,fov, volume->GetNear(), volume->GetFar());
+         } else {
+            // Error
+            logger.error << "ProjectionMode not set in ViewingVolume "
+                     << logger.end;
+         }
 
         // Select the modelview matrix
         glMatrixMode(GL_MODELVIEW);
