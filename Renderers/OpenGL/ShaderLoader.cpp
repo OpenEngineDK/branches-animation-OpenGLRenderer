@@ -45,7 +45,7 @@ void ShaderLoader::VisitGeometryNode(GeometryNode* node) {
     FaceSet* faces = node->GetFaceSet();
     if (faces == NULL) return;
     for (face = faces->begin(); face != faces->end(); face++) {
-        IShaderResourcePtr shad = (*face)->shad;
+        IShaderResourcePtr shad = (*face)->mat->shad;
         if (shad != NULL) {
             // load shader and its textures
             shad->Load();

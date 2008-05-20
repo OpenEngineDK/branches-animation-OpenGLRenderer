@@ -39,7 +39,7 @@ void TextureLoader::VisitGeometryNode(GeometryNode* node) {
     if (faces == NULL) return;
     for (FaceList::iterator face = faces->begin(); face != faces->end(); face++) {
         // load face textures
-        LoadTextureResource((*face)->texr);
+        LoadTextureResource((*face)->mat->texr);
     }
 }
 

@@ -140,21 +140,21 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
         if (Renderer::IsGLSLSupported()) {
 
             // if the shader changes release the old shader
-            if (currentShader != NULL && currentShader != f->shad) {
+            if (currentShader != NULL && currentShader != f->mat->shad) {
                 currentShader->ReleaseShader();
                 currentShader.reset();
             }
 
             // check if a shader shall be applied
             if (IsOptionSet(RenderStateNode::RENDER_SHADERS) &&
-                f->shad != NULL &&              // and the shader is not null
-                currentShader != f->shad) {     // and the shader is different from the current
+                f->mat->shad != NULL &&              // and the shader is not null
+                currentShader != f->mat->shad) {     // and the shader is different from the current
                 // get the bi-normal and tangent ids
-                binormalid = f->shad->GetAttributeID("binormal");
-                tangentid = f->shad->GetAttributeID("tangent");
-                f->shad->ApplyShader();
+                binormalid = f->mat->shad->GetAttributeID("binormal");
+                tangentid = f->mat->shad->GetAttributeID("tangent");
+                f->mat->shad->ApplyShader();
                 // set the current shader
-                currentShader = f->shad;
+                currentShader = f->mat->shad;
             }
         }
 
@@ -163,7 +163,7 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
         if (currentShader != NULL) currentTexture = 0;
 
         // if the face has no texture reset the current texture 
-        else if (f->texr == NULL) {
+        else if (f->mat->texr == NULL) {
             glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
             glDisable(GL_TEXTURE_2D);
             currentTexture = 0;
@@ -171,12 +171,32 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
 
         // check if texture shall be applied
         else if (IsOptionSet(RenderStateNode::RENDER_TEXTURES) &&
-            currentTexture != f->texr->GetID()) {  // and face texture is different then the current one
-            currentTexture = f->texr->GetID();
+            currentTexture != f->mat->texr->GetID()) {  // and face texture is different then the current one
+            currentTexture = f->mat->texr->GetID();
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, currentTexture);
         }
 
+        // Apply materials
+        // TODO: Decide whether we want both front and back
+        //       materials (maybe a material property).
+        float col[4];
+        
+        f->mat->diffuse.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+        
+        f->mat->ambient.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
+        
+        f->mat->specular.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
+        
+        f->mat->emission.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
+        
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, f->mat->shininess);
+
+ 
         glBegin(GL_TRIANGLES);
         // for each vertex ...
         for (int i=0; i<3; i++) {
