@@ -33,7 +33,7 @@ using OpenEngine::Math::Matrix;
 
 GLSLVersion Renderer::glslversion = GLSL_UNKNOWN;
 
-Renderer::Renderer() {
+Renderer::Renderer() : farPlane(-1) {
 
 }
 
@@ -134,11 +134,11 @@ void Renderer::Process(const float deltaTime, const float percent) {
         // If no viewing volume is set for the viewport ignore it.
         if (volume == NULL) continue;
         volume->SignalRendering(deltaTime);
-        
+
         // Set viewport size
         Vector<4,int> d = viewport.GetDimension();
         glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
-        
+
         // Select The Projection Matrix
         glMatrixMode(GL_PROJECTION);
 
@@ -149,10 +149,10 @@ void Renderer::Process(const float deltaTime, const float percent) {
          IViewingVolume::ProjectionMode projectionMode = volume->GetProjectionMode();
          if ( projectionMode == IViewingVolume::OE_PERSPECTIVE ) {
             // Projection, e.g. Frustum
-            gluPerspective(fov, volume->GetAspect(), volume->GetNear(), volume->GetFar());            
+            gluPerspective(fov, volume->GetAspect(), volume->GetNear(), (farPlane > 0) ? farPlane : volume->GetFar());
          } else if ( projectionMode == IViewingVolume::OE_ORTHOGONAL ) {
             // Orthogonal, e.g. Orthotope
-            glOrtho(-(volume->GetAspect()*fov),(volume->GetAspect()*fov),-fov,fov, volume->GetNear(), volume->GetFar());
+            glOrtho(-(volume->GetAspect()*fov),(volume->GetAspect()*fov),-fov,fov, volume->GetNear(), (farPlane > 0) ? farPlane : volume->GetFar());
          } else {
             // Error
             logger.error << "ProjectionMode not set in ViewingVolume "
@@ -170,7 +170,7 @@ void Renderer::Process(const float deltaTime, const float percent) {
         float f[16] = {0};
         matrix.ToArray(f);
         glMultMatrixf(f);
-            
+
         // Start traversing the scene
         (*itr)->Render(this, root);
     }
@@ -272,6 +272,10 @@ void Renderer::DrawPoint(Vector<3,float> point, Vector<3,float> color , float si
     // reset state
     if (t) glEnable(GL_TEXTURE_2D);
     if (l) glEnable(GL_LIGHTING);
+}
+
+void Renderer::SetFarPlane(float farPlane) {
+    this->farPlane = farPlane;
 }
 
 } // NS OpenGL
