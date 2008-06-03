@@ -90,7 +90,7 @@ void Renderer::Initialize() {
 
     // Enable lighting
     glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
+    //glEnable(GL_LIGHT0);
 
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);						   
@@ -124,6 +124,14 @@ void Renderer::Initialize() {
  *       replaced by null since the initialization face. 
  */
 void Renderer::Process(const float deltaTime, const float percent) {
+
+    glPushAttrib(GL_TRANSFORM_BIT);
+    glMatrixMode(GL_MODELVIEW);
+    // setup lighting
+    root->Accept(lv);
+
+    glPopAttrib();
+
     // For each RenderingView render the viewport.
     list<IRenderingView*>::iterator itr;
     for(itr=vRenderingView.begin(); itr!=vRenderingView.end(); ++itr) {
@@ -173,6 +181,13 @@ void Renderer::Process(const float deltaTime, const float percent) {
 
         // Start traversing the scene
         (*itr)->Render(this, root);
+
+        // turn off lights
+        for (int i = 0; i < lv.GetCount(); i++) {
+            glDisable(GL_LIGHT0 + i);
+        }
+        
+        lv.ResetCount();
     }
 }
 
@@ -277,6 +292,109 @@ void Renderer::DrawPoint(Vector<3,float> point, Vector<3,float> color , float si
 void Renderer::SetFarPlane(float farPlane) {
     this->farPlane = farPlane;
 }
+
+
+//Visitor methods for setting up the lighting
+
+Renderer::LightVisitor::LightVisitor(): count(0) {
+
+}
+
+Renderer::LightVisitor::~LightVisitor() {}
+        
+int Renderer::LightVisitor::GetCount() { 
+    return count; 
+}
+
+void Renderer::LightVisitor::ResetCount() { 
+    count = 0; 
+}
+        
+void Renderer::LightVisitor::VisitTransformationNode(TransformationNode* tn) {
+    
+    // push transformation matrix to model view stack
+    Matrix<4,4,float> m = tn->GetTransformationMatrix();
+    float f[16];
+    m.ToArray(f);
+    glPushMatrix();
+    glMultMatrixf(f);
+    // traverse sub nodes
+    tn->VisitSubNodes(*this);
+    // pop transformation matrix
+    glPopMatrix();
+}
+    
+void Renderer::LightVisitor::VisitDirectionalLightNode(DirectionalLightNode* dln) {
+    if (!dln->active)
+        return;
+    
+    if (count >= GL_MAX_LIGHTS)
+        return;
+    
+    glEnable(GL_LIGHT0 + count);
+    Vector<3,float> dir(0.0,0.0,-1.0);
+    float color[4];
+    
+    dln->ambient.ToArray(color);
+    glLightfv(GL_LIGHT0 + count, GL_AMBIENT, color);
+    
+    dln->diffuse.ToArray(color);
+    glLightfv(GL_LIGHT0 + count, GL_DIFFUSE, color);
+    
+    dln->specular.ToArray(color);
+    glLightfv(GL_LIGHT0 + count, GL_SPECULAR, color);
+    
+    float direction[4];
+    direction[3] = 0.0;
+    dir.ToArray(direction);
+    glLightfv(GL_LIGHT0 + count, GL_POSITION, direction);
+    
+    count++;
+}
+    
+void Renderer::LightVisitor::VisitPointLightNode(PointLightNode* pln) {
+    if (!pln->active)
+        return;
+        
+    if (count >= GL_MAX_LIGHTS)
+        return;
+
+    glEnable(GL_LIGHT0 + count);
+    Vector<3,float> pos;
+
+    pos = Vector<3,float>(0.0,0.0,0.0);
+
+    // r->DrawPoint(pos,Vector<3,float>(0.0,0.0,1.0), 5);
+    // logger.info << "light pos: " << pos << logger.end;
+ 
+    float fpos[4];
+    fpos[3] = 1.0;
+    pos.ToArray(fpos);
+                
+    glLightfv(GL_LIGHT0 + count, GL_POSITION, fpos);
+            
+    float color[4];
+
+    pln->ambient.ToArray(color);
+    glLightfv(GL_LIGHT0 + count, GL_AMBIENT, color);
+
+    pln->diffuse.ToArray(color);
+    glLightfv(GL_LIGHT0 + count, GL_DIFFUSE, color);
+           
+    pln->specular.ToArray(color);
+    glLightfv(GL_LIGHT0 + count, GL_SPECULAR, color);
+            
+    glLightf(GL_LIGHT0 + count, GL_CONSTANT_ATTENUATION, pln->constAtt);
+    glLightf(GL_LIGHT0 + count, GL_LINEAR_ATTENUATION, pln->linearAtt);
+    glLightf(GL_LIGHT0 + count, GL_QUADRATIC_ATTENUATION, pln->quadAtt);
+            
+    count++;
+    pln->VisitSubNodes(*this);            
+}
+
+
+
+
 
 } // NS OpenGL
 } // NS OpenEngine

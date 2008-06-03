@@ -17,6 +17,11 @@
 #include <Geometry/Face.h>
 #include <vector>
 
+#include <Scene/TransformationNode.h>
+#include <Scene/LightNode.h>
+#include <Scene/DirectionalLightNode.h>
+#include <Scene/PointLightNode.h>
+
 namespace OpenEngine {
 namespace Renderers {
 
@@ -33,7 +38,8 @@ namespace OpenGL {
 enum GLSLVersion { GLSL_UNKNOWN, GLSL_NONE, GLSL_14, GLSL_20 };
 
 using namespace std;
-using OpenEngine::Scene::ISceneNode;
+using namespace OpenEngine::Scene;
+    //using OpenEngine::Scene::ISceneNode;
 using OpenEngine::Math::Matrix;
 using OpenEngine::Geometry::FacePtr;
 
@@ -46,6 +52,25 @@ class TextureLoader;
  */
 class Renderer : public IRenderer {
 private:
+    class LightVisitor: public ISceneNodeVisitor {
+    private:
+        int count;
+        
+    public:
+        int GetCount();
+        void ResetCount();
+        
+        LightVisitor(); 
+        ~LightVisitor();
+        
+        void VisitTransformationNode(TransformationNode* tn);
+
+        void VisitDirectionalLightNode(DirectionalLightNode* dln);
+
+        void VisitPointLightNode(PointLightNode* pln);
+    };
+
+    LightVisitor lv;
 
     static GLSLVersion glslversion;
 
