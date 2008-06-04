@@ -17,12 +17,17 @@
 #include <Geometry/Face.h>
 #include <vector>
 
-#include <Scene/TransformationNode.h>
-#include <Scene/LightNode.h>
-#include <Scene/DirectionalLightNode.h>
-#include <Scene/PointLightNode.h>
 
 namespace OpenEngine {
+
+    //forward declarations
+    namespace Scene {
+        class TransformationNode;
+        class PointLightNode;
+        class DirectionalLightNode;
+        class SpotLightNode;
+    }
+
 namespace Renderers {
 
 /**
@@ -54,20 +59,21 @@ class Renderer : public IRenderer {
 private:
     class LightVisitor: public ISceneNodeVisitor {
     private:
-        int count;
-        
+        float pos[4], dir[4];
     public:
-        int GetCount();
-        void ResetCount();
-        
+        int count;
+
         LightVisitor(); 
         ~LightVisitor();
         
-        void VisitTransformationNode(TransformationNode* tn);
+        void VisitTransformationNode(TransformationNode* node);
 
-        void VisitDirectionalLightNode(DirectionalLightNode* dln);
+        void VisitDirectionalLightNode(DirectionalLightNode* node);
 
-        void VisitPointLightNode(PointLightNode* pln);
+        void VisitPointLightNode(PointLightNode* node);
+
+        void VisitSpotLightNode(SpotLightNode* node);
+
     };
 
     LightVisitor lv;

@@ -19,6 +19,12 @@
 #include <Meta/OpenGL.h>
 #include <Math/Math.h>
 
+#include <Scene/TransformationNode.h>
+#include <Scene/LightNode.h>
+#include <Scene/DirectionalLightNode.h>
+#include <Scene/PointLightNode.h>
+#include <Scene/SpotLightNode.h>
+
 namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
@@ -125,12 +131,12 @@ void Renderer::Initialize() {
  */
 void Renderer::Process(const float deltaTime, const float percent) {
 
-    glPushAttrib(GL_TRANSFORM_BIT);
+    //glPushAttrib(GL_TRANSFORM_BIT);
     glMatrixMode(GL_MODELVIEW);
     // setup lighting
     root->Accept(lv);
 
-    glPopAttrib();
+    //glPopAttrib();
 
     // For each RenderingView render the viewport.
     list<IRenderingView*>::iterator itr;
@@ -183,11 +189,11 @@ void Renderer::Process(const float deltaTime, const float percent) {
         (*itr)->Render(this, root);
 
         // turn off lights
-        for (int i = 0; i < lv.GetCount(); i++) {
+        for (int i = 0; i < lv.count; i++) {
             glDisable(GL_LIGHT0 + i);
         }
         
-        lv.ResetCount();
+        lv.count = 0;
     }
 }
 
@@ -296,102 +302,129 @@ void Renderer::SetFarPlane(float farPlane) {
 
 //Visitor methods for setting up the lighting
 
-Renderer::LightVisitor::LightVisitor(): count(0) {
+Renderer::LightVisitor::LightVisitor(): count(0)  {
+    pos[0] = 0.0;
+    pos[1] = 0.0;
+    pos[2] = 0.0;
+    pos[3] = 1.0;
 
+    dir[0] = 0.0;
+    dir[1] = 0.0;
+    dir[2] = -1.0;
+    dir[3] = 0.0;
 }
 
 Renderer::LightVisitor::~LightVisitor() {}
         
-int Renderer::LightVisitor::GetCount() { 
-    return count; 
-}
-
-void Renderer::LightVisitor::ResetCount() { 
-    count = 0; 
-}
-        
-void Renderer::LightVisitor::VisitTransformationNode(TransformationNode* tn) {
+void Renderer::LightVisitor::VisitTransformationNode(TransformationNode* node) {
     
     // push transformation matrix to model view stack
-    Matrix<4,4,float> m = tn->GetTransformationMatrix();
+    Matrix<4,4,float> m = node->GetTransformationMatrix();
     float f[16];
     m.ToArray(f);
     glPushMatrix();
     glMultMatrixf(f);
     // traverse sub nodes
-    tn->VisitSubNodes(*this);
+    node->VisitSubNodes(*this);
     // pop transformation matrix
     glPopMatrix();
 }
     
-void Renderer::LightVisitor::VisitDirectionalLightNode(DirectionalLightNode* dln) {
-    if (!dln->active)
+void Renderer::LightVisitor::VisitDirectionalLightNode(DirectionalLightNode* node) {
+    if (!node->active)
         return;
     
-    if (count >= GL_MAX_LIGHTS)
+    if (count >= GL_MAX_LIGHTS) {
+        logger.warning << "Too many lights in scene: " << count+1 << logger.end;
         return;
-    
+    }
+
     glEnable(GL_LIGHT0 + count);
-    Vector<3,float> dir(0.0,0.0,-1.0);
+
+    glLightfv(GL_LIGHT0 + count, GL_POSITION, dir);
+
     float color[4];
     
-    dln->ambient.ToArray(color);
+    node->ambient.ToArray(color);
     glLightfv(GL_LIGHT0 + count, GL_AMBIENT, color);
     
-    dln->diffuse.ToArray(color);
+    node->diffuse.ToArray(color);
     glLightfv(GL_LIGHT0 + count, GL_DIFFUSE, color);
     
-    dln->specular.ToArray(color);
+    node->specular.ToArray(color);
     glLightfv(GL_LIGHT0 + count, GL_SPECULAR, color);
-    
-    float direction[4];
-    direction[3] = 0.0;
-    dir.ToArray(direction);
-    glLightfv(GL_LIGHT0 + count, GL_POSITION, direction);
     
     count++;
 }
     
-void Renderer::LightVisitor::VisitPointLightNode(PointLightNode* pln) {
-    if (!pln->active)
+void Renderer::LightVisitor::VisitPointLightNode(PointLightNode* node) {
+    if (!node->active) {
+        logger.warning << "Too many lights in scene: " << count+1 << logger.end;
         return;
+    }
         
     if (count >= GL_MAX_LIGHTS)
         return;
 
     glEnable(GL_LIGHT0 + count);
-    Vector<3,float> pos;
-
-    pos = Vector<3,float>(0.0,0.0,0.0);
 
     // r->DrawPoint(pos,Vector<3,float>(0.0,0.0,1.0), 5);
     // logger.info << "light pos: " << pos << logger.end;
  
-    float fpos[4];
-    fpos[3] = 1.0;
-    pos.ToArray(fpos);
-                
-    glLightfv(GL_LIGHT0 + count, GL_POSITION, fpos);
+    glLightfv(GL_LIGHT0 + count, GL_POSITION, pos);
             
     float color[4];
 
-    pln->ambient.ToArray(color);
+    node->ambient.ToArray(color);
     glLightfv(GL_LIGHT0 + count, GL_AMBIENT, color);
 
-    pln->diffuse.ToArray(color);
+    node->diffuse.ToArray(color);
     glLightfv(GL_LIGHT0 + count, GL_DIFFUSE, color);
            
-    pln->specular.ToArray(color);
+    node->specular.ToArray(color);
     glLightfv(GL_LIGHT0 + count, GL_SPECULAR, color);
             
-    glLightf(GL_LIGHT0 + count, GL_CONSTANT_ATTENUATION, pln->constAtt);
-    glLightf(GL_LIGHT0 + count, GL_LINEAR_ATTENUATION, pln->linearAtt);
-    glLightf(GL_LIGHT0 + count, GL_QUADRATIC_ATTENUATION, pln->quadAtt);
+    glLightf(GL_LIGHT0 + count, GL_CONSTANT_ATTENUATION, node->constAtt);
+    glLightf(GL_LIGHT0 + count, GL_LINEAR_ATTENUATION, node->linearAtt);
+    glLightf(GL_LIGHT0 + count, GL_QUADRATIC_ATTENUATION, node->quadAtt);
             
     count++;
-    pln->VisitSubNodes(*this);            
+    node->VisitSubNodes(*this);            
 }
 
+void Renderer::LightVisitor::VisitSpotLightNode(SpotLightNode* node) {
+    if (!node->active)
+        return;
+        
+    if (count >= GL_MAX_LIGHTS) {
+        logger.warning << "Too many lights in scene: " << count+1 << logger.end;
+        return;
+    }
+    glEnable(GL_LIGHT0 + count);
+ 
+    glLightfv(GL_LIGHT0 + count, GL_POSITION, pos);
+    glLightfv(GL_LIGHT0 + count, GL_SPOT_DIRECTION, dir);
+    glLightf(GL_LIGHT0 + count, GL_SPOT_CUTOFF, node->cutoff);            
+    glLightf(GL_LIGHT0 + count, GL_SPOT_EXPONENT, node->exponent);            
+
+    float color[4];
+
+    node->ambient.ToArray(color);
+    glLightfv(GL_LIGHT0 + count, GL_AMBIENT, color);
+
+    node->diffuse.ToArray(color);
+    glLightfv(GL_LIGHT0 + count, GL_DIFFUSE, color);
+           
+    node->specular.ToArray(color);
+    glLightfv(GL_LIGHT0 + count, GL_SPECULAR, color);
+            
+    glLightf(GL_LIGHT0 + count, GL_CONSTANT_ATTENUATION, node->constAtt);
+    glLightf(GL_LIGHT0 + count, GL_LINEAR_ATTENUATION, node->linearAtt);
+    glLightf(GL_LIGHT0 + count, GL_QUADRATIC_ATTENUATION, node->quadAtt);
+            
+    count++;
+    node->VisitSubNodes(*this);            
+}
 
 
 
