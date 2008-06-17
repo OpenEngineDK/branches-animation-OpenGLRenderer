@@ -10,9 +10,15 @@
 #include <Renderers/OpenGL/RenderingView.h>
 #include <Renderers/OpenGL/Renderer.h>
 #include <Renderers/IRenderNode.h>
+#include <Geometry/FaceSet.h>
+#include <Geometry/VertexArray.h>
 #include <Scene/GeometryNode.h>
+#include <Scene/VertexArrayNode.h>
 #include <Scene/TransformationNode.h>
 #include <Resources/IShaderResource.h>
+#include <Display/Viewport.h>
+#include <Display/IViewingVolume.h>
+
 #include <Meta/OpenGL.h>
 #include <Math/Math.h>
 
@@ -20,9 +26,13 @@ namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
-using namespace OpenEngine::Math;
-using namespace OpenEngine::Geometry;
-using namespace OpenEngine::Resources;
+using OpenEngine::Math::Vector;
+using OpenEngine::Math::Matrix;
+using OpenEngine::Geometry::FaceSet;
+using OpenEngine::Geometry::VertexArray;
+using OpenEngine::Resources::IShaderResource;
+using OpenEngine::Display::Viewport;
+using OpenEngine::Display::IViewingVolume;
 
 /**
  * Rendering view constructor.
@@ -53,6 +63,66 @@ RenderingView::~RenderingView() {
  */
 IRenderer* RenderingView::GetRenderer() {
     return renderer;
+}
+
+
+void RenderingView::Handle(RenderingEventArg arg) {
+    // the following is moved from the previous Renderer::Process
+
+    Viewport& viewport = this->GetViewport();
+    IViewingVolume* volume = viewport.GetViewingVolume();
+    float farPlane = arg.renderer.GetFarPlane();
+
+    // If no viewing volume is set for the viewport ignore it.
+    if (volume == NULL) return;
+    volume->SignalRendering(arg.dt);
+
+    // Set viewport size
+    Vector<4,int> d = viewport.GetDimension();
+    glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
+
+    // Select The Projection Matrix
+    glMatrixMode(GL_PROJECTION);
+
+    // Reset The Projection Matrix
+    glLoadIdentity();
+
+    float fov = volume->GetFOV()/PI*180;
+    IViewingVolume::ProjectionMode projectionMode = volume->GetProjectionMode();
+    if ( projectionMode == IViewingVolume::OE_PERSPECTIVE ) {
+        // Projection, e.g. Frustum
+        gluPerspective(fov,
+                       volume->GetAspect(),
+                       volume->GetNear(),
+                       (farPlane > 0) ? farPlane : volume->GetFar());
+    } else if ( projectionMode == IViewingVolume::OE_ORTHOGONAL ) {
+        // Orthogonal, e.g. Orthotope
+        glOrtho(-(volume->GetAspect()*fov),
+                (volume->GetAspect()*fov),
+                -fov,
+                fov,
+                volume->GetNear(),
+                (farPlane > 0) ? farPlane : volume->GetFar());
+    } else {
+        // Error
+        //logger.error << "ProjectionMode not set in ViewingVolume "
+        //             << logger.end;
+        // @todo: throw exception here?
+    }
+    
+    // Select the modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+
+    // Reset the modelview matrix
+    glLoadIdentity();
+    
+    // Get the view matrix and apply it
+    Matrix<4,4,float> matrix = volume->GetViewMatrix();
+    float f[16] = {0};
+    matrix.ToArray(f);
+    glMultMatrixf(f);
+    
+    Render(&arg.renderer, arg.renderer.GetSceneRoot());
 }
 
 /**
@@ -242,6 +312,56 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
 
     // disable textures if it has been enabled
     glDisable(GL_TEXTURE_2D);
+}
+
+/**
+ *   Process a Vertex Array Node which may contain a list of vertex arrays
+ *   sorted by texture id.
+ */
+void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
+    // Enable all client states
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glEnable(GL_TEXTURE_2D);
+
+    // Get vertex array from the vertex array node
+    list<VertexArray*> vaList = node->GetVertexArrays();
+    for(list<VertexArray*>::iterator itr = vaList.begin(); itr!=vaList.end(); itr++) {
+        VertexArray* va = (*itr);
+
+        if (va->mat->texr != NULL)
+            glBindTexture(GL_TEXTURE_2D, va->mat->texr->GetID());
+
+        // Apply materials
+        // TODO: Decide whether we want both front and back
+        //       materials (maybe a material property).
+        float col[4];
+        va->mat->diffuse.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+        va->mat->ambient.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
+        va->mat->specular.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
+        va->mat->emission.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, va->mat->shininess);
+        
+        // Setup pointers to arrays
+        glNormalPointer(GL_FLOAT, 0, va->GetNormals());
+        glColorPointer(4, GL_FLOAT, 0, va->GetColors());
+        glTexCoordPointer(2, GL_FLOAT, 0, va->GetTexCoords());
+        glVertexPointer(3, GL_FLOAT, 0, va->GetVertices());
+        glDrawArrays(GL_TRIANGLES, 0, va->GetNumFaces()*3);
+    }
+
+    // Disable all state changes
+    glDisable(GL_TEXTURE_2D);
+	glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 bool RenderingView::IsOptionSet(RenderStateNode::RenderStateOption o) {

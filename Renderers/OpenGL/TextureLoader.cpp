@@ -9,8 +9,10 @@
 
 #include <Renderers/OpenGL/TextureLoader.h>
 #include <Scene/GeometryNode.h>
+#include <Scene/VertexArrayNode.h>
 #include <Geometry/FaceSet.h>
 #include <Geometry/Face.h>
+#include <Geometry/VertexArray.h>
 #include <Meta/OpenGL.h>
 #include <Resources/ITextureResource.h>
 #include <Logging/Logger.h>
@@ -20,14 +22,19 @@ namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
-using namespace std;
+using std::list;
 using OpenEngine::Geometry::FaceSet;
 using OpenEngine::Geometry::FaceList;
+using OpenEngine::Geometry::VertexArray;
 using OpenEngine::Resources::ITextureResourcePtr;
 
 TextureLoader::TextureLoader() {}
 
 TextureLoader::~TextureLoader() {}
+
+void TextureLoader::Handle(RenderingEventArg arg) {
+    arg.renderer.GetSceneRoot()->Accept(*this);
+}
 
 /**
  * The Geometry nodes textures are loaded on visit
@@ -40,6 +47,20 @@ void TextureLoader::VisitGeometryNode(GeometryNode* node) {
     for (FaceList::iterator face = faces->begin(); face != faces->end(); face++) {
         // load face textures
         LoadTextureResource((*face)->mat->texr);
+    }
+}
+
+/**
+ * The textures for each vertex array in the nodes list are loaded on visit.
+ * 
+ * @param node Vertex Array Node
+ */
+void TextureLoader::VisitVertexArrayNode(VertexArrayNode* node) {
+    list<VertexArray*> vaList = node->GetVertexArrays();
+    // Iterate through list of Vertex Arrays
+    for (list<VertexArray*>::iterator itr = vaList.begin(); itr!=vaList.end(); itr++) {
+        // Load vertex array texture
+        LoadTextureResource((*itr)->mat->texr);
     }
 }
 

@@ -112,6 +112,7 @@ public:
     virtual void DrawPoint(Vector<3,float> point, Vector<3,float> color , float size);
 
     virtual void SetFarPlane(float farPlane);
+    virtual float GetFarPlane();
 };
 
 } // NS OpenGL

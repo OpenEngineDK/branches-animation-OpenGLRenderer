@@ -10,7 +10,6 @@
 #ifndef _OPENGL_RENDERING_VIEW_H_
 #define _OPENGL_RENDERING_VIEW_H_
 
-#include <Geometry/FaceSet.h>
 #include <Renderers/IRenderingView.h>
 #include <Renderers/RenderStateNode.h>
 #include <vector>
@@ -41,10 +40,12 @@ public:
     RenderingView(Viewport& viewport);
     virtual ~RenderingView();
     void VisitGeometryNode(GeometryNode* node);
+    void VisitVertexArrayNode(VertexArrayNode* node);
     void VisitTransformationNode(TransformationNode* node);
     void VisitRenderStateNode(RenderStateNode* node);
     void VisitRenderNode(IRenderNode* node);
     void Render(IRenderer* renderer, ISceneNode* root);
+    void Handle(RenderingEventArg arg);
     IRenderer* GetRenderer();
 };
 

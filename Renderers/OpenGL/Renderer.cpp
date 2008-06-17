@@ -11,8 +11,6 @@
 #include <Renderers/OpenGL/Renderer.h>
 #include <Renderers/OpenGL/TextureLoader.h>
 #include <Renderers/OpenGL/ShaderLoader.h>
-#include <Display/Viewport.h>
-#include <Display/IViewingVolume.h>
 #include <Scene/ISceneNode.h>
 #include <Core/IGameEngine.h>
 #include <Logging/Logger.h>
@@ -32,8 +30,6 @@ namespace OpenGL {
 using namespace OpenEngine::Math;
 
 using OpenEngine::Core::IGameEngine;
-using OpenEngine::Display::Viewport;
-using OpenEngine::Display::IViewingVolume;
 using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
 
@@ -45,14 +41,10 @@ Renderer::Renderer() : farPlane(-1) {
 
 /**
  * Renderer destructor.
- * Deletes all the attached rendering views.
+ * Performs no clean up.
  */
 Renderer::~Renderer() {
-    // Delete list of IRenderingViews
-    list<IRenderingView*>::iterator itr;
-    for(itr=vRenderingView.begin(); itr!=vRenderingView.end(); ++itr)
-        delete *itr;
-    vRenderingView.clear();
+
 }
 
 void Renderer::InitializeGLSLVersion() {
@@ -108,21 +100,19 @@ void Renderer::Initialize() {
     if (root == NULL) {
         logger.error << "No scene root found." << logger.end;
         IGameEngine::Instance().Stop();
+        // @todo: throw exception here!
         return;
     }
 
-    // Find shader version and if supported load them.
-    InitializeGLSLVersion();
-    if (Renderer::glslversion != GLSL_NONE) {
-        ShaderLoader shadLoad;
-        root->Accept(shadLoad);
-    }
+    RenderingEventArg arg = { *this, 0 };
+    this->initialize.Notify(arg);
 
-    // Start loading textures by traversing the scene graph,
-    // and load in textures when GeometryNodes in the scene
-    // graph has FaceSets with associated texture files.
-    TextureLoader texLoad;
-    root->Accept(texLoad);
+    // Find shader version and if supported load them.
+    // InitializeGLSLVersion();
+    // if (Renderer::glslversion != GLSL_NONE) {
+    //     ShaderLoader shadLoad;
+    //     root->Accept(shadLoad);
+    // }
 }
 
 /**
@@ -130,74 +120,16 @@ void Renderer::Initialize() {
  *       replaced by null since the initialization face. 
  */
 void Renderer::Process(const float deltaTime, const float percent) {
-
-    //glPushAttrib(GL_TRANSFORM_BIT);
-    glMatrixMode(GL_MODELVIEW);
-    // setup lighting
-    root->Accept(lv);
-
-    //glPopAttrib();
-
-    // For each RenderingView render the viewport.
-    list<IRenderingView*>::iterator itr;
-    for(itr=vRenderingView.begin(); itr!=vRenderingView.end(); ++itr) {
-
-        Viewport& viewport = (*itr)->GetViewport();
-        IViewingVolume* volume = viewport.GetViewingVolume();
-
-        // If no viewing volume is set for the viewport ignore it.
-        if (volume == NULL) continue;
-        volume->SignalRendering(deltaTime);
-
-        // Set viewport size
-        Vector<4,int> d = viewport.GetDimension();
-        glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
-
-        // Select The Projection Matrix
-        glMatrixMode(GL_PROJECTION);
-
-        // Reset The Projection Matrix
-        glLoadIdentity();
-
-         float fov = volume->GetFOV()/PI*180;
-         IViewingVolume::ProjectionMode projectionMode = volume->GetProjectionMode();
-         if ( projectionMode == IViewingVolume::OE_PERSPECTIVE ) {
-            // Projection, e.g. Frustum
-            gluPerspective(fov, volume->GetAspect(), volume->GetNear(), (farPlane > 0) ? farPlane : volume->GetFar());
-         } else if ( projectionMode == IViewingVolume::OE_ORTHOGONAL ) {
-            // Orthogonal, e.g. Orthotope
-            glOrtho(-(volume->GetAspect()*fov),(volume->GetAspect()*fov),-fov,fov, volume->GetNear(), (farPlane > 0) ? farPlane : volume->GetFar());
-         } else {
-            // Error
-            logger.error << "ProjectionMode not set in ViewingVolume "
-                     << logger.end;
-         }
-
-        // Select the modelview matrix
-        glMatrixMode(GL_MODELVIEW);
-
-        // Reset the modelview matrix
-        glLoadIdentity();
-
-        // Get the view matrix and apply it
-        Matrix<4,4,float> matrix = volume->GetViewMatrix();
-        float f[16] = {0};
-        matrix.ToArray(f);
-        glMultMatrixf(f);
-
-        // Start traversing the scene
-        (*itr)->Render(this, root);
-
-        // turn off lights
-        for (int i = 0; i < lv.count; i++) {
-            glDisable(GL_LIGHT0 + i);
-        }
-        
-        lv.count = 0;
-    }
+    // run the processing phases
+    RenderingEventArg arg = { *this, deltaTime };
+    this->preProcess.Notify(arg);
+    this->process.Notify(arg);
+    this->postProcess.Notify(arg);
 }
 
 void Renderer::Deinitialize() {
+    RenderingEventArg arg = { *this, 0 };
+    this->deinitialize.Notify(arg);
 }
 
 bool Renderer::IsTypeOf(const std::type_info& inf) {
@@ -297,6 +229,10 @@ void Renderer::DrawPoint(Vector<3,float> point, Vector<3,float> color , float si
 
 void Renderer::SetFarPlane(float farPlane) {
     this->farPlane = farPlane;
+}
+
+float Renderer::GetFarPlane() {
+    return farPlane;
 }
 
 
@@ -425,9 +361,6 @@ void Renderer::LightVisitor::VisitSpotLightNode(SpotLightNode* node) {
     count++;
     node->VisitSubNodes(*this);            
 }
-
-
-
 
 } // NS OpenGL
 } // NS OpenEngine

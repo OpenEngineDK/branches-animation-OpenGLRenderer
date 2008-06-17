@@ -10,29 +10,36 @@
 #ifndef _TEXTURE_LOADER_H_
 #define _TEXTURE_LOADER_H_
 
+#include <Core/IListener.h>
 #include <Scene/ISceneNodeVisitor.h>
+#include <Renderers/IRenderer.h>
 #include <Resources/ITextureResource.h>
 
 namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
+using OpenEngine::Core::IListener;
 using OpenEngine::Scene::GeometryNode;
+using OpenEngine::Scene::VertexArrayNode;
 using OpenEngine::Scene::ISceneNodeVisitor;
 using OpenEngine::Resources::ITextureResourcePtr;
+using OpenEngine::Renderers::RenderingEventArg;
 
 /**
  * OpenGL specific texture loader.
  *
  * @class TextureLoader TextureLoader.h Renderers/OpenGL/TextureLoader.h
  */
-class TextureLoader : public ISceneNodeVisitor {
+class TextureLoader : public ISceneNodeVisitor, public IListener<RenderingEventArg> {
 public:
     TextureLoader();
     ~TextureLoader();
 
     static void LoadTextureResource(ITextureResourcePtr& tex);
-    void VisitGeometryNode(GeometryNode* node);
+    virtual void VisitGeometryNode(GeometryNode* node);
+    virtual void VisitVertexArrayNode(VertexArrayNode* node);
+    virtual void Handle(RenderingEventArg arg);
 };
 
 } // NS OpenGL
