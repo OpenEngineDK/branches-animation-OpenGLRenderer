@@ -105,6 +105,11 @@ void Renderer::Initialize() {
     }
 
     RenderingEventArg arg = { *this, 0 };
+
+    // attach the light preprocessor
+    // Maybe this attachment does not belong in the renderer...
+    this->preProcess.Attach(lv);
+
     this->initialize.Notify(arg);
 
     // Find shader version and if supported load them.
@@ -361,6 +366,18 @@ void Renderer::LightVisitor::VisitSpotLightNode(SpotLightNode* node) {
     count++;
     node->VisitSubNodes(*this);            
 }
+
+void Renderer::LightVisitor::Handle(RenderingEventArg arg) {
+    // turn off lights
+    for (int i = 0; i < GL_MAX_LIGHTS; i++) {
+        glDisable(GL_LIGHT0 + i);
+    }
+    
+    arg.renderer.GetSceneRoot()->Accept(*this);
+
+    count = 0;
+}
+
 
 } // NS OpenGL
 } // NS OpenEngine

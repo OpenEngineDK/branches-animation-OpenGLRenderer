@@ -57,14 +57,16 @@ class TextureLoader;
  */
 class Renderer : public IRenderer {
 private:
-    class LightVisitor: public ISceneNodeVisitor {
+    class LightVisitor: public ISceneNodeVisitor, public IListener<RenderingEventArg> {
     private:
         float pos[4], dir[4];
-    public:
         int count;
+    public:
 
         LightVisitor(); 
         ~LightVisitor();
+        
+        void Handle(RenderingEventArg arg);
         
         void VisitTransformationNode(TransformationNode* node);
 
@@ -73,7 +75,7 @@ private:
         void VisitPointLightNode(PointLightNode* node);
 
         void VisitSpotLightNode(SpotLightNode* node);
-
+        
     };
 
     LightVisitor lv;
