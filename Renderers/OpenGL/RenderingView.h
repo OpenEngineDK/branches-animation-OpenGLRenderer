@@ -44,6 +44,7 @@ public:
     void VisitTransformationNode(TransformationNode* node);
     void VisitRenderStateNode(RenderStateNode* node);
     void VisitRenderNode(IRenderNode* node);
+    void VisitDisplayListNode(DisplayListNode* node);
     void Render(IRenderer* renderer, ISceneNode* root);
     void Handle(RenderingEventArg arg);
     IRenderer* GetRenderer();

@@ -15,6 +15,7 @@
 #include <Scene/GeometryNode.h>
 #include <Scene/VertexArrayNode.h>
 #include <Scene/TransformationNode.h>
+#include <Scene/DisplayListNode.h>
 #include <Resources/IShaderResource.h>
 #include <Display/Viewport.h>
 #include <Display/IViewingVolume.h>
@@ -362,6 +363,10 @@ void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
     glDisableClientState(GL_NORMAL_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+void RenderingView::VisitDisplayListNode(DisplayListNode* node) {
+    glCallList(node->GetID());
 }
 
 bool RenderingView::IsOptionSet(RenderStateNode::RenderStateOption o) {
