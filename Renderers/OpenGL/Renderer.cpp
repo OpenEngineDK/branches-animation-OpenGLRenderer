@@ -83,6 +83,8 @@ void Renderer::InitializeGLSLVersion() {
 }
 
 void Renderer::Initialize() {
+    InitializeGLSLVersion(); //@todo: HACK - to get Inseminator to work
+
     // Clear the OpenGL frame buffer.
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
 
