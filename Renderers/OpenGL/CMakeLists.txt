@@ -7,12 +7,13 @@ ADD_LIBRARY(OpenEngine_Renderers_OpenGL
 	    RenderingView.cpp
 	    TextureLoader.cpp
 	    ShaderLoader.cpp
+	    ../../Scene/DisplayListNode.cpp
 	    )
 
 TARGET_LINK_LIBRARIES(OpenEngine_Renderers_OpenGL
 		      OpenEngine_Scene
 		      OpenEngine_Geometry
-			  OpenEngine_Renderers
+		      OpenEngine_Renderers
 		      ${OPENGL_LIBRARY}
 		      ${GLEW_LIBRARIES})
 
