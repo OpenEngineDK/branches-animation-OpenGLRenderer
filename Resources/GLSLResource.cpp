@@ -455,8 +455,7 @@ void GLSLResource::GLSL14Resource::PrintProgramInfoLog(GLhandleARB program) {
     if (infologLength > 0) {
         infoLog = (GLcharARB*)malloc(infologLength);
         if (infoLog==NULL) {
-            logger.error << "Could not allocate InfoLog buffer" << logger.end;
-            exit(1);
+	  throw Exception("Could not allocate InfoLog buffer");
         }
         glGetInfoLogARB(program, infologLength, &charsWritten, infoLog);
         logger.info << "Shader InfoLog:\n \"" << infoLog << "\"" << logger.end;
@@ -489,8 +488,7 @@ void GLSLResource::GLSL20Resource::PrintShaderInfoLog(GLuint shader) {
     if (infologLength > 0) {
         infoLog = (GLchar *)malloc(infologLength);
         if (infoLog==NULL) {
-            logger.error << "Could not allocate InfoLog buffer" << logger.end;
-            exit(1);
+	  throw Exception("Could not allocate InfoLog buffer");
         }
         glGetShaderInfoLog(shader, infologLength, &charsWritten, infoLog);
         logger.info << "Shader InfoLog:\n \"" << infoLog << "\"" << logger.end;
@@ -550,7 +548,7 @@ void GLSLResource::GLSL20Resource::Release() {
 GLint GLSLResource::GLSL14Resource::GetUniLoc(GLhandleARB program, const GLchar *name){
     GLint loc = glGetUniformLocationARB(program, name);
     if (loc == -1)
-        logger.error << "No such uniform named \"" << name << "\"" << logger.end;
+      throw Exception(string("No such uniform named \"") + name + "\"");
     return loc;
 }
 
