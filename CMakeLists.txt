@@ -6,6 +6,7 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Resources/GLSLResource.cpp
   Scene/DisplayListNode.cpp
   Scene/DisplayListTransformer.cpp
+  Renderers/OpenGL/LightRenderer.cpp
 )
 
 TARGET_LINK_LIBRARIES( ${EXTENSION_NAME}
