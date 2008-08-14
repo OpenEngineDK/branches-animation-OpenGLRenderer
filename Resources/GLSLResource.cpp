@@ -548,14 +548,14 @@ void GLSLResource::GLSL20Resource::Release() {
 GLint GLSLResource::GLSL14Resource::GetUniLoc(GLhandleARB program, const GLchar *name){
     GLint loc = glGetUniformLocationARB(program, name);
     if (loc == -1)
-      throw Exception(string("No such uniform named \"") + name + "\"");
+      throw Exception( string("No such uniform named \"") + name + "\"");
     return loc;
 }
 
 GLint GLSLResource::GLSL20Resource::GetUniLoc(GLuint program, const GLchar *name){
     GLint loc = glGetUniformLocation(program, name);
     if (loc == -1)
-        logger.error << "No such uniform named \"" << name << "\"" << logger.end;
+      throw Exception( string("No such uniform named \"") + name + "\"");
     return loc;
 }
 
