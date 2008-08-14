@@ -14,6 +14,8 @@
 #include <Scene/ISceneNodeVisitor.h>
 #include <Core/IListener.h>
 
+#include <Meta/OpenGL.h>
+
 namespace OpenEngine {
 
     //forward declarations
@@ -46,7 +48,7 @@ using OpenEngine::Renderers::RenderingEventArg;
 class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventArg> {
  private:
     float pos[4], dir[4];
-    int count;
+    GLint lightCount;
  public:
 
     LightRenderer(); 

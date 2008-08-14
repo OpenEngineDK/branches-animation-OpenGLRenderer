@@ -89,7 +89,7 @@ void Renderer::Initialize() {
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
 
     // Enable lighting
-    glEnable(GL_LIGHTING);
+    //glEnable(GL_LIGHTING);
     //glEnable(GL_LIGHT0);
 
     // Enable depth testing

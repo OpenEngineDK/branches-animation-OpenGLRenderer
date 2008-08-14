@@ -8,9 +8,6 @@
 //--------------------------------------------------------------------
 
 #include <Renderers/OpenGL/LightRenderer.h>
-
-#include <Meta/OpenGL.h>
-
 #include <Scene/TransformationNode.h>
 #include <Scene/LightNode.h>
 #include <Scene/DirectionalLightNode.h>
@@ -27,15 +24,15 @@ using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
 
 
-LightRenderer::LightRenderer(): count(0)  {
+LightRenderer::LightRenderer()  {
     pos[0] = 0.0;
     pos[1] = 0.0;
     pos[2] = 0.0;
     pos[3] = 1.0;
 
     dir[0] = 0.0;
-    dir[1] = 0.0;
-    dir[2] = -1.0;
+    dir[1] = -1.0;
+    dir[2] = 0.0;
     dir[3] = 0.0;
 }
 
@@ -56,109 +53,100 @@ void LightRenderer::VisitTransformationNode(TransformationNode* node) {
 }
     
 void LightRenderer::VisitDirectionalLightNode(DirectionalLightNode* node) {
-    if (!node->active)
+    if (!node->active) {
+        node->VisitSubNodes(*this);            
         return;
+    } 
     
-    if (count >= GL_MAX_LIGHTS) {
-        logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " << count+1 << logger.end;
-        return;
+    if (lightCount <= GL_MAX_LIGHTS) {
+        GLint light = GL_LIGHT0+lightCount;
+        float color[4];
+        glLightfv(light, GL_POSITION, dir);
+        node->ambient.ToArray(color);
+        glLightfv(light, GL_AMBIENT, color);
+        node->diffuse.ToArray(color);
+        glLightfv(light, GL_DIFFUSE, color);
+        node->specular.ToArray(color);
+        glLightfv(light, GL_SPECULAR, color);
+        glEnable(light);
+        lightCount++;
     }
-
-    glEnable(GL_LIGHT0 + count);
-
-    glLightfv(GL_LIGHT0 + count, GL_POSITION, dir);
-
-    float color[4];
-    
-    node->ambient.ToArray(color);
-    glLightfv(GL_LIGHT0 + count, GL_AMBIENT, color);
-    
-    node->diffuse.ToArray(color);
-    glLightfv(GL_LIGHT0 + count, GL_DIFFUSE, color);
-    
-    node->specular.ToArray(color);
-    glLightfv(GL_LIGHT0 + count, GL_SPECULAR, color);
-    
-    count++;
+    else {
+        logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " 
+                       << lightCount << logger.end;
+    }
+    node->VisitSubNodes(*this);            
 }
     
 void LightRenderer::VisitPointLightNode(PointLightNode* node) {
     if (!node->active) {
-        logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " << count+1 << logger.end;
+        node->VisitSubNodes(*this);            
         return;
+    } 
+    if (lightCount <= GL_MAX_LIGHTS) {
+        GLint light = GL_LIGHT0+lightCount;
+        float color[4];
+        glLightfv(light, GL_POSITION, pos);
+        node->ambient.ToArray(color);
+        glLightfv(light, GL_AMBIENT, color);
+        node->diffuse.ToArray(color);
+        glLightfv(light, GL_DIFFUSE, color);
+        node->specular.ToArray(color);
+        glLightfv(light, GL_SPECULAR, color);
+        glLightf(light, GL_CONSTANT_ATTENUATION, node->constAtt);
+        glLightf(light, GL_LINEAR_ATTENUATION, node->linearAtt);
+        glLightf(light, GL_QUADRATIC_ATTENUATION, node->quadAtt);
+        glEnable(light);
+        lightCount++;
     }
-        
-    if (count >= GL_MAX_LIGHTS)
-        return;
-
-    glEnable(GL_LIGHT0 + count);
-
-    // r->DrawPoint(pos,Vector<3,float>(0.0,0.0,1.0), 5);
-    // logger.info << "light pos: " << pos << logger.end;
- 
-    glLightfv(GL_LIGHT0 + count, GL_POSITION, pos);
-            
-    float color[4];
-
-    node->ambient.ToArray(color);
-    glLightfv(GL_LIGHT0 + count, GL_AMBIENT, color);
-
-    node->diffuse.ToArray(color);
-    glLightfv(GL_LIGHT0 + count, GL_DIFFUSE, color);
-           
-    node->specular.ToArray(color);
-    glLightfv(GL_LIGHT0 + count, GL_SPECULAR, color);
-            
-    glLightf(GL_LIGHT0 + count, GL_CONSTANT_ATTENUATION, node->constAtt);
-    glLightf(GL_LIGHT0 + count, GL_LINEAR_ATTENUATION, node->linearAtt);
-    glLightf(GL_LIGHT0 + count, GL_QUADRATIC_ATTENUATION, node->quadAtt);
-            
-    count++;
+    else {
+        logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " 
+                       << lightCount << logger.end;
+    }
     node->VisitSubNodes(*this);            
 }
 
 void LightRenderer::VisitSpotLightNode(SpotLightNode* node) {
-    if (!node->active)
+    if (!node->active) {
+        node->VisitSubNodes(*this);            
         return;
-        
-    if (count >= GL_MAX_LIGHTS) {
-        logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " << count+1 << logger.end;
-        return;
+    } 
+    
+    if (lightCount <= GL_MAX_LIGHTS) {
+        GLint light = GL_LIGHT0+lightCount;
+        float color[4];
+        glLightfv(light, GL_POSITION, pos);
+        glLightfv(light, GL_SPOT_DIRECTION, dir);
+        glLightf(light, GL_SPOT_CUTOFF, node->cutoff);            
+        glLightf(light, GL_SPOT_EXPONENT, node->exponent);            
+        node->ambient.ToArray(color);
+        glLightfv(light, GL_AMBIENT, color);
+        node->diffuse.ToArray(color);
+        glLightfv(light, GL_DIFFUSE, color);
+        node->specular.ToArray(color);
+        glLightfv(light, GL_SPECULAR, color);
+        glLightf(light, GL_CONSTANT_ATTENUATION, node->constAtt);
+        glLightf(light, GL_LINEAR_ATTENUATION, node->linearAtt);
+        glLightf(light, GL_QUADRATIC_ATTENUATION, node->quadAtt);
+        glEnable(light);
+        lightCount++;
     }
-    glEnable(GL_LIGHT0 + count);
- 
-    // TODO: maybe check of attributes have changed to save gl calls?
-    glLightfv(GL_LIGHT0 + count, GL_POSITION, pos);
-    glLightfv(GL_LIGHT0 + count, GL_SPOT_DIRECTION, dir);
-    glLightf(GL_LIGHT0 + count, GL_SPOT_CUTOFF, node->cutoff);            
-    glLightf(GL_LIGHT0 + count, GL_SPOT_EXPONENT, node->exponent);            
-
-    float color[4];
-
-    node->ambient.ToArray(color);
-    glLightfv(GL_LIGHT0 + count, GL_AMBIENT, color);
-
-    node->diffuse.ToArray(color);
-    glLightfv(GL_LIGHT0 + count, GL_DIFFUSE, color);
-           
-    node->specular.ToArray(color);
-    glLightfv(GL_LIGHT0 + count, GL_SPECULAR, color);
-            
-    glLightf(GL_LIGHT0 + count, GL_CONSTANT_ATTENUATION, node->constAtt);
-    glLightf(GL_LIGHT0 + count, GL_LINEAR_ATTENUATION, node->linearAtt);
-    glLightf(GL_LIGHT0 + count, GL_QUADRATIC_ATTENUATION, node->quadAtt);
-            
-    count++;
+    else {
+        logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " 
+                       << lightCount << logger.end;
+    }
     node->VisitSubNodes(*this);            
 }
 
 void LightRenderer::Handle(RenderingEventArg arg) {
     // turn off lights
     for (int i = 0; i < GL_MAX_LIGHTS; i++) {
+        //logger.info << "disable light " << i << logger.end;
         glDisable(GL_LIGHT0 + i);
     }
 
-    count = 0;
+    glEnable(GL_LIGHTING);
+    lightCount = 0;
     arg.renderer.GetSceneRoot()->Accept(*this);
 }
 
