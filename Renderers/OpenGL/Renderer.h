@@ -61,8 +61,6 @@ private:
 
     void InitializeGLSLVersion();
 
-    float farPlane;
-
 public:
     Renderer();
     ~Renderer();
@@ -89,9 +87,6 @@ public:
     virtual void DrawFace(FacePtr face, Vector<3,float> color, float width = 1);
     virtual void DrawLine(Line line, Vector<3,float> color, float width = 1);
     virtual void DrawPoint(Vector<3,float> point, Vector<3,float> color , float size);
-
-    virtual void SetFarPlane(float farPlane);
-    virtual float GetFarPlane();
 };
 
 } // NS OpenGL

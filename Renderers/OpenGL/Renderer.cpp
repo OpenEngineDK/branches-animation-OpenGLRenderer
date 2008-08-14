@@ -35,7 +35,7 @@ using OpenEngine::Math::Matrix;
 
 GLSLVersion Renderer::glslversion = GLSL_UNKNOWN;
 
-Renderer::Renderer() : farPlane(-1) {
+Renderer::Renderer() {
 
 }
 
@@ -228,14 +228,6 @@ void Renderer::DrawPoint(Vector<3,float> point, Vector<3,float> color , float si
     // reset state
     if (t) glEnable(GL_TEXTURE_2D);
     if (l) glEnable(GL_LIGHTING);
-}
-
-void Renderer::SetFarPlane(float farPlane) {
-    this->farPlane = farPlane;
-}
-
-float Renderer::GetFarPlane() {
-    return farPlane;
 }
 
 

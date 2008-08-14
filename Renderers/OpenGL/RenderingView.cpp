@@ -72,7 +72,6 @@ void RenderingView::Handle(RenderingEventArg arg) {
 
     Viewport& viewport = this->GetViewport();
     IViewingVolume* volume = viewport.GetViewingVolume();
-    float farPlane = arg.renderer.GetFarPlane();
 
     // If no viewing volume is set for the viewport ignore it.
     if (volume == NULL) return;
@@ -84,32 +83,14 @@ void RenderingView::Handle(RenderingEventArg arg) {
 
     // Select The Projection Matrix
     glMatrixMode(GL_PROJECTION);
-
     // Reset The Projection Matrix
     glLoadIdentity();
-
-    float fov = volume->GetFOV()/PI*180;
-    IViewingVolume::ProjectionMode projectionMode = volume->GetProjectionMode();
-    if ( projectionMode == IViewingVolume::OE_PERSPECTIVE ) {
-        // Projection, e.g. Frustum
-        gluPerspective(fov,
-                       volume->GetAspect(),
-                       volume->GetNear(),
-                       (farPlane > 0) ? farPlane : volume->GetFar());
-    } else if ( projectionMode == IViewingVolume::OE_ORTHOGONAL ) {
-        // Orthogonal, e.g. Orthotope
-        glOrtho(-(volume->GetAspect()*fov),
-                (volume->GetAspect()*fov),
-                -fov,
-                fov,
-                volume->GetNear(),
-                (farPlane > 0) ? farPlane : volume->GetFar());
-    } else {
-        // Error
-        //logger.error << "ProjectionMode not set in ViewingVolume "
-        //             << logger.end;
-        // @todo: throw exception here?
-    }
+    
+    // Setup OpenGL with the volumes projection matrix
+    Matrix<4,4,float> projMatrix = volume->GetProjectionMatrix();
+    float arr[16] = {0};
+    projMatrix.ToArray(arr);
+    glMultMatrixf(arr);
     
     // Select the modelview matrix
     glMatrixMode(GL_MODELVIEW);
