@@ -75,7 +75,7 @@ void RenderingView::Handle(RenderingEventArg arg) {
 
     // If no viewing volume is set for the viewport ignore it.
     if (volume == NULL) return;
-    volume->SignalRendering(arg.dt);
+    volume->SignalRendering(arg.approx);
 
     // Set viewport size
     Vector<4,int> d = viewport.GetDimension();

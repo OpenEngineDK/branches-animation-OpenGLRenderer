@@ -37,18 +37,19 @@ namespace Renderers {
  */
 namespace OpenGL {
 
+
+using OpenEngine::Math::Matrix;
+using OpenEngine::Geometry::FacePtr;
+using OpenEngine::Core::InitializeEventArg;
+using OpenEngine::Core::ProcessEventArg;
+using OpenEngine::Core::DeinitializeEventArg;
+
+class TextureLoader;
+
 /**
  * OpenGL Shader Language versions
  */
 enum GLSLVersion { GLSL_UNKNOWN, GLSL_NONE, GLSL_14, GLSL_20 };
-
-using namespace std;
-using namespace OpenEngine::Scene;
-    //using OpenEngine::Scene::ISceneNode;
-using OpenEngine::Math::Matrix;
-using OpenEngine::Geometry::FacePtr;
-
-class TextureLoader;
 
 /**
  * Renderer using OpenGL
@@ -65,10 +66,9 @@ public:
     Renderer();
     ~Renderer();
 
-    void Initialize();
-    void Process(const float deltaTime, const float percent);
-    void Deinitialize();
-    bool IsTypeOf(const std::type_info& inf);
+    void Handle(InitializeEventArg arg);
+    void Handle(ProcessEventArg arg);
+    void Handle(DeinitializeEventArg arg);
 
     /**
      * Test if OpenGL Shader Language is supported.

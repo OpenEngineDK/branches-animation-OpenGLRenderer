@@ -12,7 +12,6 @@
 #include <Renderers/OpenGL/TextureLoader.h>
 #include <Renderers/OpenGL/ShaderLoader.h>
 #include <Scene/ISceneNode.h>
-#include <Core/IGameEngine.h>
 #include <Logging/Logger.h>
 #include <Meta/OpenGL.h>
 #include <Math/Math.h>
@@ -29,7 +28,6 @@ namespace OpenGL {
 
 using namespace OpenEngine::Math;
 
-using OpenEngine::Core::IGameEngine;
 using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
 
@@ -82,7 +80,7 @@ void Renderer::InitializeGLSLVersion() {
     }
 }
 
-void Renderer::Initialize() {
+void Renderer::Handle(InitializeEventArg arg) {
     InitializeGLSLVersion(); //@todo: HACK - to get Inseminator to work
 
     // Clear the OpenGL frame buffer.
@@ -99,44 +97,26 @@ void Renderer::Initialize() {
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
     // Check that we have a scene.
-    if (root == NULL) {
-        logger.error << "No scene root found." << logger.end;
-        IGameEngine::Instance().Stop();
-        // @todo: throw exception here!
-        return;
-    }
+    if (root == NULL)
+        throw Exception("No scene root found while rendering.");
 
-    RenderingEventArg arg = { *this, 0 };
-
-    this->initialize.Notify(arg);
-
-    // Find shader version and if supported load them.
-    // InitializeGLSLVersion();
-    // if (Renderer::glslversion != GLSL_NONE) {
-    //     ShaderLoader shadLoad;
-    //     root->Accept(shadLoad);
-    // }
+    this->initialize.Notify(RenderingEventArg(*this));
 }
 
 /**
  * @note The processing function assumes that the scene has not been
  *       replaced by null since the initialization face. 
  */
-void Renderer::Process(const float deltaTime, const float percent) {
+void Renderer::Handle(ProcessEventArg arg) {
     // run the processing phases
-    RenderingEventArg arg = { *this, deltaTime };
-    this->preProcess.Notify(arg);
-    this->process.Notify(arg);
-    this->postProcess.Notify(arg);
+    RenderingEventArg rarg(*this, arg.start, arg.approx);
+    this->preProcess.Notify(rarg);
+    this->process.Notify(rarg);
+    this->postProcess.Notify(rarg);
 }
 
-void Renderer::Deinitialize() {
-    RenderingEventArg arg = { *this, 0 };
-    this->deinitialize.Notify(arg);
-}
-
-bool Renderer::IsTypeOf(const std::type_info& inf) {
-    return ((typeid(Renderer) == inf) || IRenderer::IsTypeOf(inf));
+void Renderer::Handle(DeinitializeEventArg arg) {
+    this->deinitialize.Notify(RenderingEventArg(*this));
 }
 
 bool Renderer::IsGLSLSupported() {
