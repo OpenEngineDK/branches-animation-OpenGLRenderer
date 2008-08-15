@@ -12,6 +12,7 @@
 
 #include <Renderers/IRenderer.h>
 #include <Renderers/IRenderingView.h>
+#include <Core/Event.h>
 #include <Scene/ISceneNode.h>
 #include <Math/Matrix.h>
 #include <Geometry/Face.h>
@@ -43,6 +44,8 @@ using OpenEngine::Geometry::FacePtr;
 using OpenEngine::Core::InitializeEventArg;
 using OpenEngine::Core::ProcessEventArg;
 using OpenEngine::Core::DeinitializeEventArg;
+using OpenEngine::Core::Event;
+
 
 class TextureLoader;
 
@@ -60,6 +63,13 @@ class Renderer : public IRenderer {
 private:
     static GLSLVersion glslversion;
 
+    // Event lists for the rendering phases.
+    Event<RenderingEventArg> initialize;
+    Event<RenderingEventArg> preProcess;
+    Event<RenderingEventArg> process;
+    Event<RenderingEventArg> postProcess;
+    Event<RenderingEventArg> deinitialize;
+
     void InitializeGLSLVersion();
 
 public:
@@ -69,6 +79,16 @@ public:
     void Handle(InitializeEventArg arg);
     void Handle(ProcessEventArg arg);
     void Handle(DeinitializeEventArg arg);
+
+    /**
+     * Event lists for the rendering phases.
+     */
+    virtual IEvent<RenderingEventArg>& InitializeEvent();
+    virtual IEvent<RenderingEventArg>& PreProcessEvent();
+    virtual IEvent<RenderingEventArg>& ProcessEvent();
+    virtual IEvent<RenderingEventArg>& PostProcessEvent();
+    virtual IEvent<RenderingEventArg>& DeinitializeEvent();
+
 
     /**
      * Test if OpenGL Shader Language is supported.

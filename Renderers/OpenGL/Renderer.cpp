@@ -119,6 +119,23 @@ void Renderer::Handle(DeinitializeEventArg arg) {
     this->deinitialize.Notify(RenderingEventArg(*this));
 }
 
+IEvent<RenderingEventArg>& Renderer::InitializeEvent() {
+    return initialize;
+}
+IEvent<RenderingEventArg>& Renderer::PreProcessEvent() {
+    return preProcess;
+}
+IEvent<RenderingEventArg>& Renderer::ProcessEvent() {
+    return process;
+}
+IEvent<RenderingEventArg>& Renderer::PostProcessEvent() {
+    return postProcess;
+}
+IEvent<RenderingEventArg>& Renderer::DeinitializeEvent() {
+    return deinitialize;
+}
+
+
 bool Renderer::IsGLSLSupported() {
     return (glslversion != GLSL_NONE && glslversion != GLSL_UNKNOWN);
 }
