@@ -47,8 +47,6 @@ using OpenEngine::Core::DeinitializeEventArg;
 using OpenEngine::Core::Event;
 
 
-class TextureLoader;
-
 /**
  * OpenGL Shader Language versions
  */
@@ -104,6 +102,7 @@ public:
      */
     static GLSLVersion GetGLSLVersion();
 
+    virtual void BindTexture(ITextureResourcePtr texr);
     virtual void DrawFace(FacePtr face, Vector<3,float> color, float width = 1);
     virtual void DrawLine(Line line, Vector<3,float> color, float width = 1);
     virtual void DrawPoint(Vector<3,float> point, Vector<3,float> color , float size);

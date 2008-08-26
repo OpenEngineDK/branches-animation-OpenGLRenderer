@@ -9,8 +9,6 @@
 
 #include <Renderers/IRenderingView.h>
 #include <Renderers/OpenGL/Renderer.h>
-#include <Renderers/OpenGL/TextureLoader.h>
-#include <Renderers/OpenGL/ShaderLoader.h>
 #include <Scene/ISceneNode.h>
 #include <Logging/Logger.h>
 #include <Meta/OpenGL.h>
@@ -142,6 +140,52 @@ bool Renderer::IsGLSLSupported() {
 
 GLSLVersion Renderer::GetGLSLVersion() {
     return glslversion;
+}
+
+void Renderer::BindTexture(ITextureResourcePtr texr) {
+    // check for null pointers
+    if (texr == NULL) return;
+
+    GLuint texid = texr->GetID();
+
+    // if the texture has been loaded delete it before reloading
+    if (texid != 0) glDeleteTextures(1, &texid);
+
+    // signal we need the texture data
+    texr->Load();
+
+    glGenTextures(1, &texid);
+    texr->SetID(texid);
+            
+    glBindTexture(GL_TEXTURE_2D, texid);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        
+    GLuint depth = 0;
+    switch (texr->GetDepth()) {
+    case 8:  depth = GL_LUMINANCE; break;
+    case 24: depth = GL_RGB;   break;
+    case 32: depth = GL_RGBA;  break;
+    default: logger.warning << "Unsupported color depth: " 
+                            << texr->GetDepth() << logger.end;
+    }
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 depth,
+                 texr->GetWidth(),
+                 texr->GetHeight(),
+                 0,
+                 depth,
+                 GL_UNSIGNED_BYTE,
+                 texr->GetData());
+
+    // signal we are done with the texture data
+    texr->Unload();
 }
 
 /**
