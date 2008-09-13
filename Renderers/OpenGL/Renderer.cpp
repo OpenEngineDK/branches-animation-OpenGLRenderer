@@ -142,20 +142,32 @@ GLSLVersion Renderer::GetGLSLVersion() {
     return glslversion;
 }
 
-void Renderer::BindTexture(ITextureResourcePtr texr) {
+void Renderer::LoadTexture(ITextureResourcePtr texr) {
     // check for null pointers
     if (texr == NULL) return;
-
-    GLuint texid = texr->GetID();
-
-    // if the texture has been loaded delete it before reloading
-    if (texid != 0) glDeleteTextures(1, &texid);
 
     // signal we need the texture data
     texr->Load();
 
-    glGenTextures(1, &texid);
-    texr->SetID(texid);
+    // bind the texture
+    RebindTexture(texr);
+
+    // signal we are done with the texture data
+    texr->Unload();
+}
+
+void Renderer::RebindTexture(ITextureResourcePtr texr) {
+    // check for null pointers
+    if (texr == NULL) return;
+
+    GLuint texid = texr->GetID();
+    if (texid == 0) {
+        glGenTextures(1, &texid);
+        texr->SetID(texid);
+    }
+
+    // if the texture has been loaded delete it before reloading
+    glDeleteTextures(1, &texid); //ignored by gl if not loaded
             
     glBindTexture(GL_TEXTURE_2D, texid);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -183,9 +195,6 @@ void Renderer::BindTexture(ITextureResourcePtr texr) {
                  depth,
                  GL_UNSIGNED_BYTE,
                  texr->GetData());
-
-    // signal we are done with the texture data
-    texr->Unload();
 }
 
 /**
