@@ -162,6 +162,8 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
 
     GLuint texid = texr->GetID();
     if (texid == 0) {
+        //@todo: check that there is a gl context
+
         glGenTextures(1, &texid);
         texr->SetID(texid);
     }

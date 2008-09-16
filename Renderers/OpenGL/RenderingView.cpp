@@ -226,6 +226,10 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
             currentTexture != f->mat->texr->GetID()) {  // and face texture is different then the current one
             currentTexture = f->mat->texr->GetID();
             glEnable(GL_TEXTURE_2D);
+            #ifdef DEBUG
+            if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
+                throw Exception("texture not bound, id: " + currentTexture);
+            #endif
             glBindTexture(GL_TEXTURE_2D, currentTexture);
         }
 
