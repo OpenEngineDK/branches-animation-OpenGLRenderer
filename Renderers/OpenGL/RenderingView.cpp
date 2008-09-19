@@ -68,6 +68,7 @@ IRenderer* RenderingView::GetRenderer() {
 
 
 void RenderingView::Handle(RenderingEventArg arg) {
+    CHECK_FOR_GL_ERROR();
     // the following is moved from the previous Renderer::Process
 
     Viewport& viewport = this->GetViewport();
@@ -80,29 +81,36 @@ void RenderingView::Handle(RenderingEventArg arg) {
     // Set viewport size
     Vector<4,int> d = viewport.GetDimension();
     glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
+    CHECK_FOR_GL_ERROR();
 
     // Select The Projection Matrix
     glMatrixMode(GL_PROJECTION);
+    CHECK_FOR_GL_ERROR();
     // Reset The Projection Matrix
     glLoadIdentity();
+    CHECK_FOR_GL_ERROR();
     
     // Setup OpenGL with the volumes projection matrix
     Matrix<4,4,float> projMatrix = volume->GetProjectionMatrix();
     float arr[16] = {0};
     projMatrix.ToArray(arr);
     glMultMatrixf(arr);
+    CHECK_FOR_GL_ERROR();
     
     // Select the modelview matrix
     glMatrixMode(GL_MODELVIEW);
+    CHECK_FOR_GL_ERROR();
 
     // Reset the modelview matrix
     glLoadIdentity();
+    CHECK_FOR_GL_ERROR();
     
     // Get the view matrix and apply it
     Matrix<4,4,float> matrix = volume->GetViewMatrix();
     float f[16] = {0};
     matrix.ToArray(f);
     glMultMatrixf(f);
+    CHECK_FOR_GL_ERROR();
     
     Render(&arg.renderer, arg.renderer.GetSceneRoot());
 }
@@ -150,11 +158,14 @@ void RenderingView::VisitTransformationNode(TransformationNode* node) {
     float f[16];
     m.ToArray(f);
     glPushMatrix();
+    CHECK_FOR_GL_ERROR();
     glMultMatrixf(f);
+    CHECK_FOR_GL_ERROR();
     // traverse sub nodes
     node->VisitSubNodes(*this);
     // pop transformation matrix
     glPopMatrix();
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -166,14 +177,21 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
 
     if( IsOptionSet(RenderStateNode::RENDER_WIREFRAMED) ) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    } else
+        CHECK_FOR_GL_ERROR();
+    } else {
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        CHECK_FOR_GL_ERROR();
+    }
 
     // Enable back-face culling, only faces facing towards the view is rendered.
-    if( IsOptionSet(RenderStateNode::RENDER_BACKFACES) )
+    if( IsOptionSet(RenderStateNode::RENDER_BACKFACES) ) {
         glDisable(GL_CULL_FACE);
-    else
+        CHECK_FOR_GL_ERROR();
+    }
+    else {
         glEnable(GL_CULL_FACE);
+        CHECK_FOR_GL_ERROR();
+    }
 
     // Remember last bound texture and shader
     int currentTexture = 0;
@@ -218,6 +236,7 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
         else if (f->mat->texr == NULL) {
             glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
             glDisable(GL_TEXTURE_2D);
+            CHECK_FOR_GL_ERROR();
             currentTexture = 0;
         }
 
@@ -231,6 +250,7 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
                 throw Exception("texture not bound, id: " + currentTexture);
             #endif
             glBindTexture(GL_TEXTURE_2D, currentTexture);
+            CHECK_FOR_GL_ERROR();
         }
 
         // Apply materials
@@ -240,18 +260,22 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
         
         f->mat->diffuse.ToArray(col);
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+        CHECK_FOR_GL_ERROR();
         
         f->mat->ambient.ToArray(col);
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
+        CHECK_FOR_GL_ERROR();
         
         f->mat->specular.ToArray(col);
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
+        CHECK_FOR_GL_ERROR();
         
         f->mat->emission.ToArray(col);
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
+        CHECK_FOR_GL_ERROR();
         
         glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, f->mat->shininess);
-
+        CHECK_FOR_GL_ERROR();
  
         glBegin(GL_TRIANGLES);
         // for each vertex ...
@@ -273,12 +297,13 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
 			glVertex3f(v[0],v[1],v[2]);
         }
         glEnd();
+        CHECK_FOR_GL_ERROR();
 
         // Render normal if enabled
-        GLboolean c = glIsEnabled(GL_COLOR);
         GLboolean l = glIsEnabled(GL_LIGHTING);
- 		glEnable(GL_COLOR);
+        CHECK_FOR_GL_ERROR();
         glDisable(GL_LIGHTING);
+        CHECK_FOR_GL_ERROR();
 
         if (IsOptionSet(RenderStateNode::RENDER_BINORMALS))
             RenderBinormals(f);
@@ -288,8 +313,8 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
             RenderNormals(f);
         if (IsOptionSet(RenderStateNode::RENDER_HARD_NORMAL))
             RenderHardNormal(f);
-        if (c) glEnable(GL_COLOR);
         if (l) glEnable(GL_LIGHTING);
+        CHECK_FOR_GL_ERROR();
     }
 
     // last we release the final shader
@@ -298,6 +323,7 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
 
     // disable textures if it has been enabled
     glDisable(GL_TEXTURE_2D);
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -305,12 +331,15 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
  *   sorted by texture id.
  */
 void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
+    CHECK_FOR_GL_ERROR();
+
     // Enable all client states
     glEnableClientState(GL_VERTEX_ARRAY);
     glEnableClientState(GL_NORMAL_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
     glEnable(GL_TEXTURE_2D);
+    CHECK_FOR_GL_ERROR();
 
     // Get vertex array from the vertex array node
     list<VertexArray*> vaList = node->GetVertexArrays();
@@ -341,6 +370,7 @@ void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
         glVertexPointer(3, GL_FLOAT, 0, va->GetVertices());
         glDrawArrays(GL_TRIANGLES, 0, va->GetNumFaces()*3);
     }
+    CHECK_FOR_GL_ERROR();
 
     // Disable all state changes
     glDisable(GL_TEXTURE_2D);
@@ -348,10 +378,12 @@ void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
     glDisableClientState(GL_NORMAL_ARRAY);
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    CHECK_FOR_GL_ERROR();
 }
 
 void RenderingView::VisitDisplayListNode(DisplayListNode* node) {
     glCallList(node->GetID());
+    CHECK_FOR_GL_ERROR();
 }
 
 bool RenderingView::IsOptionSet(RenderStateNode::RenderStateOption o) {

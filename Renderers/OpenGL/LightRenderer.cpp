@@ -39,6 +39,7 @@ LightRenderer::LightRenderer()  {
 LightRenderer::~LightRenderer() {}
         
 void LightRenderer::VisitTransformationNode(TransformationNode* node) {
+    CHECK_FOR_GL_ERROR();
     
     // push transformation matrix to model view stack
     Matrix<4,4,float> m = node->GetTransformationMatrix();
@@ -50,9 +51,13 @@ void LightRenderer::VisitTransformationNode(TransformationNode* node) {
     node->VisitSubNodes(*this);
     // pop transformation matrix
     glPopMatrix();
+
+    CHECK_FOR_GL_ERROR();
 }
     
 void LightRenderer::VisitDirectionalLightNode(DirectionalLightNode* node) {
+    CHECK_FOR_GL_ERROR();
+
     if (!node->active) {
         node->VisitSubNodes(*this);            
         return;
@@ -75,10 +80,13 @@ void LightRenderer::VisitDirectionalLightNode(DirectionalLightNode* node) {
         logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " 
                        << lightCount << logger.end;
     }
+    CHECK_FOR_GL_ERROR();
     node->VisitSubNodes(*this);            
 }
     
 void LightRenderer::VisitPointLightNode(PointLightNode* node) {
+    CHECK_FOR_GL_ERROR();
+
     if (!node->active) {
         node->VisitSubNodes(*this);            
         return;
@@ -103,10 +111,12 @@ void LightRenderer::VisitPointLightNode(PointLightNode* node) {
         logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " 
                        << lightCount << logger.end;
     }
-    node->VisitSubNodes(*this);            
+    CHECK_FOR_GL_ERROR();
+    node->VisitSubNodes(*this);
 }
 
 void LightRenderer::VisitSpotLightNode(SpotLightNode* node) {
+    CHECK_FOR_GL_ERROR();
     if (!node->active) {
         node->VisitSubNodes(*this);            
         return;
@@ -135,18 +145,23 @@ void LightRenderer::VisitSpotLightNode(SpotLightNode* node) {
         logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " 
                        << lightCount << logger.end;
     }
+    CHECK_FOR_GL_ERROR();
     node->VisitSubNodes(*this);            
 }
 
 void LightRenderer::Handle(RenderingEventArg arg) {
+    CHECK_FOR_GL_ERROR();
+
     // turn off lights
-    for (int i = 0; i < GL_MAX_LIGHTS; i++) {
-        //logger.info << "disable light " << i << logger.end;
+    for (int i = 0; i < lightCount; i++) {
         glDisable(GL_LIGHT0 + i);
     }
+    CHECK_FOR_GL_ERROR();
 
     glEnable(GL_LIGHTING);
     lightCount = 0;
+
+    CHECK_FOR_GL_ERROR();
     arg.renderer.GetSceneRoot()->Accept(*this);
 }
 

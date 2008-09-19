@@ -79,10 +79,14 @@ void Renderer::InitializeGLSLVersion() {
 }
 
 void Renderer::Handle(InitializeEventArg arg) {
+    CHECK_FOR_GL_ERROR();
+
     InitializeGLSLVersion(); //@todo: HACK - to get Inseminator to work
+    CHECK_FOR_GL_ERROR();
 
     // Clear the OpenGL frame buffer.
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
+    CHECK_FOR_GL_ERROR();
 
     // Enable lighting
     //glEnable(GL_LIGHTING);
@@ -90,15 +94,18 @@ void Renderer::Handle(InitializeEventArg arg) {
 
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);						   
+    CHECK_FOR_GL_ERROR();
 
     // Set perspective calculations to most accurate
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    CHECK_FOR_GL_ERROR();
 
     // Check that we have a scene.
     if (root == NULL)
         throw Exception("No scene root found while rendering.");
 
     this->initialize.Notify(RenderingEventArg(*this));
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -165,20 +172,25 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
         //@todo: check that there is a gl context
 
         glGenTextures(1, &texid);
+        CHECK_FOR_GL_ERROR();
         texr->SetID(texid);
     }
 
     // if the texture has been loaded delete it before reloading
     glDeleteTextures(1, &texid); //ignored by gl if not loaded
+    CHECK_FOR_GL_ERROR();
             
     glBindTexture(GL_TEXTURE_2D, texid);
+    CHECK_FOR_GL_ERROR();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    CHECK_FOR_GL_ERROR();
         
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    CHECK_FOR_GL_ERROR();
         
     GLuint depth = 0;
     switch (texr->GetDepth()) {
@@ -197,6 +209,7 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
                  depth,
                  GL_UNSIGNED_BYTE,
                  texr->GetData());
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -209,10 +222,13 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
 void Renderer::DrawFace(FacePtr face, Vector<3,float> color, float width) {
     GLboolean t = glIsEnabled(GL_TEXTURE_2D);
     GLboolean l = glIsEnabled(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
 
     glLineWidth(width);
+    CHECK_FOR_GL_ERROR();
 
     glBegin(GL_LINES);
         glColor3f(color[0],color[1],color[2]);
@@ -225,10 +241,12 @@ void Renderer::DrawFace(FacePtr face, Vector<3,float> color, float width) {
         glVertex3f(face->vert[2][0], face->vert[2][1], face->vert[2][2]);
         glVertex3f(face->vert[0][0], face->vert[0][1], face->vert[0][2]);
     glEnd();
+    CHECK_FOR_GL_ERROR();
 
     // reset state
     if (t) glEnable(GL_TEXTURE_2D);
     if (l) glEnable(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -241,20 +259,25 @@ void Renderer::DrawFace(FacePtr face, Vector<3,float> color, float width) {
 void Renderer::DrawLine(Line line, Vector<3,float> color, float width) {
     GLboolean t = glIsEnabled(GL_TEXTURE_2D);
     GLboolean l = glIsEnabled(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
 
     glLineWidth(width);
+    CHECK_FOR_GL_ERROR();
 
     glBegin(GL_LINES);
         glColor3f(color[0],color[1],color[2]);
         glVertex3f(line.point1[0],line.point1[1],line.point1[2]);
         glVertex3f(line.point2[0],line.point2[1],line.point2[2]);
     glEnd();
+    CHECK_FOR_GL_ERROR();
 
     // reset state 
     if (t) glEnable(GL_TEXTURE_2D);
     if (l) glEnable(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -267,21 +290,25 @@ void Renderer::DrawLine(Line line, Vector<3,float> color, float width) {
 void Renderer::DrawPoint(Vector<3,float> point, Vector<3,float> color , float size) {
     GLboolean t = glIsEnabled(GL_TEXTURE_2D);
     GLboolean l = glIsEnabled(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
 
     glPointSize(size);
+    CHECK_FOR_GL_ERROR();
 
     glBegin(GL_POINTS);
         glColor3f(color[0],color[1],color[2]);
         glVertex3f(point[0],point[1],point[2]);
     glEnd();
+    CHECK_FOR_GL_ERROR();
 
     // reset state
     if (t) glEnable(GL_TEXTURE_2D);
     if (l) glEnable(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
 }
-
 
 } // NS OpenGL
 } // NS OpenEngine

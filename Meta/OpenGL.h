@@ -19,19 +19,14 @@ using OpenEngine::Utils::Convert;
 #include <GL/glew.h>
 
 #if defined __APPLE__
-  #include <GL/glew.h> //only included here for windows to supprot glMultTransposeMatrix
     #include <OpenGL/gl.h>
     #include <OpenGL/glu.h>
-
 #else
-
   #ifdef _WIN32
     #include <Windows.h>
   #endif
-
   #include <GL/gl.h>
   #include <GL/glu.h>
-
 #endif
 
 /**
@@ -52,7 +47,7 @@ inline void CHECK_FOR_GL_ERROR(const std::string file, const int line) {
  *  Checks for Open GL errors and throws an exception if
  *  an error was detected, is only available in debug mode
  */
-#ifdef DEBUG
+#if OE_DEBUG_GL
 #define CHECK_FOR_GL_ERROR(); CHECK_FOR_GL_ERROR(__FILE__,__LINE__);
 #else
 #define CHECK_FOR_GL_ERROR();

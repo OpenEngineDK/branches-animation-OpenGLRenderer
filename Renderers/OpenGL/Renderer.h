@@ -110,7 +110,7 @@ public:
 };
 
 } // NS OpenGL
-} // NS OpenEngine
 } // NS Renderers
+} // NS OpenEngine
 
-#endif
+#endif // _RENDERER_H_
