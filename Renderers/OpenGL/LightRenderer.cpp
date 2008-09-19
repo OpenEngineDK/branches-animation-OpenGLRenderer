@@ -24,7 +24,7 @@ using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
 
 
-LightRenderer::LightRenderer()  {
+LightRenderer::LightRenderer() : lightCount(0) {
     pos[0] = 0.0;
     pos[1] = 0.0;
     pos[2] = 0.0;
