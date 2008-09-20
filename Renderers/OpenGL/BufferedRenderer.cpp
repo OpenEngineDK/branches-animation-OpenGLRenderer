@@ -1,5 +1,7 @@
 #include <Renderers/OpenGL/BufferedRenderer.h>
 
+#include <string>
+
 #include <Logging/Logger.h>
 
 namespace OpenEngine {
@@ -17,11 +19,14 @@ BufferedRenderer::~BufferedRenderer() {}
 void BufferedRenderer::Handle(InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
-    // make sure that there is a gl context
     Renderer::Handle(arg);
     CHECK_FOR_GL_ERROR();
 
-    //@todo: check that the FBO extension is supported
+    //@todo: make sure that there is a gl context
+
+    const std::string fboExt = "GL_EXT_framebuffer_object";
+    if (glewGetExtension(fboExt.c_str()) != GL_TRUE )
+        throw Exception(fboExt + " not supported");
 
     glGenFramebuffersEXT(1, &fbo);
     CHECK_FOR_GL_ERROR();
