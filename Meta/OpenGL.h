@@ -16,6 +16,12 @@
 using OpenEngine::Core::Exception;
 using OpenEngine::Utils::Convert;
 
+#ifdef _WIN32
+#ifndef GLEW_STATIC
+#define GLEW_STATIC
+#endif // GLEW_STATIC
+#endif
+
 #include <GL/glew.h>
 
 #if defined __APPLE__
