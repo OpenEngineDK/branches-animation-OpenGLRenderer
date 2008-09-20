@@ -24,6 +24,9 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
 
     //@todo: make sure that there is a gl context
 
+    // maybe there should be setup a texture env:
+    //glTexParameteriv(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR) ;
+
     const std::string fboExt = "GL_EXT_framebuffer_object";
     if (glewGetExtension(fboExt.c_str()) != GL_TRUE )
         throw Exception(fboExt + " not supported");
@@ -34,13 +37,14 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
     CHECK_FOR_GL_ERROR();
 
-    
+
     // Adding a depth buffer
     glGenRenderbuffersEXT(1, &depthbuffer);
     CHECK_FOR_GL_ERROR();
     glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depthbuffer);
     CHECK_FOR_GL_ERROR();
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,GL_DEPTH_COMPONENT, 
+    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
+                             GL_DEPTH_COMPONENT, 
                              width, height);
     CHECK_FOR_GL_ERROR();
     glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
@@ -64,14 +68,46 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
     // check FBO state for errors
 #if OE_DEBUG_GL
     GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-    if (status!=GL_FRAMEBUFFER_COMPLETE_EXT)
-        throw Exception("incomplete frame buffer object");
+    if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
+        throw Exception("Incomplete frame buffer object: " + EnumToString(status) );
 #endif
 
     // done initializing, go back to the main gl context 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); //unbind
     CHECK_FOR_GL_ERROR();
 }
+
+std::string BufferedRenderer::EnumToString(GLenum status) {
+    std::string error = "";
+    switch(status) {
+    case GL_FRAMEBUFFER_COMPLETE_EXT:
+        break;
+    case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+        error = "GL_FRAMEBUFFER_UNSUPPORTED_EXT\n";
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+        error = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT\n";
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+        error = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT\n";
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: 
+        error = "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT\n";
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+        error = "GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT\n";
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+        error = "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT\n";
+        break;
+    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+        error = "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT\n";
+        break;
+    default: break;
+    }
+    return error;
+}
+
 
 void BufferedRenderer::Handle(ProcessEventArg arg) {
     CHECK_FOR_GL_ERROR();

@@ -38,6 +38,7 @@ private:
     GLuint fbo, depthbuffer, img;
     unsigned int width, height;
 
+    std::string EnumToString(GLenum status);
     void RenderTextureInOrtho();
 };
 
