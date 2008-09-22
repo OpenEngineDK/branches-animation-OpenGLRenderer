@@ -20,6 +20,9 @@
 #include <Scene/PointLightNode.h>
 #include <Scene/SpotLightNode.h>
 
+#include <Resources/ITextureResource.h>
+using namespace OpenEngine::Resources;
+
 namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
@@ -193,16 +196,18 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
     CHECK_FOR_GL_ERROR();
         
     GLuint depth = 0;
-    switch (texr->GetDepth()) {
-    case 8:  depth = GL_LUMINANCE; break;
-    case 24: depth = GL_RGB;   break;
-    case 32: depth = GL_RGBA;  break;
+    switch (texr->GetColorFormat()) {
+    case LUMINANCE:  depth = GL_LUMINANCE; break;
+    case RGB: depth = GL_RGB;   break;
+    case RGBA: depth = GL_RGBA;  break;
+    case BGR: depth = GL_BGR;   break;
+    case BGRA: depth = GL_BGRA;  break;
     default: logger.warning << "Unsupported color depth: " 
                             << texr->GetDepth() << logger.end;
     }
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 depth,
+                 texr->GetDepth()/8,
                  texr->GetWidth(),
                  texr->GetHeight(),
                  0,
