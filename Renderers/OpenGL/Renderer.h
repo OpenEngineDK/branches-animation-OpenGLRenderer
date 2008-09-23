@@ -72,7 +72,7 @@ private:
 
 public:
     Renderer();
-    ~Renderer();
+    virtual ~Renderer();
 
     void Handle(InitializeEventArg arg);
     void Handle(ProcessEventArg arg);

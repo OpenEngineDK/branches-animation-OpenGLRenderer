@@ -108,6 +108,7 @@ void Renderer::Handle(InitializeEventArg arg) {
         throw Exception("No scene root found while rendering.");
 
     this->initialize.Notify(RenderingEventArg(*this));
+    this->stage = RENDERER_PREPROCESS;
     CHECK_FOR_GL_ERROR();
 }
 
@@ -116,14 +117,19 @@ void Renderer::Handle(InitializeEventArg arg) {
  *       replaced by null since the initialization face. 
  */
 void Renderer::Handle(ProcessEventArg arg) {
+    // @todo: assert we are in preprocess stage
     // run the processing phases
     RenderingEventArg rarg(*this, arg.start, arg.approx);
     this->preProcess.Notify(rarg);
+    this->stage = RENDERER_PROCESS;
     this->process.Notify(rarg);
+    this->stage = RENDERER_POSTPROCESS;
     this->postProcess.Notify(rarg);
+    this->stage = RENDERER_PREPROCESS;
 }
 
 void Renderer::Handle(DeinitializeEventArg arg) {
+    this->stage = RENDERER_DEINITIALIZE;
     this->deinitialize.Notify(RenderingEventArg(*this));
 }
 
