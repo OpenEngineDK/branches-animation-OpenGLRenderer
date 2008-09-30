@@ -386,6 +386,65 @@ void RenderingView::VisitDisplayListNode(DisplayListNode* node) {
     CHECK_FOR_GL_ERROR();
 }
 
+void RenderingView::VisitBlendingNode(BlendingNode* node) {
+    EnableBlending(node->GetSource(),
+                   node->GetDestination(),
+                   node->GetEquation());
+    node->VisitSubNodes(*this);
+    DisableBlending();
+}
+
+void RenderingView::EnableBlending(BlendingNode::BlendingFactor source, 
+                                   BlendingNode::BlendingFactor destination,
+                                   BlendingNode::BlendingEquation equation) {
+    EnableBlending( ConvertBlendingFactor(source),
+                    ConvertBlendingFactor(destination),
+                    ConvertBlendingEquation(equation));
+}
+
+GLenum RenderingView::ConvertBlendingFactor(BlendingNode::BlendingFactor factor) {
+    switch(factor) {
+    case BlendingNode::ZERO: return GL_ZERO;
+    case BlendingNode::ONE: return GL_ONE;
+    case BlendingNode::BlendingNode::SRC_COLOR: return GL_SRC_COLOR;
+    case BlendingNode::ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+    case BlendingNode::DST_COLOR: return GL_DST_COLOR;
+    case BlendingNode::ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+    case BlendingNode::SRC_ALPHA: return GL_SRC_ALPHA;
+    case BlendingNode::ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+    case BlendingNode::DST_ALPHA: return GL_DST_ALPHA;
+    case BlendingNode::ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+    default:
+        throw Exception("unsupported blending factor");
+    }
+}
+
+GLenum RenderingView::ConvertBlendingEquation(BlendingNode::BlendingEquation equation) {
+    switch(equation) {
+    case BlendingNode::ADD: return GL_FUNC_ADD;
+    case BlendingNode::SUBTRACT: return GL_FUNC_SUBTRACT;
+    case BlendingNode::REVERSE_SUBTRACT:
+        return GL_FUNC_REVERSE_SUBTRACT_EXT; //@todo ?!?
+    case BlendingNode::MIN: return GL_MIN;
+    case BlendingNode::MAX: return GL_MAX;
+    default:
+        throw Exception("unsupported blending equation");
+    }
+}
+
+void RenderingView::EnableBlending(GLenum source, GLenum destination,
+                                     GLenum equation) {
+    //@todo default values
+    glEnable(GL_BLEND);
+    glBlendFunc (source, destination);
+    glBlendEquationEXT(equation);
+    CHECK_FOR_GL_ERROR();
+}
+
+void RenderingView::DisableBlending() {
+    glDisable(GL_BLEND);
+    CHECK_FOR_GL_ERROR();
+}
 bool RenderingView::IsOptionSet(RenderStateNode::RenderStateOption o) {
     return stateStack.back()->IsOptionSet(o);
 }

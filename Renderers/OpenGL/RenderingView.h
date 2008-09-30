@@ -10,8 +10,10 @@
 #ifndef _OPENGL_RENDERING_VIEW_H_
 #define _OPENGL_RENDERING_VIEW_H_
 
+#include <Meta/OpenGL.h>
 #include <Renderers/IRenderingView.h>
 #include <Renderers/RenderStateNode.h>
+#include <Scene/BlendingNode.h>
 #include <vector>
 
 namespace OpenEngine {
@@ -45,9 +47,22 @@ public:
     void VisitRenderStateNode(RenderStateNode* node);
     void VisitRenderNode(IRenderNode* node);
     void VisitDisplayListNode(DisplayListNode* node);
+    void VisitBlendingNode(BlendingNode* node);
     void Render(IRenderer* renderer, ISceneNode* root);
     void Handle(RenderingEventArg arg);
     IRenderer* GetRenderer();
+
+private:
+    void EnableBlending(BlendingNode::BlendingFactor source, 
+                        BlendingNode::BlendingFactor destination,
+                        BlendingNode::BlendingEquation equation);
+    void DisableBlending();
+
+    inline void EnableBlending(GLenum source, GLenum destination,
+                               GLenum eqation);
+    inline GLenum ConvertBlendingFactor(BlendingNode::BlendingFactor factor);
+    inline GLenum ConvertBlendingEquation(BlendingNode::BlendingEquation equation);
+
 };
 
 } // NS OpenGL
