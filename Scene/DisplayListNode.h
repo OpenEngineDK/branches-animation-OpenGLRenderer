@@ -13,15 +13,11 @@
 #include <Scene/SceneNode.h>
 #include <Meta/OpenGL.h>
 
-
 namespace OpenEngine {
     namespace Scene { 
 
 // forward declarations   
 class ISceneNodeVisitor; 
-
-
-using namespace OpenEngine::Scene;
 
 /**
  * GL display list tree node.

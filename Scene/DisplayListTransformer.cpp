@@ -11,10 +11,12 @@
 
 #include <Renderers/OpenGL/Renderer.h>
 #include <Logging/Logger.h>
+#include <Renderers/IRenderer.h>
 
 namespace OpenEngine {
 namespace Scene {
 
+    using namespace OpenEngine::Renderers;
     using namespace OpenEngine::Resources;
     using namespace OpenEngine::Renderers::OpenGL;
 
@@ -23,7 +25,7 @@ namespace Scene {
      * GL nodes.
      */
     DisplayListTransformer::DisplayListTransformer(IRenderingView* r): r(r) {
-        
+        renderer = NULL;
     }
 
     /**
@@ -54,8 +56,8 @@ namespace Scene {
             logger.info << "DisplayListTransformer: Error creating display list element" << logger.end;
             return;
         } 
-        glNewList(id, GL_COMPILE);        
-        r->VisitGeometryNode(node);
+        glNewList(id, GL_COMPILE);
+        r->Render(renderer, node);
         glEndList();
 
         DisplayListNode* glnode = new DisplayListNode(id);
@@ -69,7 +71,7 @@ namespace Scene {
             return;
         } 
         glNewList(id, GL_COMPILE);        
-        r->VisitVertexArrayNode(node);
+        r->Render(renderer, node);
         glEndList();
 
         DisplayListNode* glnode = new DisplayListNode(id);
@@ -77,7 +79,9 @@ namespace Scene {
     }
 
     void DisplayListTransformer::Handle(RenderingEventArg arg) {
+        renderer = &arg.renderer;
         Transform(*arg.renderer.GetSceneRoot());
+        renderer = NULL;
     }
 
 } // NS Scene

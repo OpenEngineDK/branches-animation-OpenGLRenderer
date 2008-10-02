@@ -38,6 +38,8 @@ class RenderingView : virtual public IRenderingView {
     void RenderHardNormal(FacePtr face);
     void RenderLine(Vector<3,float> vert, Vector<3,float> norm, Vector<3,float> color);
     bool IsOptionSet(RenderStateNode::RenderStateOption o);
+    void ApplyMaterial(MaterialPtr mat);
+    void ApplyRenderState();
 public:
     RenderingView(Viewport& viewport);
     virtual ~RenderingView();
@@ -51,8 +53,16 @@ public:
     void Render(IRenderer* renderer, ISceneNode* root);
     void Handle(RenderingEventArg arg);
     IRenderer* GetRenderer();
+    virtual void SetBackgroundColor(Vector<4,float> color);
+    virtual Vector<4,float> GetBackgroundColor();
 
 private:
+    int currentTexture;
+    IShaderResourcePtr currentShader;
+    int binormalid;
+    int tangentid;
+    Vector<4,float> backgroundColor;
+
     void EnableBlending(BlendingNode::BlendingFactor source, 
                         BlendingNode::BlendingFactor destination,
                         BlendingNode::BlendingEquation equation);

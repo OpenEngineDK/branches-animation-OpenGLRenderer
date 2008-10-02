@@ -27,6 +27,7 @@ using namespace OpenEngine::Renderers;
 class DisplayListTransformer : public ISceneNodeVisitor, public IListener<RenderingEventArg> {
  private:
     IRenderingView* r;
+    IRenderer* renderer;
     
  public:
     DisplayListTransformer(IRenderingView* r);

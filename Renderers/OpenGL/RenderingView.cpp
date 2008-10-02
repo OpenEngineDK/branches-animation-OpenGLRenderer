@@ -47,15 +47,17 @@ RenderingView::RenderingView(Viewport& viewport)
     renderStateNode->AddOptions(RenderStateNode::RENDER_TEXTURES);
     renderStateNode->AddOptions(RenderStateNode::RENDER_SHADERS);
     renderStateNode->AddOptions(RenderStateNode::RENDER_BACKFACES);
+    renderStateNode->AddOptions(RenderStateNode::RENDER_LIGHTING);
+    renderStateNode->AddOptions(RenderStateNode::RENDER_WITH_DEPTH_TEST);
     stateStack.push_back(renderStateNode);
+
+    backgroundColor = Vector<4,float>(1.0);
 }
 
 /**
  * Rendering view destructor.
  */
-RenderingView::~RenderingView() {
-
-}
+RenderingView::~RenderingView() {}
 
 /**
  * Get the renderer that the view is processing for.
@@ -66,8 +68,14 @@ IRenderer* RenderingView::GetRenderer() {
     return renderer;
 }
 
-
 void RenderingView::Handle(RenderingEventArg arg) {
+    // reset last state
+    currentTexture = 0;
+    currentShader.reset();
+    binormalid = -1; 
+    tangentid = -1;
+
+
     CHECK_FOR_GL_ERROR();
     // the following is moved from the previous Renderer::Process
 
@@ -86,7 +94,23 @@ void RenderingView::Handle(RenderingEventArg arg) {
     // apply the volume
     arg.renderer.ApplyViewingVolume(*volume);
 
+    // Reset the modelview matrix
+    glLoadIdentity();
+    CHECK_FOR_GL_ERROR();
+    
+    // Get the view matrix and apply it
+    Matrix<4,4,float> matrix = volume->GetViewMatrix();
+    float f[16] = {0};
+    matrix.ToArray(f);
+    glMultMatrixf(f);
+    CHECK_FOR_GL_ERROR();
+    
     Render(&arg.renderer, arg.renderer.GetSceneRoot());
+
+    Vector<4,float> bgc = backgroundColor;
+    glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
+
+    ApplyRenderState();
 }
 
 /**
@@ -110,6 +134,35 @@ void RenderingView::VisitRenderNode(IRenderNode* node) {
     node->Apply(this);
 }
 
+void RenderingView::ApplyRenderState() {
+    if( IsOptionSet(RenderStateNode::RENDER_WIREFRAMED) ) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        CHECK_FOR_GL_ERROR();
+    } else {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        CHECK_FOR_GL_ERROR();
+    }
+
+    if( IsOptionSet(RenderStateNode::RENDER_BACKFACES) ) {
+        glDisable(GL_CULL_FACE);
+        CHECK_FOR_GL_ERROR();
+    }
+    else {
+        glEnable(GL_CULL_FACE);
+        CHECK_FOR_GL_ERROR();
+    }
+
+    if (IsOptionSet(RenderStateNode::RENDER_LIGHTING))
+        glEnable(GL_LIGHTING);
+    else
+        glDisable(GL_LIGHTING);
+
+    if (IsOptionSet(RenderStateNode::RENDER_WITH_DEPTH_TEST))
+        glEnable(GL_DEPTH_TEST);
+    else
+        glDisable(GL_DEPTH_TEST);
+}
+
 /**
  * Process a render state node.
  *
@@ -117,8 +170,10 @@ void RenderingView::VisitRenderNode(IRenderNode* node) {
  */
 void RenderingView::VisitRenderStateNode(RenderStateNode* node) {
     stateStack.push_back(node);
+    ApplyRenderState();
     node->VisitSubNodes(*this);
     stateStack.pop_back();
+    ApplyRenderState();
 }
 
 /**
@@ -142,36 +197,86 @@ void RenderingView::VisitTransformationNode(TransformationNode* node) {
     CHECK_FOR_GL_ERROR();
 }
 
+void RenderingView::ApplyMaterial(MaterialPtr mat) {
+    // check if shaders should be applied
+    if (Renderer::IsGLSLSupported()) {
+
+        // if the shader changes release the old shader
+        if (currentShader != NULL && currentShader != mat->shad) {
+            currentShader->ReleaseShader();
+            currentShader.reset();
+        }
+        
+        // check if a shader shall be applied
+        if (IsOptionSet(RenderStateNode::RENDER_SHADERS) &&
+            mat->shad != NULL &&              // and the shader is not null
+                currentShader != mat->shad) {     // and the shader is different from the current
+            // get the bi-normal and tangent ids
+            binormalid = mat->shad->GetAttributeID("binormal");
+            tangentid = mat->shad->GetAttributeID("tangent");
+            mat->shad->ApplyShader();
+            // set the current shader
+            currentShader = mat->shad;
+        }
+    }
+    
+    // if a shader is in use reset the current texture,
+    // but dont disable in GL because the shader may use textures. 
+    if (currentShader != NULL) currentTexture = 0;
+    
+    // if the face has no texture reset the current texture 
+    else if (mat->texr == NULL) {
+        glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
+        glDisable(GL_TEXTURE_2D);
+        CHECK_FOR_GL_ERROR();
+        currentTexture = 0;
+    }
+    
+    // check if texture shall be applied
+    else if (IsOptionSet(RenderStateNode::RENDER_TEXTURES) &&
+             currentTexture != mat->texr->GetID()) {  // and face texture is different then the current one
+        currentTexture = mat->texr->GetID();
+        glEnable(GL_TEXTURE_2D);
+#ifdef DEBUG
+        if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
+            throw Exception("texture not bound, id: " + currentTexture);
+#endif
+        glBindTexture(GL_TEXTURE_2D, currentTexture);
+        CHECK_FOR_GL_ERROR();
+    }
+    
+    // Apply materials
+    // TODO: Decide whether we want both front and back
+    //       materials (maybe a material property).
+    float col[4];
+    
+    mat->diffuse.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+    CHECK_FOR_GL_ERROR();
+    
+    mat->ambient.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
+    CHECK_FOR_GL_ERROR();
+    
+    mat->specular.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
+    CHECK_FOR_GL_ERROR();
+    
+    mat->emission.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
+    CHECK_FOR_GL_ERROR();
+    
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->shininess);
+    CHECK_FOR_GL_ERROR();
+}
+
 /**
  * Process a geometry node.
  *
  * @param node Geometry node to render
  */
 void RenderingView::VisitGeometryNode(GeometryNode* node) {
-
-    if( IsOptionSet(RenderStateNode::RENDER_WIREFRAMED) ) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        CHECK_FOR_GL_ERROR();
-    } else {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        CHECK_FOR_GL_ERROR();
-    }
-
-    // Enable back-face culling, only faces facing towards the view is rendered.
-    if( IsOptionSet(RenderStateNode::RENDER_BACKFACES) ) {
-        glDisable(GL_CULL_FACE);
-        CHECK_FOR_GL_ERROR();
-    }
-    else {
-        glEnable(GL_CULL_FACE);
-        CHECK_FOR_GL_ERROR();
-    }
-
     // Remember last bound texture and shader
-    int currentTexture = 0;
-    IShaderResourcePtr currentShader;
-    int binormalid = -1; 
-    int tangentid = -1;
     FaceList::iterator itr;
     FaceSet* faces = node->GetFaceSet();
     if (faces == NULL) return;
@@ -180,77 +285,8 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
     for (itr = faces->begin(); itr != faces->end(); itr++) {
         FacePtr f = (*itr);
 
-        // check if shaders should be applied
-        if (Renderer::IsGLSLSupported()) {
+        ApplyMaterial(f->mat);
 
-            // if the shader changes release the old shader
-            if (currentShader != NULL && currentShader != f->mat->shad) {
-                currentShader->ReleaseShader();
-                currentShader.reset();
-            }
-
-            // check if a shader shall be applied
-            if (IsOptionSet(RenderStateNode::RENDER_SHADERS) &&
-                f->mat->shad != NULL &&              // and the shader is not null
-                currentShader != f->mat->shad) {     // and the shader is different from the current
-                // get the bi-normal and tangent ids
-                binormalid = f->mat->shad->GetAttributeID("binormal");
-                tangentid = f->mat->shad->GetAttributeID("tangent");
-                f->mat->shad->ApplyShader();
-                // set the current shader
-                currentShader = f->mat->shad;
-            }
-        }
-
-        // if a shader is in use reset the current texture,
-        // but dont disable in GL because the shader may use textures. 
-        if (currentShader != NULL) currentTexture = 0;
-
-        // if the face has no texture reset the current texture 
-        else if (f->mat->texr == NULL) {
-            glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
-            glDisable(GL_TEXTURE_2D);
-            CHECK_FOR_GL_ERROR();
-            currentTexture = 0;
-        }
-
-        // check if texture shall be applied
-        else if (IsOptionSet(RenderStateNode::RENDER_TEXTURES) &&
-            currentTexture != f->mat->texr->GetID()) {  // and face texture is different then the current one
-            currentTexture = f->mat->texr->GetID();
-            glEnable(GL_TEXTURE_2D);
-            #ifdef DEBUG
-            if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
-                throw Exception("texture not bound, id: " + currentTexture);
-            #endif
-            glBindTexture(GL_TEXTURE_2D, currentTexture);
-            CHECK_FOR_GL_ERROR();
-        }
-
-        // Apply materials
-        // TODO: Decide whether we want both front and back
-        //       materials (maybe a material property).
-        float col[4];
-        
-        f->mat->diffuse.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
-        CHECK_FOR_GL_ERROR();
-        
-        f->mat->ambient.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
-        CHECK_FOR_GL_ERROR();
-        
-        f->mat->specular.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
-        CHECK_FOR_GL_ERROR();
-        
-        f->mat->emission.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
-        CHECK_FOR_GL_ERROR();
-        
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, f->mat->shininess);
-        CHECK_FOR_GL_ERROR();
- 
         glBegin(GL_TRIANGLES);
         // for each vertex ...
         for (int i=0; i<3; i++) {
@@ -320,22 +356,7 @@ void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
     for(list<VertexArray*>::iterator itr = vaList.begin(); itr!=vaList.end(); itr++) {
         VertexArray* va = (*itr);
 
-        if (va->mat->texr != NULL)
-            glBindTexture(GL_TEXTURE_2D, va->mat->texr->GetID());
-
-        // Apply materials
-        // TODO: Decide whether we want both front and back
-        //       materials (maybe a material property).
-        float col[4];
-        va->mat->diffuse.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
-        va->mat->ambient.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
-        va->mat->specular.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
-        va->mat->emission.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, va->mat->shininess);
+        ApplyMaterial(va->mat);
         
         // Setup pointers to arrays
         glNormalPointer(GL_FLOAT, 0, va->GetNormals());
@@ -423,11 +444,25 @@ bool RenderingView::IsOptionSet(RenderStateNode::RenderStateOption o) {
     return stateStack.back()->IsOptionSet(o);
 }
 
+void RenderingView::SetBackgroundColor(Vector<4,float> color) {
+    backgroundColor = color;
+}
+
+Vector<4,float> RenderingView::GetBackgroundColor() {
+    return backgroundColor;
+}
+
 void RenderingView::RenderNormals(FacePtr face) {
     for (int i=0; i<3; i++) {
         Vector<3,float> v = face->vert[i];
         Vector<3,float> n = face->norm[i];
-		Vector<3,float> c(0,1,0);
+		Vector<3,float> c (0,1,0);
+
+        // if not unit length, make it red
+        float length = n.GetLength();
+        if (length > 1 + Math::EPS ||
+            length < 1 - Math::EPS)
+            c = Vector<3,float>(1,0,0);
         RenderLine(v,n,c);
     }
 } 	
