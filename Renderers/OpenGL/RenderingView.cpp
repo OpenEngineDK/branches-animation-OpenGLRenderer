@@ -82,36 +82,10 @@ void RenderingView::Handle(RenderingEventArg arg) {
     Vector<4,int> d = viewport.GetDimension();
     glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
     CHECK_FOR_GL_ERROR();
+    
+    // apply the volume
+    arg.renderer.ApplyViewingVolume(*volume);
 
-    // Select The Projection Matrix
-    glMatrixMode(GL_PROJECTION);
-    CHECK_FOR_GL_ERROR();
-    // Reset The Projection Matrix
-    glLoadIdentity();
-    CHECK_FOR_GL_ERROR();
-    
-    // Setup OpenGL with the volumes projection matrix
-    Matrix<4,4,float> projMatrix = volume->GetProjectionMatrix();
-    float arr[16] = {0};
-    projMatrix.ToArray(arr);
-    glMultMatrixf(arr);
-    CHECK_FOR_GL_ERROR();
-    
-    // Select the modelview matrix
-    glMatrixMode(GL_MODELVIEW);
-    CHECK_FOR_GL_ERROR();
-
-    // Reset the modelview matrix
-    glLoadIdentity();
-    CHECK_FOR_GL_ERROR();
-    
-    // Get the view matrix and apply it
-    Matrix<4,4,float> matrix = volume->GetViewMatrix();
-    float f[16] = {0};
-    matrix.ToArray(f);
-    glMultMatrixf(f);
-    CHECK_FOR_GL_ERROR();
-    
     Render(&arg.renderer, arg.renderer.GetSceneRoot());
 }
 

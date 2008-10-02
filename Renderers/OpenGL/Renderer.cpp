@@ -13,6 +13,7 @@
 #include <Logging/Logger.h>
 #include <Meta/OpenGL.h>
 #include <Math/Math.h>
+#include <Display/IViewingVolume.h>
 
 #include <Scene/TransformationNode.h>
 #include <Scene/LightNode.h>
@@ -31,6 +32,7 @@ using namespace OpenEngine::Math;
 
 using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
+using OpenEngine::Display::IViewingVolume;
 
 GLSLVersion Renderer::glslversion = GLSL_UNKNOWN;
 
@@ -149,6 +151,37 @@ IEvent<RenderingEventArg>& Renderer::DeinitializeEvent() {
     return deinitialize;
 }
 
+void Renderer::ApplyViewingVolume(IViewingVolume& volume) {
+    // Select The Projection Matrix
+    glMatrixMode(GL_PROJECTION);
+    CHECK_FOR_GL_ERROR();
+
+    // Reset The Projection Matrix
+    glLoadIdentity();
+    CHECK_FOR_GL_ERROR();
+
+    // Setup OpenGL with the volumes projection matrix
+    Matrix<4,4,float> projMatrix = volume.GetProjectionMatrix();
+    float arr[16] = {0};
+    projMatrix.ToArray(arr);
+    glMultMatrixf(arr);
+    CHECK_FOR_GL_ERROR();
+
+    // Select the modelview matrix
+    glMatrixMode(GL_MODELVIEW);
+    CHECK_FOR_GL_ERROR();
+
+    // Reset the modelview matrix
+    glLoadIdentity();
+    CHECK_FOR_GL_ERROR();
+
+    // Get the view matrix and apply it
+    Matrix<4,4,float> matrix = volume.GetViewMatrix();
+    float f[16] = {0};
+    matrix.ToArray(f);
+    glMultMatrixf(f);
+    CHECK_FOR_GL_ERROR();
+}
 
 bool Renderer::IsGLSLSupported() {
     return (glslversion != GLSL_NONE && glslversion != GLSL_UNKNOWN);
@@ -221,6 +254,40 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
                  GL_UNSIGNED_BYTE,
                  texr->GetData());
     CHECK_FOR_GL_ERROR();
+}
+
+void Renderer::DrawFace(FacePtr f) {
+    if (f->mat->texr == NULL) {
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_TEXTURE_2D);
+    } else {
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, f->mat->texr->GetID());
+    }
+    float col[4];
+    f->mat->diffuse.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+    f->mat->ambient.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
+    f->mat->specular.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
+    f->mat->emission.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, f->mat->shininess);
+    glBegin(GL_TRIANGLES);
+    // for each vertex ...
+    for (int i=0; i<3; i++) {
+        Vector<3,float> v = f->vert[i];
+        Vector<2,float> t = f->texc[i];
+        Vector<3,float> n = f->norm[i];
+        Vector<4,float> c = f->colr[i];
+        glTexCoord2f(t[0],t[1]);
+        glColor4f (c[0],c[1],c[2],c[3]);
+        glNormal3f(n[0],n[1],n[2]);
+        glVertex3f(v[0],v[1],v[2]);
+    }
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
 }
 
 /**
