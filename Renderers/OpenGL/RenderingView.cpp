@@ -47,7 +47,6 @@ RenderingView::RenderingView(Viewport& viewport)
     renderStateNode->AddOptions(RenderStateNode::RENDER_TEXTURES);
     renderStateNode->AddOptions(RenderStateNode::RENDER_SHADERS);
     renderStateNode->AddOptions(RenderStateNode::RENDER_BACKFACES);
-    renderStateNode->AddOptions(RenderStateNode::RENDER_LIGHTING);
     renderStateNode->AddOptions(RenderStateNode::RENDER_WITH_DEPTH_TEST);
     stateStack.push_back(renderStateNode);
 
@@ -69,13 +68,6 @@ IRenderer* RenderingView::GetRenderer() {
 }
 
 void RenderingView::Handle(RenderingEventArg arg) {
-    // reset last state
-    currentTexture = 0;
-    currentShader.reset();
-    binormalid = -1; 
-    tangentid = -1;
-
-
     CHECK_FOR_GL_ERROR();
     // the following is moved from the previous Renderer::Process
 
@@ -104,13 +96,16 @@ void RenderingView::Handle(RenderingEventArg arg) {
     matrix.ToArray(f);
     glMultMatrixf(f);
     CHECK_FOR_GL_ERROR();
-    
+
+    // Really Nice Perspective Calculations
+    glShadeModel(GL_SMOOTH);
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+
+    ApplyRenderState();
     Render(&arg.renderer, arg.renderer.GetSceneRoot());
 
     Vector<4,float> bgc = backgroundColor;
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
-
-    ApplyRenderState();
 }
 
 /**
@@ -210,7 +205,7 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
         // check if a shader shall be applied
         if (IsOptionSet(RenderStateNode::RENDER_SHADERS) &&
             mat->shad != NULL &&              // and the shader is not null
-                currentShader != mat->shad) {     // and the shader is different from the current
+            currentShader != mat->shad) {     // and the shader is different from the current
             // get the bi-normal and tangent ids
             binormalid = mat->shad->GetAttributeID("binormal");
             tangentid = mat->shad->GetAttributeID("tangent");
@@ -276,6 +271,12 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
  * @param node Geometry node to render
  */
 void RenderingView::VisitGeometryNode(GeometryNode* node) {
+    // reset last state for matrial applying
+    currentTexture = 0;
+    currentShader.reset();
+    binormalid = -1; 
+    tangentid = -1;
+
     // Remember last bound texture and shader
     FaceList::iterator itr;
     FaceSet* faces = node->GetFaceSet();
@@ -341,6 +342,12 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
  *   sorted by texture id.
  */
 void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
+    // reset last state for matrial applying
+    currentTexture = 0;
+    currentShader.reset();
+    binormalid = -1; 
+    tangentid = -1;
+
     CHECK_FOR_GL_ERROR();
 
     // Enable all client states
@@ -366,6 +373,10 @@ void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
         glDrawArrays(GL_TRIANGLES, 0, va->GetNumFaces()*3);
     }
     CHECK_FOR_GL_ERROR();
+
+    // last we release the final shader
+    if (currentShader != NULL)
+        currentShader->ReleaseShader();
 
     // Disable all state changes
     glDisable(GL_TEXTURE_2D);

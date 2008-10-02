@@ -158,11 +158,14 @@ void LightRenderer::Handle(RenderingEventArg arg) {
     }
     CHECK_FOR_GL_ERROR();
 
-    glEnable(GL_LIGHTING);
     lightCount = 0;
-
-    CHECK_FOR_GL_ERROR();
     arg.renderer.GetSceneRoot()->Accept(*this);
+
+    if (lightCount == 0)
+        glDisable(GL_LIGHTING);
+    else
+        glEnable(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
 }
 
 
