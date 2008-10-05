@@ -43,13 +43,8 @@ using OpenEngine::Display::IViewingVolume;
 RenderingView::RenderingView(Viewport& viewport)
     : IRenderingView(viewport),
       renderer(NULL) {
-    RenderStateNode* renderStateNode = new RenderStateNode();
-    renderStateNode->AddOptions(RenderStateNode::RENDER_TEXTURES);
-    renderStateNode->AddOptions(RenderStateNode::RENDER_SHADERS);
-    renderStateNode->AddOptions(RenderStateNode::RENDER_BACKFACES);
-    renderStateNode->AddOptions(RenderStateNode::RENDER_WITH_DEPTH_TEST);
-    stateStack.push_back(renderStateNode);
-
+    renderBinormal=renderTangent=renderSoftNormal=renderHardNormal = false;
+    renderTexture = renderShader = true;
     backgroundColor = Vector<4,float>(1.0);
 }
 
@@ -101,7 +96,17 @@ void RenderingView::Handle(RenderingEventArg arg) {
     glShadeModel(GL_SMOOTH);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
-    ApplyRenderState();
+    // setup default render state
+    RenderStateNode* renderStateNode = new RenderStateNode();
+    renderStateNode->EnableOption(RenderStateNode::TEXTURE);
+    renderStateNode->EnableOption(RenderStateNode::SHADER);
+    renderStateNode->EnableOption(RenderStateNode::BACKFACE);
+    renderStateNode->EnableOption(RenderStateNode::DEPTH_TEST);
+    renderStateNode->DisableOption(RenderStateNode::LIGHTING); //@todo
+    renderStateNode->DisableOption(RenderStateNode::WIREFRAME);
+    ApplyRenderState(renderStateNode);
+    delete renderStateNode;
+
     Render(&arg.renderer, arg.renderer.GetSceneRoot());
 
     Vector<4,float> bgc = backgroundColor;
@@ -129,46 +134,85 @@ void RenderingView::VisitRenderNode(IRenderNode* node) {
     node->Apply(this);
 }
 
-void RenderingView::ApplyRenderState() {
-    if( IsOptionSet(RenderStateNode::RENDER_WIREFRAMED) ) {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        CHECK_FOR_GL_ERROR();
-    } else {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        CHECK_FOR_GL_ERROR();
-    }
-
-    if( IsOptionSet(RenderStateNode::RENDER_BACKFACES) ) {
-        glDisable(GL_CULL_FACE);
-        CHECK_FOR_GL_ERROR();
-    }
-    else {
-        glEnable(GL_CULL_FACE);
-        CHECK_FOR_GL_ERROR();
-    }
-
-    if (IsOptionSet(RenderStateNode::RENDER_LIGHTING))
-        glEnable(GL_LIGHTING);
-    else
-        glDisable(GL_LIGHTING);
-
-    if (IsOptionSet(RenderStateNode::RENDER_WITH_DEPTH_TEST))
-        glEnable(GL_DEPTH_TEST);
-    else
-        glDisable(GL_DEPTH_TEST);
-}
-
 /**
  * Process a render state node.
  *
  * @param node Render state node to apply.
  */
 void RenderingView::VisitRenderStateNode(RenderStateNode* node) {
-    stateStack.push_back(node);
-    ApplyRenderState();
+    ApplyRenderState(node);
     node->VisitSubNodes(*this);
-    stateStack.pop_back();
-    ApplyRenderState();
+    RenderStateNode* inverse = node->GetInverse();
+    ApplyRenderState(inverse);
+    delete inverse;
+}
+
+void RenderingView::ApplyRenderState(RenderStateNode* node) {
+    if (node->IsOptionEnabled(RenderStateNode::WIREFRAME)) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        CHECK_FOR_GL_ERROR();
+    }
+    else if (node->IsOptionDisabled(RenderStateNode::WIREFRAME)) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        CHECK_FOR_GL_ERROR();
+    }
+
+    if (node->IsOptionEnabled(RenderStateNode::BACKFACE)) {
+        glDisable(GL_CULL_FACE);
+        CHECK_FOR_GL_ERROR();
+    }
+    else if (node->IsOptionDisabled(RenderStateNode::BACKFACE)) {
+        glEnable(GL_CULL_FACE);
+        CHECK_FOR_GL_ERROR();
+    }
+
+    if (node->IsOptionEnabled(RenderStateNode::LIGHTING)) {
+        glEnable(GL_LIGHTING);
+        CHECK_FOR_GL_ERROR();
+    }
+    else if (node->IsOptionDisabled(RenderStateNode::LIGHTING)) {
+        glDisable(GL_LIGHTING);
+        CHECK_FOR_GL_ERROR();
+    }
+
+    if (node->IsOptionEnabled(RenderStateNode::DEPTH_TEST)) {
+        glEnable(GL_DEPTH_TEST);
+        CHECK_FOR_GL_ERROR();
+    }
+    else if (node->IsOptionDisabled(RenderStateNode::DEPTH_TEST)) {
+        glDisable(GL_DEPTH_TEST);
+        CHECK_FOR_GL_ERROR();
+    }
+
+    if (node->IsOptionEnabled(RenderStateNode::BINORMAL))
+        renderBinormal = true;
+    else if (node->IsOptionDisabled(RenderStateNode::BINORMAL))
+        renderBinormal = false;
+
+    if (node->IsOptionEnabled(RenderStateNode::TANGENT))
+        renderTangent = true;
+    else if (node->IsOptionDisabled(RenderStateNode::TANGENT))
+        renderTangent = false;
+
+    if (node->IsOptionEnabled(RenderStateNode::SOFT_NORMAL))
+        renderSoftNormal = true;
+    else if (node->IsOptionDisabled(RenderStateNode::SOFT_NORMAL))
+        renderSoftNormal = false;
+
+    if (node->IsOptionEnabled(RenderStateNode::HARD_NORMAL))
+        renderHardNormal = true;
+    else if (node->IsOptionDisabled(RenderStateNode::HARD_NORMAL))
+        renderHardNormal = false;
+
+    if (node->IsOptionEnabled(RenderStateNode::TEXTURE))
+        renderTexture = true;
+    else if (node->IsOptionDisabled(RenderStateNode::TEXTURE))
+        renderTexture = false;
+
+    if (node->IsOptionEnabled(RenderStateNode::SHADER))
+        renderShader = true;
+    else if (node->IsOptionDisabled(RenderStateNode::SHADER))
+        renderShader = false;
 }
 
 /**
@@ -203,7 +247,7 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
         }
         
         // check if a shader shall be applied
-        if (IsOptionSet(RenderStateNode::RENDER_SHADERS) &&
+        if (renderShader &&
             mat->shad != NULL &&              // and the shader is not null
             currentShader != mat->shad) {     // and the shader is different from the current
             // get the bi-normal and tangent ids
@@ -228,7 +272,7 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     }
     
     // check if texture shall be applied
-    else if (IsOptionSet(RenderStateNode::RENDER_TEXTURES) &&
+    else if (renderTexture &&
              currentTexture != mat->texr->GetID()) {  // and face texture is different then the current one
         currentTexture = mat->texr->GetID();
         glEnable(GL_TEXTURE_2D);
@@ -310,22 +354,7 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
         glEnd();
         CHECK_FOR_GL_ERROR();
 
-        // Render normal if enabled
-        GLboolean l = glIsEnabled(GL_LIGHTING);
-        CHECK_FOR_GL_ERROR();
-        glDisable(GL_LIGHTING);
-        CHECK_FOR_GL_ERROR();
-
-        if (IsOptionSet(RenderStateNode::RENDER_BINORMALS))
-            RenderBinormals(f);
-        if (IsOptionSet(RenderStateNode::RENDER_TANGENTS))
-            RenderTangents(f);
-        if (IsOptionSet(RenderStateNode::RENDER_NORMALS))
-            RenderNormals(f);
-        if (IsOptionSet(RenderStateNode::RENDER_HARD_NORMAL))
-            RenderHardNormal(f);
-        if (l) glEnable(GL_LIGHTING);
-        CHECK_FOR_GL_ERROR();
+        RenderDebugGeometry(f);
     }
 
     // last we release the final shader
@@ -373,6 +402,9 @@ void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
         glDrawArrays(GL_TRIANGLES, 0, va->GetNumFaces()*3);
     }
     CHECK_FOR_GL_ERROR();
+
+    /* @todo: added debug rendering of normals and other things:
+       RenderDebugGeometry(face); */
 
     // last we release the final shader
     if (currentShader != NULL)
@@ -451,9 +483,6 @@ void RenderingView::DisableBlending() {
     glDisable(GL_BLEND);
     CHECK_FOR_GL_ERROR();
 }
-bool RenderingView::IsOptionSet(RenderStateNode::RenderStateOption o) {
-    return stateStack.back()->IsOptionSet(o);
-}
 
 void RenderingView::SetBackgroundColor(Vector<4,float> color) {
     backgroundColor = color;
@@ -461,6 +490,25 @@ void RenderingView::SetBackgroundColor(Vector<4,float> color) {
 
 Vector<4,float> RenderingView::GetBackgroundColor() {
     return backgroundColor;
+}
+
+void RenderingView::RenderDebugGeometry(FacePtr f) {
+        // Render normal if enabled
+        GLboolean l = glIsEnabled(GL_LIGHTING);
+        CHECK_FOR_GL_ERROR();
+        glDisable(GL_LIGHTING);
+        CHECK_FOR_GL_ERROR();
+
+        if (renderBinormal)
+            RenderBinormals(f);
+        if (renderTangent)
+            RenderTangents(f);
+        if (renderSoftNormal)
+            RenderNormals(f);
+        if (renderHardNormal)
+            RenderHardNormal(f);
+        if (l) glEnable(GL_LIGHTING);
+        CHECK_FOR_GL_ERROR();
 }
 
 void RenderingView::RenderNormals(FacePtr face) {

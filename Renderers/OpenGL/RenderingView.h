@@ -32,14 +32,10 @@ class RenderingView : virtual public IRenderingView {
     IRenderer* renderer;
     vector<RenderStateNode*> stateStack;
 
-    void RenderBinormals(FacePtr face);
-    void RenderTangents(FacePtr face);
-    void RenderNormals(FacePtr face);
-    void RenderHardNormal(FacePtr face);
-    void RenderLine(Vector<3,float> vert, Vector<3,float> norm, Vector<3,float> color);
-    bool IsOptionSet(RenderStateNode::RenderStateOption o);
-    void ApplyMaterial(MaterialPtr mat);
-    void ApplyRenderState();
+    void RenderLine(Vector<3,float> vert,
+                    Vector<3,float> norm,
+                    Vector<3,float> color);
+
 public:
     RenderingView(Viewport& viewport);
     virtual ~RenderingView();
@@ -57,6 +53,8 @@ public:
     virtual Vector<4,float> GetBackgroundColor();
 
 private:
+    bool renderBinormal, renderTangent, renderSoftNormal, renderHardNormal;
+    bool renderTexture, renderShader;
     int currentTexture;
     IShaderResourcePtr currentShader;
     int binormalid;
@@ -72,7 +70,13 @@ private:
                                GLenum eqation);
     inline GLenum ConvertBlendingFactor(BlendingNode::BlendingFactor factor);
     inline GLenum ConvertBlendingEquation(BlendingNode::BlendingEquation equation);
-
+    inline void RenderDebugGeometry(FacePtr face);
+    inline void RenderBinormals(FacePtr face);
+    inline void RenderTangents(FacePtr face);
+    inline void RenderNormals(FacePtr face);
+    inline void RenderHardNormal(FacePtr face);
+    inline void ApplyMaterial(MaterialPtr mat);
+    inline void ApplyRenderState(RenderStateNode* node);
 };
 
 } // NS OpenGL
