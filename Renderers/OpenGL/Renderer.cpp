@@ -209,31 +209,24 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
     // check for null pointers
     if (texr == NULL) return;
 
-    GLuint texid = texr->GetID();
-    if (texid == 0) {
-        //@todo: check that there is a gl context
+    GLuint texid = 0;
+    bool firstload = (texr->GetID() == 0);
 
+    // first time, generate id and uploade, else update texture
+    if (firstload) {
+        //@todo: check that there is a gl context
         glGenTextures(1, &texid);
         CHECK_FOR_GL_ERROR();
         texr->SetID(texid);
-    }
+    } else 
+        texid = texr->GetID();
 
-    // if the texture has been loaded delete it before reloading
-    glDeleteTextures(1, &texid); //ignored by gl if not loaded
-    CHECK_FOR_GL_ERROR();
-            
+    // @todo: move this to some kind of destructor
+    //glDeleteTextures(1, &texid); //ignored by gl if not loaded or 0
+
     glBindTexture(GL_TEXTURE_2D, texid);
     CHECK_FOR_GL_ERROR();
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    CHECK_FOR_GL_ERROR();
-        
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    CHECK_FOR_GL_ERROR();
-        
+
     GLuint depth = 0;
     switch (texr->GetColorFormat()) {
     case LUMINANCE:  depth = GL_LUMINANCE; break;
@@ -244,15 +237,39 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
     default: logger.warning << "Unsupported color depth: " 
                             << texr->GetDepth() << logger.end;
     }
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 texr->GetDepth()/8,
-                 texr->GetWidth(),
-                 texr->GetHeight(),
-                 0,
-                 depth,
-                 GL_UNSIGNED_BYTE,
-                 texr->GetData());
+
+    if (firstload) {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        CHECK_FOR_GL_ERROR();
+        
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        CHECK_FOR_GL_ERROR();
+        
+        glTexImage2D(GL_TEXTURE_2D,
+                     0, // mipmap level
+                     texr->GetDepth()/8,
+                     texr->GetWidth(),
+                     texr->GetHeight(),
+                     0, // border
+                     depth,
+                     GL_UNSIGNED_BYTE,
+                     texr->GetData());
+    }
+    else
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0, // mipmap level
+                        0, // offset x
+                        0, // offset y
+                        texr->GetWidth(),
+                        texr->GetHeight(),
+                        depth,
+                        GL_UNSIGNED_BYTE,
+                        texr->GetData());
+      // @todo: when updating, what if the size if greater than the old texture
     CHECK_FOR_GL_ERROR();
 }
 
