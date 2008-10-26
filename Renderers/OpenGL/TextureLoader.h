@@ -31,7 +31,7 @@ using OpenEngine::Renderers::RenderingEventArg;
  *
  * @class TextureLoader TextureLoader.h Renderers/OpenGL/TextureLoader.h
  */
-class TextureLoader : public ISceneNodeVisitor, public IListener<RenderingEventArg> {
+class __attribute__ (deprecated) TextureLoader : public ISceneNodeVisitor, public IListener<RenderingEventArg> {
 public:
     TextureLoader();
     ~TextureLoader();

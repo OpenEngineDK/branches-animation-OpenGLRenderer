@@ -11,7 +11,7 @@
 #define _SHADER_LOADER_H_
 
 #include <Scene/ISceneNodeVisitor.h>
-#include <Renderers/OpenGL/TextureLoader.h>
+#include <Renderers/TextureLoader.h>
 
 namespace OpenEngine {
 namespace Renderers {
@@ -27,9 +27,9 @@ using OpenEngine::Scene::ISceneNodeVisitor;
  */
 class ShaderLoader : public ISceneNodeVisitor {
 private:
-    TextureLoader* textureLoader;
+    TextureLoader& textureLoader;
 public:
-    ShaderLoader();
+    ShaderLoader(TextureLoader& textureLoader);
     ~ShaderLoader();
 
     void VisitGeometryNode(GeometryNode* node);

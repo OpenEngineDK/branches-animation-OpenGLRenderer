@@ -26,13 +26,10 @@ using OpenEngine::Geometry::FaceList;
 using OpenEngine::Resources::IShaderResourcePtr;
 using OpenEngine::Resources::ShaderTextureMap;
 
-ShaderLoader::ShaderLoader() {
-    textureLoader = new TextureLoader();
-}
+ShaderLoader::ShaderLoader(TextureLoader& textureLoader)
+  : textureLoader(textureLoader) {}
 
-ShaderLoader::~ShaderLoader() {
-    delete textureLoader;
-}
+ShaderLoader::~ShaderLoader() {}
 
 /**
  * The Geometry nodes shaders are loaded on visit
@@ -50,7 +47,7 @@ void ShaderLoader::VisitGeometryNode(GeometryNode* node) {
             // load shader and its textures
             shad->Load();
             for (itr = shad->textures.begin(); itr != shad->textures.end(); itr++)
-                textureLoader->LoadTextureResource( (*itr).second );
+                textureLoader.Load( (*itr).second );
         }
     }
 }
