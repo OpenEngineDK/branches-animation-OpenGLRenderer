@@ -26,6 +26,10 @@ namespace OpenEngine {
         class SpotLightNode;
     }
 
+namespace Display {
+    class IViewingVolume;
+}
+
 namespace Renderers {
 namespace OpenGL {
 
@@ -49,9 +53,11 @@ class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventAr
  private:
     float pos[4], dir[4];
     GLint lightCount;
+    Display::IViewingVolume& volume;
+
  public:
 
-    LightRenderer(); 
+    LightRenderer(Display::IViewingVolume& volume); 
     ~LightRenderer();
         
     void Handle(RenderingEventArg arg);

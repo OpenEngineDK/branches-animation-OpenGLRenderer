@@ -13,6 +13,7 @@
 #include <Scene/DirectionalLightNode.h>
 #include <Scene/PointLightNode.h>
 #include <Scene/SpotLightNode.h>
+#include <Display/IViewingVolume.h>
 
 #include <Logging/Logger.h>
 
@@ -24,7 +25,9 @@ using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
 
 
-LightRenderer::LightRenderer() : lightCount(0) {
+LightRenderer::LightRenderer(Display::IViewingVolume& volume)
+    : lightCount(0)
+    , volume(volume) {
     pos[0] = 0.0;
     pos[1] = 0.0;
     pos[2] = 0.0;
@@ -156,6 +159,13 @@ void LightRenderer::Handle(RenderingEventArg arg) {
     for (int i = 0; i < lightCount; i++) {
         glDisable(GL_LIGHT0 + i);
     }
+    CHECK_FOR_GL_ERROR();
+
+    // rotate the world to compensate for the camera
+    Matrix<4,4,float> matrix = volume.GetViewMatrix();
+    float f[16] = {0};
+    matrix.ToArray(f);
+    glMultMatrixf(f);
     CHECK_FOR_GL_ERROR();
 
     lightCount = 0;
