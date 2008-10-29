@@ -29,15 +29,6 @@ DisplayListNode::~DisplayListNode() {
 }
 
 /**
- * Accept of visitors.
- *
- * @param visitor Scene visitor.
- */
-void DisplayListNode::Accept(ISceneNodeVisitor& visitor) {
-    visitor.VisitDisplayListNode(this);
-}
-
-/**
  * Get ID value
  * Use the ID value in a call to glCallList()
  * @return The ID value.

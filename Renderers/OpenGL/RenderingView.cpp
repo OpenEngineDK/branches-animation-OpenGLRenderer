@@ -9,13 +9,13 @@
 
 #include <Renderers/OpenGL/RenderingView.h>
 #include <Renderers/OpenGL/Renderer.h>
-#include <Renderers/IRenderNode.h>
 #include <Geometry/FaceSet.h>
 #include <Geometry/VertexArray.h>
 #include <Scene/GeometryNode.h>
 #include <Scene/VertexArrayNode.h>
 #include <Scene/TransformationNode.h>
 #include <Scene/DisplayListNode.h>
+#include <Scene/RenderNode.h>
 #include <Resources/IShaderResource.h>
 #include <Display/Viewport.h>
 #include <Display/IViewingVolume.h>
@@ -130,7 +130,7 @@ void RenderingView::Render(IRenderer* renderer, ISceneNode* root) {
  *
  * @param node Rendering node to apply.
  */
-void RenderingView::VisitRenderNode(IRenderNode* node) {
+void RenderingView::VisitRenderNode(RenderNode* node) {
     node->Apply(this);
 }
 

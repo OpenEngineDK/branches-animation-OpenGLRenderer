@@ -1,4 +1,4 @@
-// GL tree node.
+// OpenGL display list node.
 // -------------------------------------------------------------------
 // Copyright (C) 2007 OpenEngine.dk (See AUTHORS)
 //
@@ -7,37 +7,34 @@
 // See the GNU General Public License for more details (see LICENSE).
 //--------------------------------------------------------------------
 
-#ifndef _DISPLAY_LIST_NODE_H_
-#define _DISPLAY_LIST_NODE_H_
+#ifndef _OE_DISPLAY_LIST_NODE_H_
+#define _OE_DISPLAY_LIST_NODE_H_
 
-#include <Scene/SceneNode.h>
+#include <Scene/ISceneNode.h>
 #include <Meta/OpenGL.h>
 
 namespace OpenEngine {
-    namespace Scene { 
-
-// forward declarations   
-class ISceneNodeVisitor; 
+namespace Scene { 
 
 /**
- * GL display list tree node.
- * To build a tree please refer to -.
- *
- * @see GLTreeBuilder
+ * OpenGL display list node.
  *
  * @class DisplayListNode DisplayListNode.h Scene/DisplayListNode.h
  */
-class DisplayListNode : public SceneNode {
-private:
-    GLuint id;
+class DisplayListNode : public ISceneNode {
+    OE_SCENE_NODE(DisplayListNode, ISceneNode)
+
 public:
     DisplayListNode(GLuint id);
     ~DisplayListNode();
-
-    void Accept(ISceneNodeVisitor& visitor);
     GLuint GetID(); 
+
+private:
+    GLuint id;
+
 };
 
-}
-}
-#endif // _DISPLAY_LIST_NODE_H_
+} // NS Scene
+} // NS OpenEngine
+
+#endif // _OE_DISPLAY_LIST_NODE_H_

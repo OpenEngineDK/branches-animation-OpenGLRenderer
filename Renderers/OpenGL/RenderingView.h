@@ -12,7 +12,7 @@
 
 #include <Meta/OpenGL.h>
 #include <Renderers/IRenderingView.h>
-#include <Renderers/RenderStateNode.h>
+#include <Scene/RenderStateNode.h>
 #include <Scene/BlendingNode.h>
 #include <vector>
 
@@ -43,7 +43,7 @@ public:
     void VisitVertexArrayNode(VertexArrayNode* node);
     void VisitTransformationNode(TransformationNode* node);
     void VisitRenderStateNode(RenderStateNode* node);
-    void VisitRenderNode(IRenderNode* node);
+    void VisitRenderNode(RenderNode* node);
     void VisitDisplayListNode(DisplayListNode* node);
     void VisitBlendingNode(BlendingNode* node);
     void Render(IRenderer* renderer, ISceneNode* root);
