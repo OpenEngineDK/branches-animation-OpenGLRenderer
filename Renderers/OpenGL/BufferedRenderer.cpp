@@ -37,7 +37,6 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
     CHECK_FOR_GL_ERROR();
 
-
     // Adding a depth buffer
     glGenRenderbuffersEXT(1, &depthbuffer);
     CHECK_FOR_GL_ERROR();
@@ -55,14 +54,14 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
     // Adding a Texture
     glGenTextures(1, &img);
     CHECK_FOR_GL_ERROR();
-    glBindTexture(GL_TEXTURE_2D, img);
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, img);
     CHECK_FOR_GL_ERROR();
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8,
-                 width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA,
+                 width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
     CHECK_FOR_GL_ERROR();
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
                               GL_COLOR_ATTACHMENT0_EXT, 
-                              GL_TEXTURE_2D, img, 0);
+                              GL_TEXTURE_RECTANGLE_ARB, img, 0);
     CHECK_FOR_GL_ERROR();
 
     // check FBO state for errors
@@ -75,6 +74,8 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
     // done initializing, go back to the main gl context 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); //unbind
     CHECK_FOR_GL_ERROR();
+
+    glEnable(GL_TEXTURE_RECTANGLE_ARB);
 }
 
 std::string BufferedRenderer::EnumToString(GLenum status) {
@@ -114,17 +115,25 @@ void BufferedRenderer::Handle(ProcessEventArg arg) {
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo); //bind
     CHECK_FOR_GL_ERROR();
+
     glPushAttrib(GL_VIEWPORT_BIT);
     CHECK_FOR_GL_ERROR();
+
     glViewport(0,0,width, height);
     CHECK_FOR_GL_ERROR();
 
-    //test: glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+    //glClearColor(1,0,1,1);
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    CHECK_FOR_GL_ERROR();
 
     Renderer::Handle(arg);
 
+    //test: glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+
+
     CHECK_FOR_GL_ERROR();
     glPopAttrib();
+
     CHECK_FOR_GL_ERROR();
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); //unbind
     CHECK_FOR_GL_ERROR();
@@ -132,24 +141,19 @@ void BufferedRenderer::Handle(ProcessEventArg arg) {
     // for debugging
     RenderTextureInOrtho();
     CHECK_FOR_GL_ERROR();
-
-    /*  
-    unsigned int i = 0-1;
-    while(i--);
-    logger.info << "frame done" << logger.end;
-    */
 }
 
 void BufferedRenderer::RenderTextureInOrtho() {
 
     GLboolean t = glIsEnabled(GL_TEXTURE_2D);
+    /*
     GLboolean l = glIsEnabled(GL_LIGHTING);
     GLboolean d = glIsEnabled(GL_DEPTH_TEST);
-
+    */
     // render a screen sized quad
-    glDisable(GL_DEPTH_TEST);
+    //glDisable(GL_DEPTH_TEST);
     CHECK_FOR_GL_ERROR();
-    glDisable(GL_LIGHTING);
+    //glDisable(GL_LIGHTING);
     CHECK_FOR_GL_ERROR();
     glEnable(GL_TEXTURE_2D);
     CHECK_FOR_GL_ERROR();
@@ -157,7 +161,7 @@ void BufferedRenderer::RenderTextureInOrtho() {
     CHECK_FOR_GL_ERROR();
 
     // quad rendering of texture
-    glBindTexture(GL_TEXTURE_2D, img);
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, img);
     CHECK_FOR_GL_ERROR();
 
     glMatrixMode(GL_PROJECTION);
@@ -198,9 +202,10 @@ void BufferedRenderer::RenderTextureInOrtho() {
     CHECK_FOR_GL_ERROR();
 
     if (!t) glDisable(GL_TEXTURE_2D);
+    /*
     if (l) glEnable(GL_LIGHTING);
     if (d) glEnable(GL_DEPTH_TEST);
-    CHECK_FOR_GL_ERROR();
+    CHECK_FOR_GL_ERROR();*/
 }
 
 void BufferedRenderer::Handle(DeinitializeEventArg arg) {
