@@ -24,9 +24,6 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
 
     //@todo: make sure that there is a gl context
 
-    // maybe there should be setup a texture env:
-    //glTexParameteriv(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR) ;
-
     const std::string fboExt = "GL_EXT_framebuffer_object";
     if (glewGetExtension(fboExt.c_str()) != GL_TRUE )
         throw Exception(fboExt + " not supported");
@@ -54,14 +51,22 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
     // Adding a Texture
     glGenTextures(1, &img);
     CHECK_FOR_GL_ERROR();
-    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, img);
+    glBindTexture(GL_TEXTURE_2D, img);
     CHECK_FOR_GL_ERROR();
-    glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA,
+
+    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                  width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
     CHECK_FOR_GL_ERROR();
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
                               GL_COLOR_ATTACHMENT0_EXT, 
-                              GL_TEXTURE_RECTANGLE_ARB, img, 0);
+                              GL_TEXTURE_2D, img, 0);
     CHECK_FOR_GL_ERROR();
 
     // check FBO state for errors
@@ -74,8 +79,6 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
     // done initializing, go back to the main gl context 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); //unbind
     CHECK_FOR_GL_ERROR();
-
-    glEnable(GL_TEXTURE_RECTANGLE_ARB);
 }
 
 std::string BufferedRenderer::EnumToString(GLenum status) {
@@ -116,68 +119,48 @@ void BufferedRenderer::Handle(ProcessEventArg arg) {
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo); //bind
     CHECK_FOR_GL_ERROR();
 
-    glPushAttrib(GL_VIEWPORT_BIT);
-    CHECK_FOR_GL_ERROR();
-
-    glViewport(0,0,width, height);
-    CHECK_FOR_GL_ERROR();
-
-    //glClearColor(1,0,1,1);
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     CHECK_FOR_GL_ERROR();
 
     Renderer::Handle(arg);
-
-    //test: glDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
-
-
     CHECK_FOR_GL_ERROR();
-    glPopAttrib();
 
-    CHECK_FOR_GL_ERROR();
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); //unbind
     CHECK_FOR_GL_ERROR();
 
-    // for debugging
     RenderTextureInOrtho();
     CHECK_FOR_GL_ERROR();
 }
 
 void BufferedRenderer::RenderTextureInOrtho() {
-
-    GLboolean t = glIsEnabled(GL_TEXTURE_2D);
-    /*
     GLboolean l = glIsEnabled(GL_LIGHTING);
-    GLboolean d = glIsEnabled(GL_DEPTH_TEST);
-    */
-    // render a screen sized quad
-    //glDisable(GL_DEPTH_TEST);
-    CHECK_FOR_GL_ERROR();
-    //glDisable(GL_LIGHTING);
-    CHECK_FOR_GL_ERROR();
-    glEnable(GL_TEXTURE_2D);
-    CHECK_FOR_GL_ERROR();
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    GLboolean t = glIsEnabled(GL_TEXTURE_2D);
+
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     CHECK_FOR_GL_ERROR();
 
     // quad rendering of texture
-    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, img);
+    glDisable(GL_LIGHTING);
+    glEnable(GL_TEXTURE_2D);
+    CHECK_FOR_GL_ERROR();
+
+    glBindTexture(GL_TEXTURE_2D, img);
     CHECK_FOR_GL_ERROR();
 
     glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
     glLoadIdentity();
-    glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+    bool orth = false;
+    if (!orth)
+        gluPerspective(45.0,width/height,0.3,1000.0);
+    else
+        glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
     CHECK_FOR_GL_ERROR();
 
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    CHECK_FOR_GL_ERROR();
+    if (!orth)
+        gluLookAt(0,1,4, 0,0,0, 0,1,0);
 
-    glViewport(0, 0, width, height);
-    CHECK_FOR_GL_ERROR();
-
+    glColor4f(1.0, 1.0, 1.0, 1.0);
     glBegin(GL_QUADS);
 
     glTexCoord2f(0.0, 0.0);
@@ -195,17 +178,9 @@ void BufferedRenderer::RenderTextureInOrtho() {
     glEnd();
     CHECK_FOR_GL_ERROR();
 
-    glMatrixMode(GL_PROJECTION);
-    glPopMatrix();
-    glMatrixMode( GL_MODELVIEW );
-	glPopMatrix();
-    CHECK_FOR_GL_ERROR();
-
     if (!t) glDisable(GL_TEXTURE_2D);
-    /*
     if (l) glEnable(GL_LIGHTING);
-    if (d) glEnable(GL_DEPTH_TEST);
-    CHECK_FOR_GL_ERROR();*/
+    CHECK_FOR_GL_ERROR();
 }
 
 void BufferedRenderer::Handle(DeinitializeEventArg arg) {

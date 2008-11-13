@@ -81,17 +81,6 @@ void RenderingView::Handle(RenderingEventArg arg) {
     // apply the volume
     arg.renderer.ApplyViewingVolume(*volume);
 
-    // Reset the modelview matrix
-    glLoadIdentity();
-    CHECK_FOR_GL_ERROR();
-    
-    // Get the view matrix and apply it
-    Matrix<4,4,float> matrix = volume->GetViewMatrix();
-    float f[16] = {0};
-    matrix.ToArray(f);
-    glMultMatrixf(f);
-    CHECK_FOR_GL_ERROR();
-
     // Really Nice Perspective Calculations
     glShadeModel(GL_SMOOTH);
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
@@ -107,10 +96,13 @@ void RenderingView::Handle(RenderingEventArg arg) {
     ApplyRenderState(renderStateNode);
     delete renderStateNode;
 
-    Render(&arg.renderer, arg.renderer.GetSceneRoot());
-
     Vector<4,float> bgc = backgroundColor;
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
+
+    // Clear the screen and the depth buffer.
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+    Render(&arg.renderer, arg.renderer.GetSceneRoot());
 }
 
 /**
