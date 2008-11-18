@@ -36,16 +36,31 @@ using OpenEngine::Display::IViewingVolume;
 
 GLSLVersion Renderer::glslversion = GLSL_UNKNOWN;
 
-Renderer::Renderer() {
+Renderer::Renderer(Viewport* viewport)
+    : root(NULL) 
+    , viewport(viewport)
+{
 
 }
 
 /**
  * Renderer destructor.
- * Performs no clean up.
+ * Deletes the internal viewport.
  */
 Renderer::~Renderer() {
+    delete viewport;
+}
 
+Viewport& Renderer::GetViewport() const {
+    return *viewport;
+}
+
+void Renderer::SetSceneRoot(ISceneNode* root) {
+    this->root = root;
+}
+
+ISceneNode* Renderer::GetSceneRoot() const {
+    return root;
 }
 
 void Renderer::InitializeGLSLVersion() {

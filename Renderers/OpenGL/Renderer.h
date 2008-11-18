@@ -61,6 +61,9 @@ class Renderer : public IRenderer {
 private:
     static GLSLVersion glslversion;
 
+    Scene::ISceneNode* root;
+    Viewport* viewport;
+
     // Event lists for the rendering phases.
     Event<RenderingEventArg> initialize;
     Event<RenderingEventArg> preProcess;
@@ -71,12 +74,16 @@ private:
     void InitializeGLSLVersion();
 
 public:
-    Renderer();
+    Renderer(Viewport* viewport);
     virtual ~Renderer();
 
     void Handle(InitializeEventArg arg);
     void Handle(ProcessEventArg arg);
     void Handle(DeinitializeEventArg arg);
+
+    virtual Viewport& GetViewport() const;
+    virtual void SetSceneRoot(Scene::ISceneNode* root);
+    virtual Scene::ISceneNode* GetSceneRoot() const;
 
     /**
      * Event lists for the rendering phases.
@@ -86,7 +93,6 @@ public:
     virtual IEvent<RenderingEventArg>& ProcessEvent();
     virtual IEvent<RenderingEventArg>& PostProcessEvent();
     virtual IEvent<RenderingEventArg>& DeinitializeEvent();
-
 
     /**
      * Test if OpenGL Shader Language is supported.
