@@ -8,18 +8,30 @@ namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
-BufferedRenderer::BufferedRenderer() {
-    fbo = depthbuffer = img = 0;
-    width = 800;
-    height = 600;
+BufferedRenderer::BufferedRenderer(Viewport* viewport)
+    : peer(Renderer(viewport))
+    , fbo(0)
+    , depthbuffer(0)
+    , img(0)
+{
+    Vector<4,int> dim(viewport->GetDimension());
+    width  = dim[2] - dim[0];
+    height = dim[3] - dim[1];
+    colorbuf = ITextureResourcePtr(new ColorBuffer(*this));
 }
 
-BufferedRenderer::~BufferedRenderer() {}
+BufferedRenderer::~BufferedRenderer() {
+    // the viewport is deleted in the super class (Renderer)
+}
+
+ITextureResourcePtr BufferedRenderer::GetColorBuffer() const {
+    return colorbuf;
+}
 
 void BufferedRenderer::Handle(InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
-    Renderer::Handle(arg);
+    peer.Handle(arg);
     CHECK_FOR_GL_ERROR();
 
     //@todo: make sure that there is a gl context
@@ -122,7 +134,7 @@ void BufferedRenderer::Handle(ProcessEventArg arg) {
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     CHECK_FOR_GL_ERROR();
 
-    Renderer::Handle(arg);
+    peer.Handle(arg);
     CHECK_FOR_GL_ERROR();
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); //unbind
@@ -130,6 +142,9 @@ void BufferedRenderer::Handle(ProcessEventArg arg) {
 
     RenderTextureInOrtho();
     CHECK_FOR_GL_ERROR();
+
+    colorbuf->ChangedEvent().
+        Notify(Resources::TextureChangedEventArg(colorbuf));
 }
 
 void BufferedRenderer::RenderTextureInOrtho() {
@@ -188,7 +203,7 @@ void BufferedRenderer::Handle(DeinitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
     glDeleteRenderbuffersEXT(1, &depthbuffer);
     CHECK_FOR_GL_ERROR();
-    Renderer::Handle(arg);
+    peer.Handle(arg);
     CHECK_FOR_GL_ERROR();
 }
 
