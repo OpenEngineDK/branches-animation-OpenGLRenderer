@@ -48,6 +48,7 @@ void LightRenderer::VisitTransformationNode(TransformationNode* node) {
     Matrix<4,4,float> m = node->GetTransformationMatrix();
     float f[16];
     m.ToArray(f);
+    glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glMultMatrixf(f);
     // traverse sub nodes
