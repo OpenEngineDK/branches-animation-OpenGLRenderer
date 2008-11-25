@@ -10,14 +10,18 @@
 #ifndef _SHADER_LOADER_H_
 #define _SHADER_LOADER_H_
 
-#include <Scene/ISceneNodeVisitor.h>
+#include <Core/EngineEvents.h>
+#include <Core/IListener.h>
 #include <Renderers/TextureLoader.h>
+#include <Scene/ISceneNode.h>
+#include <Scene/ISceneNodeVisitor.h>
 
 namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
 using OpenEngine::Scene::GeometryNode;
+using OpenEngine::Scene::VertexArrayNode;
 using OpenEngine::Scene::ISceneNodeVisitor;
 
 /**
@@ -25,14 +29,17 @@ using OpenEngine::Scene::ISceneNodeVisitor;
  *
  * @class ShaderLoader ShaderLoader.h Renderers/OpenGL/ShaderLoader.h
  */
-class ShaderLoader : public ISceneNodeVisitor {
+ class ShaderLoader : public ISceneNodeVisitor, public Core::IListener<Core::InitializeEventArg> {
 private:
     TextureLoader& textureLoader;
+    Scene::ISceneNode& scene;
 public:
-    ShaderLoader(TextureLoader& textureLoader);
+    ShaderLoader(TextureLoader& textureLoader, Scene::ISceneNode& scene);
     ~ShaderLoader();
 
+    void Handle(Core::InitializeEventArg event);
     void VisitGeometryNode(GeometryNode* node);
+    void VisitVertexArrayNode(VertexArrayNode* node);
 };
 
 } // NS OpenGL
