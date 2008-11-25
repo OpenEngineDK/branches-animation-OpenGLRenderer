@@ -354,6 +354,7 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
         currentShader->ReleaseShader();
 
     // disable textures if it has been enabled
+    glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
     glDisable(GL_TEXTURE_2D);
     CHECK_FOR_GL_ERROR();
 }
@@ -403,6 +404,7 @@ void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
         currentShader->ReleaseShader();
 
     // Disable all state changes
+    glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
     glDisable(GL_TEXTURE_2D);
 	glDisableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
