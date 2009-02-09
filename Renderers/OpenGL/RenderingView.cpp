@@ -64,26 +64,6 @@ IRenderer* RenderingView::GetRenderer() {
 
 void RenderingView::Handle(RenderingEventArg arg) {
     CHECK_FOR_GL_ERROR();
-    // the following is moved from the previous Renderer::Process
-
-    Viewport& viewport = this->GetViewport();
-    IViewingVolume* volume = viewport.GetViewingVolume();
-
-    // If no viewing volume is set for the viewport ignore it.
-    if (volume == NULL) return;
-    volume->SignalRendering(arg.approx);
-
-    // Set viewport size
-    Vector<4,int> d = viewport.GetDimension();
-    glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
-    CHECK_FOR_GL_ERROR();
-    
-    // apply the volume
-    arg.renderer.ApplyViewingVolume(*volume);
-
-    // Really Nice Perspective Calculations
-    glShadeModel(GL_SMOOTH);
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
     // setup default render state
     RenderStateNode* renderStateNode = new RenderStateNode();

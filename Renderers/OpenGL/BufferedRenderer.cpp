@@ -15,8 +15,8 @@ BufferedRenderer::BufferedRenderer(Viewport* viewport)
     , img(0)
 {
     Vector<4,int> dim(viewport->GetDimension());
-    width  = dim[2] - dim[0];
-    height = dim[3] - dim[1];
+    width  = dim[2];
+    height = dim[3];
     colorbuf = ITextureResourcePtr(new ColorBuffer(*this));
 }
 
