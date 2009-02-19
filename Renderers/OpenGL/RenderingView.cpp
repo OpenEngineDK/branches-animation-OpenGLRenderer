@@ -79,9 +79,6 @@ void RenderingView::Handle(RenderingEventArg arg) {
     Vector<4,float> bgc = backgroundColor;
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
-    // Clear the screen and the depth buffer.
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
     Render(&arg.renderer, arg.renderer.GetSceneRoot());
 }
 

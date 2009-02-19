@@ -135,6 +135,10 @@ void Renderer::Handle(InitializeEventArg arg) {
  */
 void Renderer::Handle(ProcessEventArg arg) {
     // @todo: assert we are in preprocess stage
+
+    // Clear the screen and the depth buffer.
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
     // run the processing phases
     RenderingEventArg rarg(*this, arg.start, arg.approx);
     this->preProcess.Notify(rarg);
