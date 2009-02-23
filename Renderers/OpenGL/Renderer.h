@@ -60,9 +60,9 @@ enum GLSLVersion { GLSL_UNKNOWN, GLSL_NONE, GLSL_14, GLSL_20 };
 class Renderer : public IRenderer {
 private:
     static GLSLVersion glslversion;
-
     Scene::ISceneNode* root;
     Viewport* viewport;
+    Vector<4,float> backgroundColor;
 
     // Event lists for the rendering phases.
     Event<RenderingEventArg> initialize;
@@ -107,6 +107,9 @@ public:
      * @return Version
      */
     static GLSLVersion GetGLSLVersion();
+
+    virtual void SetBackgroundColor(Vector<4,float> color);
+    virtual Vector<4,float> GetBackgroundColor();
 
     virtual void ApplyViewingVolume(Display::IViewingVolume& volume);
     virtual void LoadTexture(ITextureResourcePtr texr);

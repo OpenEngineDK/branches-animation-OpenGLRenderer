@@ -40,7 +40,7 @@ Renderer::Renderer(Viewport* viewport)
     : root(NULL) 
     , viewport(viewport)
 {
-
+    backgroundColor = Vector<4,float>(1.0);
 }
 
 /**
@@ -104,6 +104,9 @@ void Renderer::Handle(InitializeEventArg arg) {
     InitializeGLSLVersion(); //@todo: HACK - to get Inseminator to work
     CHECK_FOR_GL_ERROR();
 
+    Vector<4,float> bgc = backgroundColor;
+    glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
+
     // Clear the OpenGL frame buffer.
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
     CHECK_FOR_GL_ERROR();
@@ -135,6 +138,9 @@ void Renderer::Handle(InitializeEventArg arg) {
  */
 void Renderer::Handle(ProcessEventArg arg) {
     // @todo: assert we are in preprocess stage
+
+    Vector<4,float> bgc = backgroundColor;
+    glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
     // Clear the screen and the depth buffer.
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -441,6 +447,14 @@ void Renderer::DrawPoint(Vector<3,float> point, Vector<3,float> color , float si
     if (t) glEnable(GL_TEXTURE_2D);
     if (l) glEnable(GL_LIGHTING);
     CHECK_FOR_GL_ERROR();
+}
+
+void Renderer::SetBackgroundColor(Vector<4,float> color) {
+    backgroundColor = color;
+}
+
+Vector<4,float> Renderer::GetBackgroundColor() {
+    return backgroundColor;
 }
 
 } // NS OpenGL

@@ -49,8 +49,6 @@ public:
     void Render(IRenderer* renderer, ISceneNode* root);
     void Handle(RenderingEventArg arg);
     IRenderer* GetRenderer();
-    virtual void SetBackgroundColor(Vector<4,float> color);
-    virtual Vector<4,float> GetBackgroundColor();
 
 private:
     bool renderBinormal, renderTangent, renderSoftNormal, renderHardNormal;
@@ -59,7 +57,6 @@ private:
     IShaderResourcePtr currentShader;
     int binormalid;
     int tangentid;
-    Vector<4,float> backgroundColor;
 
     void EnableBlending(BlendingNode::BlendingFactor source, 
                         BlendingNode::BlendingFactor destination,

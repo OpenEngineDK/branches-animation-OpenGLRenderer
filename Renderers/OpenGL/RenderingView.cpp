@@ -45,7 +45,6 @@ RenderingView::RenderingView(Viewport& viewport)
       renderer(NULL) {
     renderBinormal=renderTangent=renderSoftNormal=renderHardNormal = false;
     renderTexture = renderShader = true;
-    backgroundColor = Vector<4,float>(1.0);
 }
 
 /**
@@ -75,9 +74,6 @@ void RenderingView::Handle(RenderingEventArg arg) {
     renderStateNode->DisableOption(RenderStateNode::WIREFRAME);
     ApplyRenderState(renderStateNode);
     delete renderStateNode;
-
-    Vector<4,float> bgc = backgroundColor;
-    glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
     Render(&arg.renderer, arg.renderer.GetSceneRoot());
 }
@@ -453,14 +449,6 @@ void RenderingView::EnableBlending(GLenum source, GLenum destination,
 void RenderingView::DisableBlending() {
     glDisable(GL_BLEND);
     CHECK_FOR_GL_ERROR();
-}
-
-void RenderingView::SetBackgroundColor(Vector<4,float> color) {
-    backgroundColor = color;
-}
-
-Vector<4,float> RenderingView::GetBackgroundColor() {
-    return backgroundColor;
 }
 
 void RenderingView::RenderDebugGeometry(FacePtr f) {
