@@ -121,6 +121,7 @@ void Renderer::Handle(InitializeEventArg arg) {
 
     // Set perspective calculations to most accurate
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    glShadeModel(GL_SMOOTH);
     CHECK_FOR_GL_ERROR();
 
     // Check that we have a scene.
@@ -149,25 +150,6 @@ void Renderer::Handle(ProcessEventArg arg) {
     RenderingEventArg rarg(*this, arg.start, arg.approx);
     this->preProcess.Notify(rarg);
     this->stage = RENDERER_PROCESS;
-
-    IViewingVolume* volume = viewport->GetViewingVolume();
-    // If no viewing volume is set for the viewport ignore it.
-    if (volume != NULL) {
-        volume->SignalRendering(arg.approx);
-
-        // Set viewport size
-        Vector<4,int> d = viewport->GetDimension();
-        glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
-        CHECK_FOR_GL_ERROR();
-
-        // apply the volume
-        ApplyViewingVolume(*volume);
-
-        // Really Nice Perspective Calculations
-        glShadeModel(GL_SMOOTH);
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-    }
-
     this->process.Notify(rarg);
     this->stage = RENDERER_POSTPROCESS;
     this->postProcess.Notify(rarg);

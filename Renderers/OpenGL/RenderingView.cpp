@@ -62,6 +62,19 @@ IRenderer* RenderingView::GetRenderer() {
 }
 
 void RenderingView::Handle(RenderingEventArg arg) {
+    IViewingVolume* volume = viewport.GetViewingVolume();
+    // If no viewing volume is set for the viewport ignore it.
+    if (volume != NULL) {
+        volume->SignalRendering(arg.approx);
+
+        // Set viewport size
+        Vector<4,int> d = viewport.GetDimension();
+        glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
+        CHECK_FOR_GL_ERROR();
+
+        // apply the volume
+        arg.renderer.ApplyViewingVolume(*volume);
+    }
     CHECK_FOR_GL_ERROR();
 
     // setup default render state
