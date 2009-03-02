@@ -51,7 +51,9 @@ inline void CHECK_FOR_GL_ERROR(const std::string file, const int line) {
 
 /**
  *  Checks for Open GL errors and throws an exception if
- *  an error was detected, is only available in debug mode
+ *  an error was detected, is only available in debug mode.
+ *  NOTE: This call must not be used between calls to glBegin and
+ *  glEnd. 
  */
 #if OE_DEBUG_GL
 #define CHECK_FOR_GL_ERROR(); CHECK_FOR_GL_ERROR(__FILE__,__LINE__);
