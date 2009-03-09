@@ -439,6 +439,39 @@ Vector<4,float> Renderer::GetBackgroundColor() {
     return backgroundColor;
 }
 
+/**
+ * Helper function drawing a sphere.
+ *
+ * @param center Center of sphere.
+ * @param radius Radius of sphere.
+ * @param color  Color of sphere.
+ */
+    void Renderer::DrawSphere(Vector<3,float> center, float radius, Vector<3,float> color) {
+    GLboolean t = glIsEnabled(GL_TEXTURE_2D);
+    GLboolean l = glIsEnabled(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
+
+    glPushMatrix();
+    glTranslatef(center[0], center[1], center[2]);
+    glColor3f(color[0], color[1], color[2]);
+    GLUquadricObj* qobj = gluNewQuadric();
+    glLineWidth(1);
+    gluQuadricNormals(qobj, GLU_SMOOTH);
+    gluQuadricDrawStyle(qobj, GLU_LINE);
+    gluQuadricOrientation(qobj, GLU_INSIDE);
+    gluSphere(qobj, radius, 10, 10); 
+    gluDeleteQuadric(qobj);
+    glPopMatrix();
+
+    // reset state
+    if (t) glEnable(GL_TEXTURE_2D);
+    if (l) glEnable(GL_LIGHTING);
+    CHECK_FOR_GL_ERROR();
+}
+
 } // NS OpenGL
 } // NS OpenEngine
 } // NS Renderers
