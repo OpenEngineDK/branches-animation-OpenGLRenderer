@@ -140,11 +140,11 @@ void BufferedRenderer::Handle(ProcessEventArg arg) {
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); //unbind
     CHECK_FOR_GL_ERROR();
 
-    RenderTextureInOrtho();
-    CHECK_FOR_GL_ERROR();
+    //RenderTextureInOrtho();
+    //CHECK_FOR_GL_ERROR();
 
-    colorbuf->ChangedEvent().
-        Notify(Resources::TextureChangedEventArg(colorbuf));
+    //colorbuf->ChangedEvent().
+    //    Notify(Resources::TextureChangedEventArg(colorbuf));
 }
 
 void BufferedRenderer::RenderTextureInOrtho() {
