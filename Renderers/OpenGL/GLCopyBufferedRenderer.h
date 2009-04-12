@@ -55,6 +55,7 @@ public:
     void DrawFace(FacePtr f, Vector<3,float> c, float w)          { peer.DrawFace(f, c, w); }
     void DrawLine(Line l, Vector<3,float> c, float w)             { peer.DrawLine(l, c, w); }
     void DrawPoint(Vector<3,float> p, Vector<3,float> c, float w) { peer.DrawPoint(p, c, w); }
+    void DrawSphere(Vector<3,float> c, float r, Vector<3,float> col) { peer.DrawSphere(c, r, col); }
     void SetBackgroundColor(Vector<4,float> color) { peer.SetBackgroundColor(color); }
     Vector<4,float> GetBackgroundColor() { return peer.GetBackgroundColor(); }
 
