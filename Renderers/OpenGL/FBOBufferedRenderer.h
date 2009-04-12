@@ -24,14 +24,14 @@ namespace Renderers {
 namespace OpenGL {
 
 /**
- * BufferedRenderer using OpenGL
+ * FBOBufferedRenderer using OpenGL
  *
- * @class BufferedRenderer BufferedRenderer.h Renderers/OpenGL/Renderer.h
+ * @class FBOBufferedRenderer FBOBufferedRenderer.h Renderers/OpenGL/Renderer.h
  */
-class BufferedRenderer : public IBufferedRenderer {
+class FBOBufferedRenderer : public IBufferedRenderer {
 public:
-    BufferedRenderer(Viewport* viewport);
-    virtual ~BufferedRenderer();
+    FBOBufferedRenderer(Viewport* viewport);
+    virtual ~FBOBufferedRenderer();
 
     virtual void Handle(InitializeEventArg arg);
     virtual void Handle(ProcessEventArg arg);
@@ -69,7 +69,7 @@ private:
     ITextureResourcePtr colorbuf;
     class ColorBuffer : public Resources::ITextureResource {
     public:
-        ColorBuffer(BufferedRenderer& r) : r(r) {}
+        ColorBuffer(FBOBufferedRenderer& r) : r(r) {}
         void Load() {}
         void Unload() {}
         int GetID() { return r.img; }
@@ -80,7 +80,7 @@ private:
         unsigned char* GetData() { throw Exception("Buffered textures can not supply data information."); }
         Resources::ColorFormat GetColorFormat() { return Resources::RGBA; }
     private:
-        BufferedRenderer& r;
+        FBOBufferedRenderer& r;
     };
     
 };

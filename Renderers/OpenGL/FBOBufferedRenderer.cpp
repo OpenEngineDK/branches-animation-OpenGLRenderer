@@ -1,4 +1,4 @@
-#include <Renderers/OpenGL/BufferedRenderer.h>
+#include <Renderers/OpenGL/FBOBufferedRenderer.h>
 
 #include <string>
 
@@ -8,7 +8,7 @@ namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
-BufferedRenderer::BufferedRenderer(Viewport* viewport)
+FBOBufferedRenderer::FBOBufferedRenderer(Viewport* viewport)
     : peer(Renderer(viewport))
     , fbo(0)
     , depthbuffer(0)
@@ -20,15 +20,15 @@ BufferedRenderer::BufferedRenderer(Viewport* viewport)
     colorbuf = ITextureResourcePtr(new ColorBuffer(*this));
 }
 
-BufferedRenderer::~BufferedRenderer() {
+FBOBufferedRenderer::~FBOBufferedRenderer() {
     // the viewport is deleted in the super class (Renderer)
 }
 
-ITextureResourcePtr BufferedRenderer::GetColorBuffer() const {
+ITextureResourcePtr FBOBufferedRenderer::GetColorBuffer() const {
     return colorbuf;
 }
 
-void BufferedRenderer::Handle(InitializeEventArg arg) {
+void FBOBufferedRenderer::Handle(InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
     peer.Handle(arg);
@@ -93,7 +93,7 @@ void BufferedRenderer::Handle(InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
 }
 
-std::string BufferedRenderer::EnumToString(GLenum status) {
+std::string FBOBufferedRenderer::EnumToString(GLenum status) {
     std::string error = "";
     switch(status) {
     case GL_FRAMEBUFFER_COMPLETE_EXT:
@@ -125,7 +125,7 @@ std::string BufferedRenderer::EnumToString(GLenum status) {
 }
 
 
-void BufferedRenderer::Handle(ProcessEventArg arg) {
+void FBOBufferedRenderer::Handle(ProcessEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo); //bind
@@ -147,7 +147,7 @@ void BufferedRenderer::Handle(ProcessEventArg arg) {
     //    Notify(Resources::TextureChangedEventArg(colorbuf));
 }
 
-void BufferedRenderer::RenderTextureInOrtho() {
+void FBOBufferedRenderer::RenderTextureInOrtho() {
     GLboolean l = glIsEnabled(GL_LIGHTING);
     GLboolean t = glIsEnabled(GL_TEXTURE_2D);
 
@@ -198,7 +198,7 @@ void BufferedRenderer::RenderTextureInOrtho() {
     CHECK_FOR_GL_ERROR();
 }
 
-void BufferedRenderer::Handle(DeinitializeEventArg arg) {
+void FBOBufferedRenderer::Handle(DeinitializeEventArg arg) {
     glDeleteFramebuffersEXT(1, &fbo);
     CHECK_FOR_GL_ERROR();
     glDeleteRenderbuffersEXT(1, &depthbuffer);
