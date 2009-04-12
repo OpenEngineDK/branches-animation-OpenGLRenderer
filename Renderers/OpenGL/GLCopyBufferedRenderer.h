@@ -1,8 +1,8 @@
 // OpenGL buffered renderer implementation.
-// renderers a scene to a 2d texture using a Frame Buffer Object (FBO)
+// renderers a scene to a 2d texture using a GLCopy after renderering
 //
-// initial code based on:
-// http://www.gamedev.net/reference/articles/article2331.asp
+// initial code based on the FBOBufferedRenderer and:
+// http://nehe.gamedev.net/data/lessons/lesson.asp?lesson=36
 // -------------------------------------------------------------------
 // Copyright (C) 2007 OpenEngine.dk (See AUTHORS) 
 // 
@@ -11,8 +11,8 @@
 // See the GNU General Public License for more details (see LICENSE). 
 //--------------------------------------------------------------------
 
-#ifndef _OE_FBO_BUFFERED_RENDERER_H_
-#define _OE_FBO_BUFFERED_RENDERER_H_
+#ifndef _OE_GLCOPY_BUFFERED_RENDERER_H_
+#define _OE_GLCOPY_BUFFERED_RENDERER_H_
 
 #include <Meta/OpenGL.h>
 #include <Renderers/IBufferedRenderer.h>
@@ -24,14 +24,14 @@ namespace Renderers {
 namespace OpenGL {
 
 /**
- * FBOBufferedRenderer using OpenGL
+ * GLCopyBufferedRenderer using OpenGL
  *
- * @class FBOBufferedRenderer FBOBufferedRenderer.h Renderers/OpenGL/Renderer.h
+ * @class GLCopyBufferedRenderer GLCopyBufferedRenderer.h Renderers/OpenGL/Renderer.h
  */
-class FBOBufferedRenderer : public IBufferedRenderer {
+class GLCopyBufferedRenderer : public IBufferedRenderer {
 public:
-    FBOBufferedRenderer(Viewport* viewport);
-    virtual ~FBOBufferedRenderer();
+    GLCopyBufferedRenderer(Viewport* viewport);
+    virtual ~GLCopyBufferedRenderer();
 
     virtual void Handle(InitializeEventArg arg);
     virtual void Handle(ProcessEventArg arg);
@@ -63,13 +63,11 @@ private:
     Renderer peer;
     GLuint fbo, depthbuffer, img;
     unsigned int width, height;
-    std::string EnumToString(GLenum status);
-    void RenderTextureInOrtho();
     // color buffer wrapper
     ITextureResourcePtr colorbuf;
     class ColorBuffer : public Resources::ITextureResource {
     public:
-        ColorBuffer(FBOBufferedRenderer& r) : r(r) {}
+        ColorBuffer(GLCopyBufferedRenderer& r) : r(r) {}
         void Load() {}
         void Unload() {}
         int GetID() { return r.img; }
@@ -80,7 +78,7 @@ private:
         unsigned char* GetData() { throw Exception("Buffered textures can not supply data information."); }
         Resources::ColorFormat GetColorFormat() { return Resources::RGBA; }
     private:
-        FBOBufferedRenderer& r;
+        GLCopyBufferedRenderer& r;
     };
     
 };
@@ -89,4 +87,4 @@ private:
 } // NS OpenEngine
 } // NS Renderers
 
-#endif // _FBO_BUFFERED_RENDERER_H_
+#endif // _GLCOPY_BUFFERED_RENDERER_H_

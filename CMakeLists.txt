@@ -8,6 +8,8 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Resources/GLSLResource.cpp
   Renderers/OpenGL/FBOBufferedRenderer.h
   Renderers/OpenGL/FBOBufferedRenderer.cpp
+  Renderers/OpenGL/GLCopyBufferedRenderer.h
+  Renderers/OpenGL/GLCopyBufferedRenderer.cpp
   Renderers/OpenGL/Renderer.h
   Renderers/OpenGL/Renderer.cpp
   Renderers/OpenGL/RenderingView.h
