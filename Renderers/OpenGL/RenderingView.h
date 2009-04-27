@@ -50,7 +50,7 @@ public:
     void Handle(RenderingEventArg arg);
     IRenderer* GetRenderer();
 
-private:
+protected:
     bool renderBinormal, renderTangent, renderSoftNormal, renderHardNormal;
     bool renderTexture, renderShader;
     int currentTexture;
