@@ -8,10 +8,20 @@
 //--------------------------------------------------------------------
 
 #include <Scene/DisplayListNode.h>
+#include <Core/Exceptions.h>
 
 namespace OpenEngine {
     namespace Scene {
-    
+
+/**
+ * Default constructor to satisfy scene node requirements.
+ * Calling this constructor will throw an exception.
+ * @throws Core::Exception
+ */
+DisplayListNode::DisplayListNode() {
+    throw Core::Exception("Unable to create a display list node with no display list id.");
+}
+
 /** 
  * Create a display list tree node.
  * @param id An index pointing to a GL display list.

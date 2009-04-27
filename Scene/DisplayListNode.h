@@ -25,6 +25,7 @@ class DisplayListNode : public ISceneNode {
     OE_SCENE_NODE(DisplayListNode, ISceneNode)
 
 public:
+    DisplayListNode();
     DisplayListNode(GLuint id);
     ~DisplayListNode();
     GLuint GetID(); 
