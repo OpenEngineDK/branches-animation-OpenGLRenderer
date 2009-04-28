@@ -34,6 +34,7 @@ using OpenEngine::Geometry::VertexArray;
 using OpenEngine::Resources::IShaderResource;
 using OpenEngine::Display::Viewport;
 using OpenEngine::Display::IViewingVolume;
+using OpenEngine::Scene::RenderStateNode;
 
 /**
  * Rendering view constructor.
