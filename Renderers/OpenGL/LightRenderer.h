@@ -45,9 +45,9 @@ using OpenEngine::Renderers::RenderingEventArg;
 
 
 /**
- * Renderer using OpenGL
+ * Setup OpenGL lighting
  *
- * @class Renderer Renderer.h Renderers/OpenGL/IRenderer.h
+ * @class LightRenderer LightRenderer.h Renderers/OpenGL/LightRenderer.h
  */
 class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventArg> {
  private:
@@ -61,13 +61,9 @@ class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventAr
     ~LightRenderer();
         
     void Handle(RenderingEventArg arg);
-    
     void VisitTransformationNode(TransformationNode* node);
-    
     void VisitDirectionalLightNode(DirectionalLightNode* node);
-    
     void VisitPointLightNode(PointLightNode* node);
-
     void VisitSpotLightNode(SpotLightNode* node);
         
 };

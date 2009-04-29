@@ -43,19 +43,16 @@ LightRenderer::~LightRenderer() {}
         
 void LightRenderer::VisitTransformationNode(TransformationNode* node) {
     CHECK_FOR_GL_ERROR();
-    
     // push transformation matrix to model view stack
     Matrix<4,4,float> m = node->GetTransformationMatrix();
     float f[16];
     m.ToArray(f);
-    glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glMultMatrixf(f);
     // traverse sub nodes
     node->VisitSubNodes(*this);
     // pop transformation matrix
     glPopMatrix();
-
     CHECK_FOR_GL_ERROR();
 }
     
@@ -163,13 +160,11 @@ void LightRenderer::Handle(RenderingEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
     // rotate the world to compensate for the camera
-    Matrix<4,4,float> matrix = volume.GetViewMatrix();
-    float f[16] = {0};
-    matrix.ToArray(f);
-    glMultMatrixf(f);
+    arg.renderer.ApplyViewingVolume(volume);
     CHECK_FOR_GL_ERROR();
 
     lightCount = 0;
+    glMatrixMode(GL_MODELVIEW);
     arg.renderer.GetSceneRoot()->Accept(*this);
 
     if (lightCount == 0)
