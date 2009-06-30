@@ -58,12 +58,10 @@ protected:
     int binormalid;
     int tangentid;
 
-    void EnableBlending(BlendingNode::BlendingFactor source, 
+    void SwitchBlending(BlendingNode::BlendingFactor source, 
                         BlendingNode::BlendingFactor destination,
                         BlendingNode::BlendingEquation equation);
-    void DisableBlending();
-
-    inline void EnableBlending(GLenum source, GLenum destination,
+    inline void SwitchBlending(GLenum source, GLenum destination,
                                GLenum eqation);
     inline GLenum ConvertBlendingFactor(BlendingNode::BlendingFactor factor);
     inline GLenum ConvertBlendingEquation(BlendingNode::BlendingEquation equation);

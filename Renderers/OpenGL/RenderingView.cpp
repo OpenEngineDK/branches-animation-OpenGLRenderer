@@ -406,17 +406,28 @@ void RenderingView::VisitDisplayListNode(DisplayListNode* node) {
 }
 
 void RenderingView::VisitBlendingNode(BlendingNode* node) {
-    EnableBlending(node->GetSource(),
+    // save original blend state
+    GLboolean blending = glIsEnabled(GL_BLEND);
+    GLenum source, destination, equation;
+    glGetIntegerv(GL_BLEND_SRC, (GLint*) &source);
+    glGetIntegerv(GL_BLEND_DST, (GLint*) &destination);
+    glGetIntegerv(GL_BLEND_EQUATION, (GLint*) &equation);
+
+    glEnable(GL_BLEND);
+    SwitchBlending(node->GetSource(),
                    node->GetDestination(),
                    node->GetEquation());
     node->VisitSubNodes(*this);
-    DisableBlending();
+
+    // apply original blend state
+    SwitchBlending(source, destination, equation);
+    if (!blending) glDisable(GL_BLEND);
 }
 
-void RenderingView::EnableBlending(BlendingNode::BlendingFactor source, 
+void RenderingView::SwitchBlending(BlendingNode::BlendingFactor source, 
                                    BlendingNode::BlendingFactor destination,
                                    BlendingNode::BlendingEquation equation) {
-    EnableBlending( ConvertBlendingFactor(source),
+    SwitchBlending( ConvertBlendingFactor(source),
                     ConvertBlendingFactor(destination),
                     ConvertBlendingEquation(equation));
 }
@@ -451,17 +462,10 @@ GLenum RenderingView::ConvertBlendingEquation(BlendingNode::BlendingEquation equ
     }
 }
 
-void RenderingView::EnableBlending(GLenum source, GLenum destination,
+void RenderingView::SwitchBlending(GLenum source, GLenum destination,
                                      GLenum equation) {
-    //@todo default values
-    glEnable(GL_BLEND);
-    glBlendFunc (source, destination);
+    glBlendFunc(source, destination);
     glBlendEquationEXT(equation);
-    CHECK_FOR_GL_ERROR();
-}
-
-void RenderingView::DisableBlending() {
-    glDisable(GL_BLEND);
     CHECK_FOR_GL_ERROR();
 }
 
