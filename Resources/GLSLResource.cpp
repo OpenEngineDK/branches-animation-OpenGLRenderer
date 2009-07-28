@@ -141,7 +141,7 @@ void GLSLResource::LoadShaderResource(string resource) {
         char file[255];
         // set the vertex shader
         if (type == "vert:") {
-            if (!vertexShader.empty())
+            if (!vertexShader.empty())                
                 logger.warning << "Line("<<line<<") Multiple vertex shaders is not supported." << logger.end;
             else if (sscanf(buf, "vert: %s", file) == 1)
                 vertexShader = string(file);

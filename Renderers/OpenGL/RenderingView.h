@@ -29,7 +29,6 @@ using namespace std;
  * Concrete RenderingView using OpenGL.
  */
 class RenderingView : virtual public IRenderingView {
-    IRenderer* renderer;
     vector<RenderStateNode*> stateStack;
 
     void RenderLine(Vector<3,float> vert,
@@ -51,6 +50,8 @@ public:
     IRenderer* GetRenderer();
 
 protected:
+    IRenderer* renderer;
+
     bool renderBinormal, renderTangent, renderSoftNormal, renderHardNormal;
     bool renderTexture, renderShader;
     int currentTexture;
