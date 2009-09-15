@@ -26,6 +26,7 @@ using OpenEngine::Geometry::FaceSet;
 using OpenEngine::Geometry::FaceList;
 using OpenEngine::Resources::IShaderResourcePtr;
 using OpenEngine::Resources::ShaderTextureMap;
+using OpenEngine::Resources::TextureList;
 
     ShaderLoader::ShaderLoader(TextureLoader& textureLoader, Scene::ISceneNode& scene)
     : textureLoader(textureLoader), scene(scene) {}
@@ -43,7 +44,6 @@ void ShaderLoader::Handle(Core::InitializeEventArg event) {
  */
 void ShaderLoader::VisitGeometryNode(GeometryNode* node) {
     FaceList::iterator face;
-    ShaderTextureMap::iterator itr;
     FaceSet* faces = node->GetFaceSet();
     if (faces == NULL) return;
     IShaderResourcePtr currentShader;
@@ -54,8 +54,9 @@ void ShaderLoader::VisitGeometryNode(GeometryNode* node) {
         if (shad != NULL) {
             // load shader and its textures
             shad->Load();
-            for (itr = shad->textures.begin(); itr != shad->textures.end(); itr++)
-                textureLoader.Load( (*itr).second );
+            TextureList texs = shad->GetTextures();
+            for (unsigned int i = 0; i < texs.size(); ++i)
+                textureLoader.Load(texs[i]);
             currentShader = shad;
         }
     }
@@ -67,9 +68,7 @@ void ShaderLoader::VisitGeometryNode(GeometryNode* node) {
  * @param node VertexArray node 
  */
 void ShaderLoader::VisitVertexArrayNode(VertexArrayNode* node) {
-    //    logger.info << "loading vertex array" << logger.end;
     std::list<Geometry::VertexArray*>::iterator array;
-    ShaderTextureMap::iterator itr;
     std::list<Geometry::VertexArray*> arrays = node->GetVertexArrays();
 
     if (arrays.size() == 0) return;
@@ -82,8 +81,9 @@ void ShaderLoader::VisitVertexArrayNode(VertexArrayNode* node) {
         if (shad != NULL) {
             // load shader and its textures
             shad->Load();
-            for (itr = shad->textures.begin(); itr != shad->textures.end(); itr++)
-                textureLoader.Load( (*itr).second );
+            TextureList texs = shad->GetTextures();
+            for (unsigned int i = 0; i < texs.size(); ++i)
+                textureLoader.Load(texs[i]);
         }
     }
 }

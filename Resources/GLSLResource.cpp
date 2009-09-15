@@ -122,7 +122,7 @@ void GLSLResource::Load() {
 void GLSLResource::LoadShaderResource(string resource) {
     vertexShader.clear();
     fragmentShader.clear();
-    attributes.clear();
+    uniforms.clear();
 
     // load file
     ifstream* in = File::Open(resource);
@@ -176,22 +176,22 @@ void GLSLResource::LoadShaderResource(string resource) {
                 string texname = string(fileandname,seperator);
                 string texfile = string(fileandname+seperator+1);
                 ITextureResourcePtr t = ResourceManager<ITextureResource>::Create(texfile);
-                if (t != NULL)
-                    textures[texname] = t;
-                else
+                if (t != NULL){
+                    texNames.push_back(texname);
+                    texs.push_back(t);
+                }else
                     logger.error << "and error occurred while loading the following shader texture: " << texfile << logger.end;
             } else
                 logger.warning << "Line("<<line<<") Invalid texture resource: '" << file << "'" << logger.end;
         }
-        // set an attribute
+        // set a uniform
         else if (type == "attr:") {
             char  name[255];
             float attr[4];
-            int n = sscanf(buf, "attr: %s = %f %f %f %f", name, &attr[0], &attr[1], &attr[2], &attr[3])
-                    - 1;
-			attributes[string(name)].clear();
+            int n = sscanf(buf, "attr: %s = %f %f %f %f", name, &attr[0], &attr[1], &attr[2], &attr[3]) - 1;
+			uniforms[string(name)].clear();
             for (int i=0; i<n; ++i)
-                attributes[string(name)].push_back(attr[i]);
+                uniforms[string(name)].push_back(attr[i]);
         }
     }
     in->close();
@@ -245,11 +245,52 @@ void GLSLResource::GLSL20Resource::Load(GLSLResource& self) {
     GLint linked;
     glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linked);
 
-    PrintOpenGLError(string(__FILE__),__LINE__);  // Check for OpenGL errors
+    PrintOpenGLError(string(__FILE__),__LINE__); // Check for OpenGL errors
     PrintProgramInfoLog(shaderProgram);
     
-    if(linked==0)
+    if(linked == 0){
 		logger.error << "could not link shader program" << logger.end;
+        Unload();
+        return;
+    }
+
+    glUseProgram(shaderProgram);
+
+    // Set up initial uniform values
+    map<string,vector<float> >::iterator itr = self.uniforms.begin();
+    while (itr != self.uniforms.end()) {
+        string name = (*itr).first;
+        vector<float> vec = (*itr).second;
+        GLuint id = GetUniLoc(shaderProgram, name.c_str());
+        switch (vec.size()) {
+        case 1:
+            glUniform1f(id, vec[0]);
+            break;
+        case 2:
+            glUniform2f(id, vec[0], vec[1] );
+            break;
+        case 3:
+            glUniform3f(id, vec[0], vec[1],vec[2]);
+            break;
+        case 4:
+            glUniform4f(id, vec[0], vec[1], vec[2], vec[3] );
+            break;
+        default:
+            logger.error << "Unsupported number of uniforms: " << vec.size() << logger.end;
+            break;
+        }
+        itr++;
+    }
+
+    // Setup uniform textures
+    int size = self.texNames.size();
+    for(int i = 0; i < size; ++i){
+        string texname = self.texNames[i];
+        glUniform1i(GetUniLoc(shaderProgram, texname.c_str()), i);
+    }
+
+    glUseProgram(0);
+
     //textures are loaded by the ShaderLoader visitor
 }
 
@@ -328,8 +369,9 @@ void GLSLResource::GLSL14Resource::Load(GLSLResource& self) {
         }
     }
 
-    GLint linked = 0;
+    // Link the program object and print out the info log
     glLinkProgramARB(programObject);
+    GLint linked;
     glGetObjectParameterivARB(programObject, GL_OBJECT_LINK_STATUS_ARB, &linked);
 
     PrintOpenGLError(string(__FILE__),__LINE__);  // Check for OpenGL errors
@@ -339,7 +381,45 @@ void GLSLResource::GLSL14Resource::Load(GLSLResource& self) {
         glDeleteObjectARB(programObject);
         programObject = 0;
         logger.error << "failed linking shader" << logger.end;
+        return;
     }
+
+    glUseProgramObjectARB(programObject);
+
+    // Set up initial uniform values
+    map<string,vector<float> >::iterator itr = self.uniforms.begin();
+    while (itr != self.uniforms.end()) {
+        string name = (*itr).first;
+        vector<float> vec = (*itr).second;
+        switch (vec.size()) {
+        case 1:
+            glUniform1fARB(GetUniLoc(programObject, name.c_str()), vec[0]);
+            break;
+        case 2:
+            glUniform2fARB(GetUniLoc(programObject, name.c_str()), vec[0], vec[1] );
+            break;
+        case 3:
+            glUniform3fARB(GetUniLoc(programObject, name.c_str()), vec[0], vec[1],vec[2]);
+            break;
+        case 4:
+            glUniform4fARB(GetUniLoc(programObject, name.c_str()), vec[0], vec[1], vec[2], vec[3] );
+            break;
+        default:
+            logger.error << "Unsupported number of uniforms: " << vec.size() << logger.end;
+            break;
+        }
+        itr++;
+    }
+    
+    // Setup uniform textures
+    int size = self.texNames.size();
+    for(int i = 0; i < size; ++i){
+        string texname = self.texNames[i];
+        glUniform1iARB(GetUniLoc(programObject, texname.c_str()), i);
+    }
+
+    glUseProgramObjectARB(0);
+
     //textures are loaded by the ShaderLoader visitor
 }
 
@@ -375,36 +455,14 @@ void GLSLResource::GLSL20Resource::Apply(GLSLResource& self) {
     // Install program object as part of current state
     glUseProgram(shaderProgram);
 
-    // Set up initial uniform values
-    map<string,vector<float> >::iterator itr = self.attributes.begin();
-    while (itr != self.attributes.end()) {
-        string attribute = (*itr).first;
-        vector<float> vec = (*itr).second;
-        switch (vec.size()) {
-        case 2:
-            glUniform2f(GetUniLoc(shaderProgram, attribute.c_str()), vec[0], vec[1] );
-            break;
-        case 3:
-            glUniform3f(GetUniLoc(shaderProgram, attribute.c_str()), vec[0], vec[1],vec[2]);
-            break;
-        default:
-            logger.error << "Unsupported number of attributes: " << vec.size() << logger.end;
-            break;
-        }
-        itr++;
-    }
     //Setup uniform textures
-    int counter=0;
-    ShaderTextureMap::const_iterator itr2 = self.textures.begin();
-    while( itr2 != self.textures.end() ){
-        string texname = (*itr2).first;
-        ITextureResourcePtr texture = (*itr2).second;
-        glActiveTexture(GL_TEXTURE0 + counter);
+    int size = self.texs.size();
+    for(int i = 0; i < size; ++i){
+        ITextureResourcePtr texture = self.texs[i];
+        glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, texture->GetID() );
-        glUniform1i(GetUniLoc(shaderProgram, texname.c_str()),counter); // Bind texture to TU = counter
-        counter++;
-        itr2++;
     }
+
     glActiveTexture(GL_TEXTURE0);//reset active texture
 }
 
@@ -413,37 +471,14 @@ void GLSLResource::GLSL14Resource::Apply(GLSLResource& self) {
 
     // Install program object as part of current state
     glUseProgramObjectARB(programObject);
-    
-	// Set up initial uniform values
-    map<string,vector<float> >::iterator itr = self.attributes.begin();
-    while (itr != self.attributes.end()) {
-        string attribute = (*itr).first;
-        vector<float> vec = (*itr).second;
-        switch (vec.size()) {
-        case 2:
-            glUniform2fARB(GetUniLoc(programObject, attribute.c_str()), vec[0], vec[1]);
-            break;
-        case 3:
-            glUniform3fARB(GetUniLoc(programObject, attribute.c_str()), vec[0], vec[1], vec[2]);
-            break;
-        default:
-            logger.error << "unsupported number of attributes: " << vec.size() << logger.end;
-            break;
-        }
-        itr++;
-    }
-    //Setup uniform textures
-    int counter=0;
-    ShaderTextureMap::const_iterator itr2 = self.textures.begin();
-    while( itr2 != self.textures.end() ){
-        string texname = (*itr2).first;
-        ITextureResourcePtr texture = (*itr2).second;
-        glActiveTextureARB(GL_TEXTURE0_ARB + counter);
+
+    int size = self.texs.size();
+    for(int i = 0; i < size; ++i){
+        ITextureResourcePtr texture = self.texs[i];
+        glActiveTextureARB(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, texture->GetID() );
-        glUniform1iARB(GetUniLoc(programObject, texname.c_str()),counter); // Bind texture to TU = counter
-        counter++;
-        itr2++;
     }
+
     glActiveTextureARB(GL_TEXTURE0_ARB);//reset active texture
 }
 
@@ -496,8 +531,112 @@ void GLSLResource::GLSL20Resource::PrintShaderInfoLog(GLuint shader) {
     }
 }
 
-void GLSLResource::SetAttribute(string str, vector<float> vec) {
-    attributes[str] = vec;
+    void GLSLResource::SetTexture(string name, ITextureResourcePtr tex){
+        if(glslshader==NULL) return;
+        glslshader->SetTexture(*this, name, tex);
+    }
+
+    void GLSLResource::GLSL14Resource::SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex){
+        if (programObject == 0) return;
+        
+        // Install program object as part of current state
+        glUseProgramObjectARB(programObject);
+        
+        // Check if the name is already in use.
+        int size = self.texNames.size();
+        for(int i = 0; i < size; ++i){
+            if (self.texNames[i].compare(name) == 0){
+                // The name is in use.
+                self.texs[i] = tex;
+                return;
+            }
+        }
+        // name not found, add and bind the new texture.
+        self.texNames.push_back(name);
+        self.texs.push_back(tex);
+        glUniform1iARB(GetUniLoc(programObject, name.c_str()), size);
+
+        //@todo reset it to the previous program
+        glUseProgramObjectARB(0);
+    }
+
+    void GLSLResource::GLSL20Resource::SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex){
+        if (shaderProgram == 0) return;
+        
+        // Install program object as part of current state
+        glUseProgram(shaderProgram);
+        
+        // Check if the name is already in use.
+        int size = self.texNames.size();
+        for(int i = 0; i < size; ++i){
+            if (self.texNames[i].compare(name) == 0){
+                // The name is in use.
+                self.texs[i] = tex;
+                return;
+            }
+        }
+        // name not found, add and bind the new texture.
+        self.texNames.push_back(name);
+        self.texs.push_back(tex);
+        glUniform1i(GetUniLoc(shaderProgram, name.c_str()), size);
+
+        //@todo reset it to the previous program
+        glUseProgram(0);
+    }
+
+#undef UNIFORM1
+#define UNIFORM1(type, extension)               \
+    void GLSLResource::SetUniform(string name, type arg) {   \
+        if(glslshader==NULL) return;                         \
+        glslshader->SetUniform(name, arg);                   \
+    }                                                        \
+    void GLSLResource::GLSL14Resource::SetUniform(string name, type arg) { \
+        GLuint id = GetUniLoc(programObject, name.c_str());             \
+        glUniform1##extension##ARB(id, arg);                            \
+    }                                                                   \
+    void GLSLResource::GLSL20Resource::SetUniform(string name, type arg) { \
+        GLuint id = GetUniLoc(shaderProgram, name.c_str());             \
+        glUniform1##extension (id, arg);                                           \
+    }
+#undef UNIFORMn
+#define UNIFORMn(params, type, extension)       \
+    void GLSLResource::SetUniform(string name, Vector<params, type> vec) {  \
+        if(glslshader==NULL) return;                                    \
+        glslshader->SetUniform(name, vec);      \
+    }                                     \
+    void GLSLResource::GLSL14Resource::SetUniform(string name, Vector<params, type> vec) {\
+        GLuint id = GetUniLoc(programObject, name.c_str());             \
+        switch(params){                                                 \
+        case 2:                                                         \
+            glUniform2##extension##ARB(id, vec[0], vec[1]);             \
+            break;                                                      \
+        case 3:                                                         \
+            glUniform3##extension##ARB(id, vec[0], vec[1], vec[2]);     \
+            break;                                                      \
+        case 4:                                                         \
+            glUniform4##extension##ARB(id, vec[0], vec[1], vec[2], vec[3]); \
+            break;                                                      \
+        }                                                               \
+    }                                                                   \
+void GLSLResource::GLSL20Resource::SetUniform(string name, Vector<params, type> vec) {\
+        GLuint id = GetUniLoc(shaderProgram, name.c_str());             \
+        switch(params){                                                 \
+        case 2:                                                         \
+            glUniform2##extension (id, vec[0], vec[1]);                 \
+            break;                                                      \
+        case 3:                                                         \
+            glUniform3##extension (id, vec[0], vec[1], vec[2]);         \
+            break;                                                      \
+        case 4:                                                         \
+            glUniform4##extension (id, vec[0], vec[1], vec[2], vec[3]); \
+            break;                                                      \
+        }                                                               \
+}                                                                   
+#include "UniformList.h"
+
+void GLSLResource::SetAttribute(string str, Vector<3, float> vec) {
+    if(glslshader==NULL) return;
+    VertexAttribute(GetAttributeID(str), vec);
 }
 
 void GLSLResource::BindAttribute(int id, string name) {

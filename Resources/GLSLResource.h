@@ -41,6 +41,14 @@ private:
 		virtual void Unload() = 0;
         virtual void Apply(GLSLResource& self) = 0;
         virtual void Release() = 0;
+        virtual void SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex) = 0;
+#undef UNIFORM1
+#define UNIFORM1(type, extension)                                         \
+        virtual void SetUniform(string name, type value) = 0; 
+#undef UNIFORMn
+#define UNIFORMn(params, type, extension)                                  \
+        virtual void SetUniform(string name, Vector<params, type> value) = 0; 
+#include "UniformList.h"
         virtual void BindAttribute(int, string) = 0;
         virtual void VertexAttribute(int, Vector<3,float>) = 0;
 		virtual int GetAttributeID(const string name)=0;
@@ -59,6 +67,14 @@ private:
         void Unload();
         void Apply(GLSLResource& self);
         void Release();
+        void SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex);
+#undef UNIFORM1
+#define UNIFORM1(type, extension)                                         \
+        void SetUniform(string name, type value); 
+#undef UNIFORMn
+#define UNIFORMn(params, type, extension)                                  \
+        void SetUniform(string name, Vector<params, type> value); 
+#include "UniformList.h"
         void BindAttribute(int, string);
         void VertexAttribute(int, Vector<3,float>);
 		int GetAttributeID(const string name);
@@ -78,6 +94,8 @@ private:
         void Unload();
         void Apply(GLSLResource& self);
         void Release();
+        void SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex);
+#include "UniformList.h"
         void BindAttribute(int, string);
         void VertexAttribute(int, Vector<3,float>);
 		int GetAttributeID(const string name);
@@ -89,7 +107,7 @@ private:
 	string resource;
     string vertexShader;
     string fragmentShader;
-    map<string, std::vector<float> > attributes;
+    map<string, std::vector<float> > uniforms;
 
     void LoadShaderResource(string resource);
 
@@ -104,10 +122,13 @@ public:
 	void Reload();
     void Load();
     void Unload();
-
+    
     void ApplyShader();
     void ReleaseShader();
-    void SetAttribute(string name, vector<float> value);
+    void SetTexture(string name, ITextureResourcePtr tex);
+    TextureList GetTextures() { return texs; }
+#include "UniformList.h" // uses previously defined UNIFORMn
+    void SetAttribute(string name, Vector<3,float> value);
     void BindAttribute(int id, string name);
     void VertexAttribute(int id, Vector<3,float> vec);
 	int GetAttributeID(const string name);
