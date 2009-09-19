@@ -291,6 +291,9 @@ void GLSLResource::GLSL20Resource::Load(GLSLResource& self) {
 
     glUseProgram(0);
 
+    // initialize the map containing uniform id's
+    uniformIDs.clear();
+
     //textures are loaded by the ShaderLoader visitor
 }
 
@@ -419,6 +422,9 @@ void GLSLResource::GLSL14Resource::Load(GLSLResource& self) {
     }
 
     glUseProgramObjectARB(0);
+
+    // initialize the map containing uniform id's
+    uniformIDs.clear();
 
     //textures are loaded by the ShaderLoader visitor
 }
@@ -600,38 +606,36 @@ void GLSLResource::GLSL20Resource::PrintShaderInfoLog(GLuint shader) {
     }
 #undef UNIFORMn
 #define UNIFORMn(params, type, extension)       \
-    void GLSLResource::SetUniform(string name, Vector<params, type> vec) {  \
+    void GLSLResource::SetUniform(string name, Vector<params, type> value) { \
         if(glslshader==NULL) return;                                    \
-        glslshader->SetUniform(name, vec);      \
-    }                                     \
-    void GLSLResource::GLSL14Resource::SetUniform(string name, Vector<params, type> vec) {\
-        GLuint id = GetUniLoc(programObject, name.c_str());             \
-        switch(params){                                                 \
-        case 2:                                                         \
-            glUniform2##extension##ARB(id, vec[0], vec[1]);             \
-            break;                                                      \
-        case 3:                                                         \
-            glUniform3##extension##ARB(id, vec[0], vec[1], vec[2]);     \
-            break;                                                      \
-        case 4:                                                         \
-            glUniform4##extension##ARB(id, vec[0], vec[1], vec[2], vec[3]); \
-            break;                                                      \
-        }                                                               \
+        glslshader->SetUniform(name, value);                              \
     }                                                                   \
-void GLSLResource::GLSL20Resource::SetUniform(string name, Vector<params, type> vec) {\
-        GLuint id = GetUniLoc(shaderProgram, name.c_str());             \
-        switch(params){                                                 \
-        case 2:                                                         \
-            glUniform2##extension (id, vec[0], vec[1]);                 \
-            break;                                                      \
-        case 3:                                                         \
-            glUniform3##extension (id, vec[0], vec[1], vec[2]);         \
-            break;                                                      \
-        case 4:                                                         \
-            glUniform4##extension (id, vec[0], vec[1], vec[2], vec[3]); \
-            break;                                                      \
+    void GLSLResource::GLSL14Resource::SetUniform(string name, Vector<params, type> value) { \
+        map<string, GLuint>::iterator itr = uniformIDs.find(name);      \
+        GLuint id;                                                      \
+        if (itr != uniformIDs.end()){                                   \
+            id = itr->second;                                           \
+        }else{                                                          \
+            id = GetUniLoc(programObject, name.c_str());                \
+            uniformIDs[name] = id;                                      \
         }                                                               \
-}                                                                   
+        type vec[params];                                               \
+        value.ToArray(vec);                                             \
+        glUniform##params##extension##vARB(id, 1, vec);                 \
+    }                                                                   \
+    void GLSLResource::GLSL20Resource::SetUniform(string name, Vector<params, type> value) { \
+        map<string, GLuint>::iterator itr = uniformIDs.find(name);      \
+        GLuint id;                                                      \
+        if (itr != uniformIDs.end()){                                   \
+            id = itr->second;                                           \
+        }else{                                                          \
+            id = GetUniLoc(shaderProgram, name.c_str());                \
+            uniformIDs[name] = id;                                      \
+        }                                                               \
+        type vec[params];                                               \
+        value.ToArray(vec);                                             \
+        glUniform##params##extension##v(id, 1, vec);                    \
+    }
 #include "UniformList.h"
 
 void GLSLResource::SetAttribute(string str, Vector<3, float> vec) {

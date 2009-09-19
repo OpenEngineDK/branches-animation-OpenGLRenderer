@@ -35,6 +35,8 @@ using namespace std;
 class GLSLResource : public IShaderResource {
 private:
     class GLSLShader{
+    protected:
+        map<string, GLuint> uniformIDs;
     public:
         GLSLShader() {};
         virtual void Load(GLSLResource& self) = 0;
@@ -59,7 +61,7 @@ private:
     private:
         GLhandleARB programObject;
         void PrintProgramInfoLog(GLhandleARB program);
-        GLhandleARB LoadShader(string, int);
+        GLhandleARB LoadShader(string, int);        
         GLint GetUniLoc(GLhandleARB program, const GLchar *name);
     public:
         GLSL14Resource() : GLSLShader(), programObject(0) {}
