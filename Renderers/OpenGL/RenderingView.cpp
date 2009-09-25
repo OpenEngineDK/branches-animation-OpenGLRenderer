@@ -162,6 +162,15 @@ void RenderingView::ApplyRenderState(RenderStateNode* node) {
         glDisable(GL_DEPTH_TEST);
         CHECK_FOR_GL_ERROR();
     }
+    
+    if (node->IsOptionEnabled(RenderStateNode::COLOR_MATERIAL)) {
+        glEnable(GL_COLOR_MATERIAL);
+        CHECK_FOR_GL_ERROR();
+    }
+    else if (node->IsOptionDisabled(RenderStateNode::COLOR_MATERIAL)) {
+        glDisable(GL_COLOR_MATERIAL);
+        CHECK_FOR_GL_ERROR();
+    }
 
     if (node->IsOptionEnabled(RenderStateNode::BINORMAL))
         renderBinormal = true;
