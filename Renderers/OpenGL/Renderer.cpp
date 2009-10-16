@@ -264,7 +264,7 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
                             << texr->GetDepth() << logger.end;
     }
 
-    if (firstload) {
+    // if (firstload) {
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         CHECK_FOR_GL_ERROR();
         
@@ -284,17 +284,17 @@ void Renderer::RebindTexture(ITextureResourcePtr texr) {
                      depth,
                      GL_UNSIGNED_BYTE,
                      texr->GetData());
-    }
-    else
-        glTexSubImage2D(GL_TEXTURE_2D,
-                        0, // mipmap level
-                        0, // offset x
-                        0, // offset y
-                        texr->GetWidth(),
-                        texr->GetHeight(),
-                        depth,
-                        GL_UNSIGNED_BYTE,
-                        texr->GetData());
+    // }
+    // else
+    //     glTexSubImage2D(GL_TEXTURE_2D,
+    //                     0, // mipmap level
+    //                     0, // offset x
+    //                     0, // offset y
+    //                     texr->GetWidth(),
+    //                     texr->GetHeight(),
+    //                     depth,
+    //                     GL_UNSIGNED_BYTE,
+    //                     texr->GetData());
       // @todo: when updating, what if the size if greater than the old texture
     CHECK_FOR_GL_ERROR();
 }
