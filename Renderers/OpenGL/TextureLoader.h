@@ -36,7 +36,7 @@ public:
     TextureLoader();
     ~TextureLoader();
 
-    static void LoadTextureResource(ITextureResourcePtr& tex);
+    static void LoadTextureResource(ITextureResourcePtr& tex, bool linearInterpolation = true, bool mipmapping = true);
     virtual void VisitGeometryNode(GeometryNode* node);
     virtual void VisitVertexArrayNode(VertexArrayNode* node);
     virtual void Handle(RenderingEventArg arg);
