@@ -569,9 +569,6 @@ void GLSLResource::GLSL20Resource::PrintShaderInfoLog(GLuint shader) {
     void GLSLResource::GLSL20Resource::SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex){
         if (shaderProgram == 0) return;
         
-        // Install program object as part of current state
-        glUseProgram(shaderProgram);
-        
         // Check if the name is already in use.
         int size = self.texNames.size();
         for(int i = 0; i < size; ++i){
@@ -585,30 +582,27 @@ void GLSLResource::GLSL20Resource::PrintShaderInfoLog(GLuint shader) {
         self.texNames.push_back(name);
         self.texs.push_back(tex);
         glUniform1i(GetUniLoc(shaderProgram, name.c_str()), size);
-
-        //@todo reset it to the previous program
-        glUseProgram(0);
     }
 
 #undef UNIFORM1
-#define UNIFORM1(type, extension)               \
-    void GLSLResource::SetUniform(string name, type arg) {   \
-        if(glslshader==NULL) return;                         \
-        glslshader->SetUniform(name, arg);                   \
-    }                                                        \
+#define UNIFORM1(type, extension)                                       \
+    void GLSLResource::SetUniform(string name, type arg) {              \
+        if(glslshader==NULL) return;                                    \
+        glslshader->SetUniform(name, arg);                              \
+    }                                                                   \
     void GLSLResource::GLSL14Resource::SetUniform(string name, type arg) { \
         GLuint id = GetUniLoc(programObject, name.c_str());             \
         glUniform1##extension##ARB(id, arg);                            \
     }                                                                   \
     void GLSLResource::GLSL20Resource::SetUniform(string name, type arg) { \
         GLuint id = GetUniLoc(shaderProgram, name.c_str());             \
-        glUniform1##extension (id, arg);                                           \
+        glUniform1##extension (id, arg);                                \
     }
 #undef UNIFORMn
-#define UNIFORMn(params, type, extension)       \
+#define UNIFORMn(params, type, extension)                               \
     void GLSLResource::SetUniform(string name, Vector<params, type> value) { \
         if(glslshader==NULL) return;                                    \
-        glslshader->SetUniform(name, value);                              \
+        glslshader->SetUniform(name, value);                            \
     }                                                                   \
     void GLSLResource::GLSL14Resource::SetUniform(string name, Vector<params, type> value) { \
         map<string, GLuint>::iterator itr = uniformIDs.find(name);      \
