@@ -174,6 +174,10 @@ void LightRenderer::Handle(RenderingEventArg arg) {
     CHECK_FOR_GL_ERROR();
 }
 
+void LightRenderer::SetViewingVolume(Display::IViewingVolume& vol) {
+    volume = vol;
+}
+
 
 } // NS OpenGL
 } // NS OpenEngine

@@ -53,7 +53,8 @@ class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventAr
  private:
     float pos[4], dir[4];
     GLint lightCount;
-    Display::IViewingVolume& volume;
+    Display::IViewingVolume& volume;    
+
 
  public:
 
@@ -66,6 +67,8 @@ class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventAr
     void VisitPointLightNode(PointLightNode* node);
     void VisitSpotLightNode(SpotLightNode* node);
         
+
+    void SetViewingVolume(Display::IViewingVolume& v);
 };
 
 } // NS OpenGL
