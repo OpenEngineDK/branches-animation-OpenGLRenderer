@@ -27,7 +27,7 @@ namespace OpenEngine {
     }
 
 namespace Display {
-    class IViewingVolume;
+    class Viewport;
 }
 
 namespace Renderers {
@@ -53,12 +53,12 @@ class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventAr
  private:
     float pos[4], dir[4];
     GLint lightCount;
-    Display::IViewingVolume& volume;    
+    Display::Viewport& viewport;    
 
 
  public:
 
-    LightRenderer(Display::IViewingVolume& volume); 
+    LightRenderer(Display::Viewport& vp); 
     ~LightRenderer();
         
     void Handle(RenderingEventArg arg);
@@ -67,8 +67,6 @@ class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventAr
     void VisitPointLightNode(PointLightNode* node);
     void VisitSpotLightNode(SpotLightNode* node);
         
-
-    void SetViewingVolume(Display::IViewingVolume& v);
 };
 
 } // NS OpenGL

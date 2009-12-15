@@ -13,7 +13,7 @@
 #include <Scene/DirectionalLightNode.h>
 #include <Scene/PointLightNode.h>
 #include <Scene/SpotLightNode.h>
-#include <Display/IViewingVolume.h>
+#include <Display/Viewport.h>
 
 #include <Logging/Logger.h>
 
@@ -24,10 +24,11 @@ namespace OpenGL {
 using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
 
+using OpenEngine::Display::Viewport;
 
-LightRenderer::LightRenderer(Display::IViewingVolume& volume)
+LightRenderer::LightRenderer(Viewport& vp)
     : lightCount(0)
-    , volume(volume) {
+    , viewport(vp) {
     pos[0] = 0.0;
     pos[1] = 0.0;
     pos[2] = 0.0;
@@ -159,8 +160,8 @@ void LightRenderer::Handle(RenderingEventArg arg) {
     }
     CHECK_FOR_GL_ERROR();
 
-    // rotate the world to compensate for the camera
-    arg.renderer.ApplyViewingVolume(volume);
+    // rotate the world to compensate for the camera    
+    arg.renderer.ApplyViewingVolume(*viewport.GetViewingVolume());
     CHECK_FOR_GL_ERROR();
 
     lightCount = 0;
@@ -174,9 +175,6 @@ void LightRenderer::Handle(RenderingEventArg arg) {
     CHECK_FOR_GL_ERROR();
 }
 
-void LightRenderer::SetViewingVolume(Display::IViewingVolume& vol) {
-    volume = vol;
-}
 
 
 } // NS OpenGL
