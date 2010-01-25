@@ -218,6 +218,9 @@ GLSLVersion Renderer::GetGLSLVersion() {
 }
 
 void Renderer::LoadTexture(ITextureResourcePtr texr) {
+    LoadTexture(texr.get());
+}
+void Renderer::LoadTexture(ITextureResource* texr) {
     // check for null pointers
     if (texr == NULL) return;
 
@@ -232,6 +235,9 @@ void Renderer::LoadTexture(ITextureResourcePtr texr) {
 }
 
 void Renderer::RebindTexture(ITextureResourcePtr texr) {
+    RebindTexture(texr.get());
+}
+void Renderer::RebindTexture(ITextureResource* texr) {
     // check for null pointers
     if (texr == NULL) return;
 
