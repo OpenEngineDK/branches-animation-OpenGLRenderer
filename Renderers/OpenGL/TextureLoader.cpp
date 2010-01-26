@@ -26,7 +26,7 @@ using std::list;
 using OpenEngine::Geometry::FaceSet;
 using OpenEngine::Geometry::FaceList;
 using OpenEngine::Geometry::VertexArray;
-using OpenEngine::Resources::ITextureResourcePtr;
+using namespace OpenEngine::Resources;
 
 TextureLoader::TextureLoader() {}
 
@@ -105,13 +105,14 @@ void TextureLoader::VisitVertexArrayNode(VertexArrayNode* node) {
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         
         GLuint depth = 0;
-        switch (tex->GetDepth()) {
-        case 8:  depth = GL_LUMINANCE; break;
-        case 24: depth = GL_RGB;   break;
-        case 32: depth = GL_RGBA;  break;
-        default: logger.warning << "Unsupported color depth: " 
-                                << tex->GetDepth() << logger.end;
+        switch (tex->GetColorFormat()) {
+        case LUMINANCE:  depth = GL_LUMINANCE; break;
+        case RGB: depth = GL_RGB;   break;
+        case BGR: depth = GL_BGR;   break;
+        case RGBA: depth = GL_RGBA;  break;
+        case BGRA: depth = GL_BGRA;  break;
         }
+
         glTexImage2D(GL_TEXTURE_2D, 0, depth, tex->GetWidth(), tex->GetHeight(), 0,
                      depth, GL_UNSIGNED_BYTE, tex->GetData());
         tex->Unload();
