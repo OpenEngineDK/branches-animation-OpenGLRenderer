@@ -224,14 +224,19 @@ void Renderer::LoadTexture(ITextureResource* texr) {
     // check for null pointers
     if (texr == NULL) return;
 
-    // signal we need the texture data
-    texr->Load();
+    // signal we need the texture data if not loaded.
+    bool loaded = true;
+    if (texr->GetData() == NULL){
+        loaded = false;
+        texr->Load();
+    }
 
     // bind the texture
     RebindTexture(texr);
-
-    // signal we are done with the texture data
-    texr->Unload();
+    
+    // Return the texture in the state we got it.
+    if (!loaded)
+        texr->Unload();
 }
 
 void Renderer::RebindTexture(ITextureResourcePtr texr) {
