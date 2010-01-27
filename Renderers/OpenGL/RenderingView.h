@@ -54,7 +54,7 @@ protected:
 
     bool renderBinormal, renderTangent, renderSoftNormal, renderHardNormal;
     bool renderTexture, renderShader;
-    int currentTexture;
+    unsigned int currentTexture;
     IShaderResourcePtr currentShader;
     int binormalid;
     int tangentid;
