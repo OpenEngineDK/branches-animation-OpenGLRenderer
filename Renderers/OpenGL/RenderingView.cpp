@@ -17,6 +17,7 @@
 #include <Scene/DisplayListNode.h>
 #include <Scene/RenderNode.h>
 #include <Resources/IShaderResource.h>
+#include <Resources/ITextureResource.h>
 #include <Display/Viewport.h>
 #include <Display/IViewingVolume.h>
 
@@ -32,6 +33,7 @@ using OpenEngine::Math::Matrix;
 using OpenEngine::Geometry::FaceSet;
 using OpenEngine::Geometry::VertexArray;
 using OpenEngine::Resources::IShaderResource;
+using OpenEngine::Resources::ITextureResource;
 using OpenEngine::Display::Viewport;
 using OpenEngine::Display::IViewingVolume;
 using OpenEngine::Scene::RenderStateNode;

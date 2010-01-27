@@ -12,7 +12,6 @@
 #define _GLSL_RESOURCE_H_
 
 #include <Resources/IShaderResource.h>
-#include <Resources/ITextureResource.h>
 #include <Resources/IResourcePlugin.h>
 #include <GL/glew.h>
 #include <Meta/OpenGL.h>
@@ -21,6 +20,14 @@
 #include <string>
 #include <vector>
 #include <map>
+
+// forward declarations
+namespace OpenEngine {
+    namespace Resources{
+        class ITextureResource;
+        typedef boost::shared_ptr<ITextureResource> ITextureResourcePtr;
+    }
+}
 
 namespace OpenEngine {
 namespace Resources {

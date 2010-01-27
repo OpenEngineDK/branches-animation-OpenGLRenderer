@@ -13,7 +13,14 @@
 #include <Core/IListener.h>
 #include <Scene/ISceneNodeVisitor.h>
 #include <Renderers/IRenderer.h>
-#include <Resources/ITextureResource.h>
+
+// forward declarations
+namespace OpenEngine {
+    namespace Resources{
+        class ITextureResource;
+        typedef boost::shared_ptr<ITextureResource> ITextureResourcePtr;
+    }
+}
 
 namespace OpenEngine {
 namespace Renderers {
