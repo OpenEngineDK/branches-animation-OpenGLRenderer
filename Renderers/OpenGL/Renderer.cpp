@@ -266,8 +266,8 @@ void Renderer::RebindTexture(ITextureResource* texr) {
     case RGBA: depth = GL_RGBA;  break;
     case BGR: depth = GL_BGR;   break;
     case BGRA: depth = GL_BGRA;  break;
-    default: logger.warning << "Unsupported color depth: " 
-                            << texr->GetDepth() << logger.end;
+    default: logger.warning << "Unsupported color format: " 
+                            << texr->GetColorFormat() << logger.end;
     }
 
     // if (firstload) {
@@ -283,7 +283,7 @@ void Renderer::RebindTexture(ITextureResource* texr) {
         
         glTexImage2D(GL_TEXTURE_2D,
                      0, // mipmap level
-                     texr->GetDepth()/8,
+                     texr->GetChannels(),
                      texr->GetWidth(),
                      texr->GetHeight(),
                      0, // border
