@@ -226,7 +226,7 @@ void Renderer::LoadTexture(ITextureResource* texr) {
 
     // signal we need the texture data if not loaded.
     bool loaded = true;
-    if (texr->GetData() == NULL){
+    if (texr->GetVoidDataPtr() == NULL){
         loaded = false;
         texr->Load();
     }
@@ -300,7 +300,7 @@ void Renderer::RebindTexture(ITextureResource* texr) {
                  0, // border
                  format,
                  GL_UNSIGNED_BYTE,
-                 texr->GetData());
+                 texr->GetVoidDataPtr());
 
     // @TODO move creation into Load texture and use glSubImage here
     // for updating.

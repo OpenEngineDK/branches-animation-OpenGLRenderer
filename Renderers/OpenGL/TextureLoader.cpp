@@ -114,7 +114,7 @@ void TextureLoader::VisitVertexArrayNode(VertexArrayNode* node) {
         }
 
         glTexImage2D(GL_TEXTURE_2D, 0, depth, tex->GetWidth(), tex->GetHeight(), 0,
-                     depth, GL_UNSIGNED_BYTE, tex->GetData());
+                     depth, GL_UNSIGNED_BYTE, tex->GetVoidDataPtr());
         tex->Unload();
     }
 }
