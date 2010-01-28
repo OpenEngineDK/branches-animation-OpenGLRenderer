@@ -230,25 +230,31 @@ void Renderer::LoadTexture(ITextureResource* texr) {
         loaded = false;
         texr->Load();
     }
-
     // bind the texture
-    RebindTexture(texr);
-    
+    RebindTexture(texr, 0, 0, texr->GetWidth(), texr->GetHeight());
+
     // Return the texture in the state we got it.
     if (!loaded)
         texr->Unload();
 }
 
-void Renderer::RebindTexture(ITextureResourcePtr texr) {
-    RebindTexture(texr.get());
+void Renderer::RebindTexture(ITextureResourcePtr texr, unsigned int xOffset, unsigned int yOffset, unsigned int width, unsigned int height) {
+    RebindTexture(texr.get(), xOffset, yOffset, width, height);
 }
-void Renderer::RebindTexture(ITextureResource* texr) {
+void Renderer::RebindTexture(ITextureResource* texr, unsigned int xOffset, unsigned int yOffset, unsigned int width, unsigned int height) {
     // check for null pointers
     if (texr == NULL) return;
 
-    GLuint texid = 0;
+    // signal we need the texture data if not loaded.
+    bool loaded = true;
+    if (texr->GetVoidDataPtr() == NULL){
+        loaded = false;
+        texr->Load();
+    }
+
     bool firstload = (texr->GetID() == 0);
 
+    GLuint texid;
     // first time, generate id and uploade, else update texture
     if (firstload) {
         //@todo: check that there is a gl context
@@ -291,21 +297,37 @@ void Renderer::RebindTexture(ITextureResource* texr) {
     }
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     CHECK_FOR_GL_ERROR();
-    
-    glTexImage2D(GL_TEXTURE_2D,
-                 0, // mipmap level
-                 format,
-                 texr->GetWidth(),
-                 texr->GetHeight(),
-                 0, // border
-                 format,
-                 GL_UNSIGNED_BYTE,
-                 texr->GetVoidDataPtr());
 
-    // @TODO move creation into Load texture and use glSubImage here
-    // for updating.
+    if (firstload) {
+        glTexImage2D(GL_TEXTURE_2D,
+                     0, // mipmap level
+                     format,
+                     width,
+                     height,
+                     0, // border
+                     format,
+                     GL_UNSIGNED_BYTE,
+                     texr->GetVoidDataPtr());
+    }else{
+        //logger.info << "(" << xOffset << ", " << yOffset << ") -> (" << width << ", " << height << ")" << logger.end;
+        //logger.info << "(0, 0) -> (" << texr->GetWidth() << ", " << texr->GetHeight() << ")" << logger.end;
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        xOffset,
+                        yOffset,
+                        width,
+                        height,
+                        format,
+                        GL_UNSIGNED_BYTE,
+                        texr->GetVoidDataPtr());
+    }
 
     CHECK_FOR_GL_ERROR();
+
+    // Return the texture in the state we got it.
+    if (!loaded)
+        texr->Unload();
+
 }
 
 void Renderer::DrawFace(FacePtr f) {

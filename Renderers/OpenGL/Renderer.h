@@ -114,8 +114,8 @@ public:
     virtual void ApplyViewingVolume(Display::IViewingVolume& volume);
     virtual void LoadTexture(ITextureResourcePtr texr);
     virtual void LoadTexture(ITextureResource* texr);
-    virtual void RebindTexture(ITextureResourcePtr texr);
-    virtual void RebindTexture(ITextureResource* texr);
+    virtual void RebindTexture(ITextureResourcePtr texr, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
+    virtual void RebindTexture(ITextureResource* texr, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
     virtual void DrawFace(FacePtr face);
     virtual void DrawFace(FacePtr face, Vector<3,float> color, float width = 1);
     virtual void DrawLine(Line line, Vector<3,float> color, float width = 1);

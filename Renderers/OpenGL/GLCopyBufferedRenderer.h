@@ -51,8 +51,8 @@ public:
     void ApplyViewingVolume(Display::IViewingVolume& v)  { peer.ApplyViewingVolume(v); }
     void LoadTexture(Resources::ITextureResourcePtr t)   { peer.LoadTexture(t); }
     void LoadTexture(Resources::ITextureResource* t)     { peer.LoadTexture(t); }
-    void RebindTexture(Resources::ITextureResourcePtr t) { peer.RebindTexture(t); }
-    void RebindTexture(Resources::ITextureResource* t)   { peer.RebindTexture(t); }
+    void RebindTexture(Resources::ITextureResourcePtr t, unsigned int x, unsigned int y, unsigned int w, unsigned int h) { peer.RebindTexture(t, x, y, w, h); }
+    void RebindTexture(Resources::ITextureResource* t, unsigned int x, unsigned int y, unsigned int w, unsigned int h) { peer.RebindTexture(t, x, y, w, h); }
     void DrawFace(FacePtr f)                                      { peer.DrawFace(f); }
     void DrawFace(FacePtr f, Vector<3,float> c, float w)          { peer.DrawFace(f, c, w); }
     void DrawLine(Line l, Vector<3,float> c, float w)             { peer.DrawLine(l, c, w); }
