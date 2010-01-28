@@ -264,49 +264,47 @@ void Renderer::RebindTexture(ITextureResource* texr) {
     glBindTexture(GL_TEXTURE_2D, texid);
     CHECK_FOR_GL_ERROR();
 
-    GLuint depth = 0;
+    GLuint format = 0;
     switch (texr->GetColorFormat()) {
-    case LUMINANCE:  depth = GL_LUMINANCE; break;
-    case RGB: depth = GL_RGB;   break;
-    case RGBA: depth = GL_RGBA;  break;
-    case BGR: depth = GL_BGR;   break;
-    case BGRA: depth = GL_BGRA;  break;
+    case LUMINANCE:  format = GL_LUMINANCE; break;
+    case RGB: format = GL_RGB;   break;
+    case RGBA: format = GL_RGBA;  break;
+    case BGR: format = GL_BGR;   break;
+    case BGRA: format = GL_BGRA;  break;
     default: logger.warning << "Unsupported color format: " 
                             << texr->GetColorFormat() << logger.end;
     }
 
-    // if (firstload) {
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        CHECK_FOR_GL_ERROR();
-        
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    CHECK_FOR_GL_ERROR();
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
+    if (texr->UseMipmapping()){
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }else{
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        CHECK_FOR_GL_ERROR();
-        
-        glTexImage2D(GL_TEXTURE_2D,
-                     0, // mipmap level
-                     texr->GetChannels(),
-                     texr->GetWidth(),
-                     texr->GetHeight(),
-                     0, // border
-                     depth,
-                     GL_UNSIGNED_BYTE,
-                     texr->GetData());
-    // }
-    // else
-    //     glTexSubImage2D(GL_TEXTURE_2D,
-    //                     0, // mipmap level
-    //                     0, // offset x
-    //                     0, // offset y
-    //                     texr->GetWidth(),
-    //                     texr->GetHeight(),
-    //                     depth,
-    //                     GL_UNSIGNED_BYTE,
-    //                     texr->GetData());
-      // @todo: when updating, what if the size if greater than the old texture
+    }
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    CHECK_FOR_GL_ERROR();
+    
+    glTexImage2D(GL_TEXTURE_2D,
+                 0, // mipmap level
+                 format,
+                 texr->GetWidth(),
+                 texr->GetHeight(),
+                 0, // border
+                 format,
+                 GL_UNSIGNED_BYTE,
+                 texr->GetData());
+
+    // @TODO move creation into Load texture and use glSubImage here
+    // for updating.
+
     CHECK_FOR_GL_ERROR();
 }
 
