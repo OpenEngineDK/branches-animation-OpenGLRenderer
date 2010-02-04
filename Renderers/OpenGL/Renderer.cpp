@@ -270,6 +270,19 @@ void Renderer::RebindTexture(ITextureResource* texr, unsigned int xOffset, unsig
     glBindTexture(GL_TEXTURE_2D, texid);
     CHECK_FOR_GL_ERROR();
 
+    if (texr->GetAPIColorFormat() == 0){
+        switch (texr->GetColorFormat()) {
+        case LUMINANCE: texr->SetAPIColorFormat(GL_LUMINANCE); break;
+        case RGB: texr->SetAPIColorFormat(GL_RGB);   break;
+        case RGBA: texr->SetAPIColorFormat(GL_RGBA);  break;
+        case BGR: texr->SetAPIColorFormat(GL_BGR);   break;
+        case BGRA: texr->SetAPIColorFormat(GL_BGRA);  break;
+        default: logger.warning << "Unsupported color format: " 
+                                << texr->GetColorFormat() << logger.end;
+        }
+    }
+
+    /*
     GLuint format = 0;
     switch (texr->GetColorFormat()) {
     case LUMINANCE:  format = GL_LUMINANCE; break;
@@ -280,6 +293,7 @@ void Renderer::RebindTexture(ITextureResource* texr, unsigned int xOffset, unsig
     default: logger.warning << "Unsupported color format: " 
                             << texr->GetColorFormat() << logger.end;
     }
+    */
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     CHECK_FOR_GL_ERROR();
@@ -301,11 +315,11 @@ void Renderer::RebindTexture(ITextureResource* texr, unsigned int xOffset, unsig
     if (firstload) {
         glTexImage2D(GL_TEXTURE_2D,
                      0, // mipmap level
-                     texr->GetChannels(),
+                     format,
                      width,
                      height,
                      0, // border
-                     format,
+                     texr->GetAPIColorFormat(),
                      GL_UNSIGNED_BYTE,
                      texr->GetVoidDataPtr());
     }else{
@@ -315,7 +329,7 @@ void Renderer::RebindTexture(ITextureResource* texr, unsigned int xOffset, unsig
                         yOffset,
                         width,
                         height,
-                        format,
+                        texr->GetAPIColorFormat(),
                         GL_UNSIGNED_BYTE,
                         texr->GetVoidDataPtr());
     }
