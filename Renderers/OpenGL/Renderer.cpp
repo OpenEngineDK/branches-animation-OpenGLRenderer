@@ -309,8 +309,6 @@ void Renderer::RebindTexture(ITextureResource* texr, unsigned int xOffset, unsig
                      GL_UNSIGNED_BYTE,
                      texr->GetVoidDataPtr());
     }else{
-        //logger.info << "(" << xOffset << ", " << yOffset << ") -> (" << width << ", " << height << ")" << logger.end;
-        //logger.info << "(0, 0) -> (" << texr->GetWidth() << ", " << texr->GetHeight() << ")" << logger.end;
         glTexSubImage2D(GL_TEXTURE_2D,
                         0,
                         xOffset,

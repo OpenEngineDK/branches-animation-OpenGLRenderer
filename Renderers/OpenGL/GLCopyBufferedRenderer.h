@@ -82,6 +82,13 @@ private:
             this->mipmapping = false;
         }
         void Unload() {}
+        int GetID() { return r.img; }
+        void SetID(int id) { throw Exception("Buffered textures can not change identifiers."); }
+        unsigned int GetWidth() { return r.width; }
+        unsigned int GetHeight() { return r.height; }
+        unsigned int GetDepth() { return 32; }
+        unsigned char* GetData() { throw Exception("Buffered textures can not supply data information."); }
+        Resources::ColorFormat GetColorFormat() { return Resources::RGBA; }
     private:
         GLCopyBufferedRenderer& r;
     };
