@@ -123,17 +123,19 @@ void RenderingView::VisitRenderNode(RenderNode* node) {
  * @param node Render state node to apply.
  */
 void RenderingView::VisitRenderStateNode(RenderStateNode* node) {
+    // apply differences between current state and node
+    RenderStateNode* changes = node->GetDifference(*currentRenderState);
+    ApplyRenderState(changes);
+    // replace current state
     RenderStateNode* prevCurrent = currentRenderState;
     currentRenderState = node;
-    ApplyRenderState(node);
     node->VisitSubNodes(*this);
-    RenderStateNode* intersect = node->GetIntersection(*prevCurrent);
-    RenderStateNode* inverse = intersect->GetInverse();
-    ApplyRenderState(inverse);
+    // undo differences
+    changes->Invert();
+    ApplyRenderState(changes);
+    // restore previous state
     currentRenderState = prevCurrent;
-
-    delete intersect;
-    delete inverse;
+    delete changes;
 }
 
 void RenderingView::ApplyRenderState(RenderStateNode* node) {
