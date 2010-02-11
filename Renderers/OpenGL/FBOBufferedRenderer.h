@@ -72,16 +72,18 @@ private:
     ITextureResourcePtr colorbuf;
     class ColorBuffer : public Resources::ITextureResource {
     public:
-        ColorBuffer(FBOBufferedRenderer& r) : r(r) {}
-        void Load() {}
+        ColorBuffer(FBOBufferedRenderer& r) : r(r) {
+            Load();
+        }
+        void Load() {
+            this->id = r.img;
+            this->width = r.width;
+            this->height = r.height;
+            this->channels = 4;
+            this->format = Resources::RGBA;
+            this->mipmapping = false;
+        }
         void Unload() {}
-        int GetID() { return r.img; }
-        void SetID(int id) { throw Exception("Buffered textures can not change identifiers."); }
-        unsigned int GetWidth() { return r.width; }
-        unsigned int GetHeight() { return r.height; }
-        unsigned int GetDepth() { return 32; }
-        unsigned char* GetData() { throw Exception("Buffered textures can not supply data information."); }
-        Resources::ColorFormat GetColorFormat() { return Resources::RGBA; }
     private:
         FBOBufferedRenderer& r;
     };

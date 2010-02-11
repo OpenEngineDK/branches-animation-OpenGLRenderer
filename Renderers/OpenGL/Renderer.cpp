@@ -301,7 +301,7 @@ void Renderer::RebindTexture(ITextureResource* texr, unsigned int xOffset, unsig
     if (firstload) {
         glTexImage2D(GL_TEXTURE_2D,
                      0, // mipmap level
-                     format,
+                     texr->GetChannels(),
                      width,
                      height,
                      0, // border
