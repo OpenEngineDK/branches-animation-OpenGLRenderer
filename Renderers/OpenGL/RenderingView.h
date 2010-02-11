@@ -28,9 +28,7 @@ using namespace std;
 /**
  * Concrete RenderingView using OpenGL.
  */
-class RenderingView : virtual public IRenderingView {
-    vector<RenderStateNode*> stateStack;
-
+class RenderingView : virtual public IRenderingView {    
     void RenderLine(Vector<3,float> vert,
                     Vector<3,float> norm,
                     Vector<3,float> color);
@@ -58,6 +56,8 @@ protected:
     IShaderResourcePtr currentShader;
     int binormalid;
     int tangentid;
+
+    RenderStateNode* currentRenderState;
 
     void SwitchBlending(BlendingNode::BlendingFactor source, 
                         BlendingNode::BlendingFactor destination,

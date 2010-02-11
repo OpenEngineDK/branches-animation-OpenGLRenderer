@@ -48,6 +48,14 @@ RenderingView::RenderingView(Viewport& viewport)
       renderer(NULL) {
     renderBinormal=renderTangent=renderSoftNormal=renderHardNormal = false;
     renderTexture = renderShader = true;
+    currentRenderState = new RenderStateNode();
+    currentRenderState->EnableOption(RenderStateNode::TEXTURE);
+    currentRenderState->EnableOption(RenderStateNode::SHADER);
+    currentRenderState->EnableOption(RenderStateNode::BACKFACE);
+    currentRenderState->EnableOption(RenderStateNode::DEPTH_TEST);
+    currentRenderState->DisableOption(RenderStateNode::LIGHTING); //@todo
+    currentRenderState->DisableOption(RenderStateNode::WIREFRAME);
+
 }
 
 /**
@@ -81,15 +89,9 @@ void RenderingView::Handle(RenderingEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
     // setup default render state
-    RenderStateNode* renderStateNode = new RenderStateNode();
-    renderStateNode->EnableOption(RenderStateNode::TEXTURE);
-    renderStateNode->EnableOption(RenderStateNode::SHADER);
-    renderStateNode->EnableOption(RenderStateNode::BACKFACE);
-    renderStateNode->EnableOption(RenderStateNode::DEPTH_TEST);
-    renderStateNode->DisableOption(RenderStateNode::LIGHTING); //@todo
-    renderStateNode->DisableOption(RenderStateNode::WIREFRAME);
-    ApplyRenderState(renderStateNode);
-    delete renderStateNode;
+    // RenderStateNode* renderStateNode = new RenderStateNode();
+    ApplyRenderState(currentRenderState);
+    //delete renderStateNode;
 
     Render(&arg.renderer, arg.renderer.GetSceneRoot());
 }
@@ -121,10 +123,16 @@ void RenderingView::VisitRenderNode(RenderNode* node) {
  * @param node Render state node to apply.
  */
 void RenderingView::VisitRenderStateNode(RenderStateNode* node) {
+    RenderStateNode* prevCurrent = currentRenderState;
+    currentRenderState = node;
     ApplyRenderState(node);
     node->VisitSubNodes(*this);
-    RenderStateNode* inverse = node->GetInverse();
+    RenderStateNode* intersect = node->GetIntersection(*prevCurrent);
+    RenderStateNode* inverse = intersect->GetInverse();
     ApplyRenderState(inverse);
+    currentRenderState = prevCurrent;
+
+    delete intersect;
     delete inverse;
 }
 
