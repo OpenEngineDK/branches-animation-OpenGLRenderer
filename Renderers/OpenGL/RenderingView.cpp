@@ -117,27 +117,6 @@ void RenderingView::VisitRenderNode(RenderNode* node) {
     node->Apply(this);
 }
 
-/**
- * Process a render state node.
- *
- * @param node Render state node to apply.
- */
-void RenderingView::VisitRenderStateNode(RenderStateNode* node) {
-    // apply differences between current state and node
-    RenderStateNode* changes = node->GetDifference(*currentRenderState);
-    ApplyRenderState(changes);
-    // replace current state
-    RenderStateNode* prevCurrent = currentRenderState;
-    currentRenderState = node;
-    node->VisitSubNodes(*this);
-    // undo differences
-    changes->Invert();
-    ApplyRenderState(changes);
-    // restore previous state
-    currentRenderState = prevCurrent;
-    delete changes;
-}
-
 void RenderingView::ApplyRenderState(RenderStateNode* node) {
     if (node->IsOptionEnabled(RenderStateNode::WIREFRAME)) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -213,6 +192,28 @@ void RenderingView::ApplyRenderState(RenderStateNode* node) {
         renderShader = true;
     else if (node->IsOptionDisabled(RenderStateNode::SHADER))
         renderShader = false;
+}
+
+
+/**
+ * Process a render state node.
+ *
+ * @param node Render state node to apply.
+ */
+void RenderingView::VisitRenderStateNode(RenderStateNode* node) {
+    // apply differences between current state and node
+    RenderStateNode* changes = node->GetDifference(*currentRenderState);
+    ApplyRenderState(changes);
+    // replace current state
+    RenderStateNode* prevCurrent = currentRenderState;
+    currentRenderState = node;
+    node->VisitSubNodes(*this);
+    // undo differences
+    changes->Invert();
+    ApplyRenderState(changes);
+    // restore previous state
+    currentRenderState = prevCurrent;
+    delete changes;
 }
 
 /**
