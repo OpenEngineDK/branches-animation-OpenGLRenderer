@@ -24,7 +24,7 @@ FBOBufferedRenderer::~FBOBufferedRenderer() {
     // the viewport is deleted in the super class (Renderer)
 }
 
-ITextureResourcePtr FBOBufferedRenderer::GetColorBuffer() const {
+ITexture2DPtr FBOBufferedRenderer::GetColorBuffer() const {
     return colorbuf;
 }
 
