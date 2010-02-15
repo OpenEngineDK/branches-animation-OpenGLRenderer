@@ -147,6 +147,7 @@ GLenum Renderer::GLColorFormat(ColorFormat f){
     case BGR: return GL_BGR;   break;
     case BGRA: return GL_BGRA;  break;
     case DEPTH: return GL_DEPTH_COMPONENT;  break;
+    case RGBA32F: return GL_RGBA32F;  break;
     default: logger.warning << "Unsupported color format: " << f << logger.end;
         logger.warning << "Defaulting to RGBA." << logger.end;
     }

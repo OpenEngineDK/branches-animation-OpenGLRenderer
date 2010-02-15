@@ -584,7 +584,7 @@ void GLSLResource::GLSL20Resource::PrintShaderInfoLog(GLuint shader) {
         self.texs.push_back(tex);
         glUniform1i(GetUniLoc(shaderProgram, name.c_str()), size);
     }
-
+    
 #undef UNIFORM1
 #define UNIFORM1(type, extension)                                       \
     void GLSLResource::SetUniform(string name, type arg) {              \
