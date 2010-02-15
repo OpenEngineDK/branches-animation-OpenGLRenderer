@@ -13,7 +13,8 @@
 #include <Resources/DirectoryManager.h>
 #include <Resources/ResourceManager.h>
 #include <Resources/File.h>
-#include <Resources/ITextureResource.h>
+#include <Resources/ITexture2D.h>
+#include <Resources/ITexture3D.h>
 #include <Resources/Exceptions.h>
 #include <Resources/File.h>
 #include <Renderers/OpenGL/Renderer.h>
@@ -175,7 +176,7 @@ void GLSLResource::LoadShaderResource(string resource) {
                 }
                 string texname = string(fileandname,seperator);
                 string texfile = string(fileandname+seperator+1);
-                ITextureResourcePtr t = ResourceManager<ITextureResource>::Create(texfile);
+                ITexture2DPtr t = ResourceManager<ITexture2D>::Create(texfile);
                 if (t != NULL){
                     texNames.push_back(texname);
                     texs.push_back(t);
@@ -464,7 +465,7 @@ void GLSLResource::GLSL20Resource::Apply(GLSLResource& self) {
     //Setup uniform textures
     int size = self.texs.size();
     for(int i = 0; i < size; ++i){
-        ITextureResourcePtr texture = self.texs[i];
+        ITexture2DPtr texture = self.texs[i];
         glActiveTexture(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, texture->GetID() );
     }
@@ -480,7 +481,7 @@ void GLSLResource::GLSL14Resource::Apply(GLSLResource& self) {
 
     int size = self.texs.size();
     for(int i = 0; i < size; ++i){
-        ITextureResourcePtr texture = self.texs[i];
+        ITexture2DPtr texture = self.texs[i];
         glActiveTextureARB(GL_TEXTURE0 + i);
         glBindTexture(GL_TEXTURE_2D, texture->GetID() );
     }
@@ -537,12 +538,12 @@ void GLSLResource::GLSL20Resource::PrintShaderInfoLog(GLuint shader) {
     }
 }
 
-    void GLSLResource::SetTexture(string name, ITextureResourcePtr tex){
+    void GLSLResource::SetTexture(string name, ITexture2DPtr tex){
         if(glslshader==NULL) return;
         glslshader->SetTexture(*this, name, tex);
     }
 
-    void GLSLResource::GLSL14Resource::SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex){
+    void GLSLResource::GLSL14Resource::SetTexture(GLSLResource& self, string name, ITexture2DPtr tex){
         if (programObject == 0) return;
         
         // Install program object as part of current state
@@ -566,7 +567,7 @@ void GLSLResource::GLSL20Resource::PrintShaderInfoLog(GLuint shader) {
         glUseProgramObjectARB(0);
     }
 
-    void GLSLResource::GLSL20Resource::SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex){
+    void GLSLResource::GLSL20Resource::SetTexture(GLSLResource& self, string name, ITexture2DPtr tex){
         if (shaderProgram == 0) return;
         
         // Check if the name is already in use.

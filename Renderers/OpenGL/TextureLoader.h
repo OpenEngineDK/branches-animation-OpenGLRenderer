@@ -17,8 +17,8 @@
 // forward declarations
 namespace OpenEngine {
     namespace Resources{
-        class ITextureResource;
-        typedef boost::shared_ptr<ITextureResource> ITextureResourcePtr;
+        class ITexture2D;
+        typedef boost::shared_ptr<ITexture2D> ITexture2DPtr;
     }
 }
 
@@ -30,7 +30,7 @@ using OpenEngine::Core::IListener;
 using OpenEngine::Scene::GeometryNode;
 using OpenEngine::Scene::VertexArrayNode;
 using OpenEngine::Scene::ISceneNodeVisitor;
-using OpenEngine::Resources::ITextureResourcePtr;
+using OpenEngine::Resources::ITexture2DPtr;
 using OpenEngine::Renderers::RenderingEventArg;
 
 /**
@@ -43,7 +43,7 @@ public:
     TextureLoader();
     ~TextureLoader();
 
-    static void LoadTextureResource(ITextureResourcePtr& tex, bool linearInterpolation = true, bool mipmapping = true);
+    static void LoadTextureResource(ITexture2DPtr& tex, bool linearInterpolation = true, bool mipmapping = true);
     virtual void VisitGeometryNode(GeometryNode* node);
     virtual void VisitVertexArrayNode(VertexArrayNode* node);
     virtual void Handle(RenderingEventArg arg);

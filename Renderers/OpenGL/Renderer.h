@@ -17,6 +17,8 @@
 #include <Math/Matrix.h>
 #include <Geometry/Face.h>
 #include <vector>
+#include <Resources/ResourceFormats.h>
+#include <Meta/OpenGL.h>
 
 
 namespace OpenEngine {
@@ -45,6 +47,8 @@ using OpenEngine::Core::InitializeEventArg;
 using OpenEngine::Core::ProcessEventArg;
 using OpenEngine::Core::DeinitializeEventArg;
 using OpenEngine::Core::Event;
+using OpenEngine::Resources::Type;
+using OpenEngine::Resources::ColorFormat;
 
 
 /**
@@ -72,6 +76,9 @@ private:
     Event<RenderingEventArg> deinitialize;
 
     void InitializeGLSLVersion();
+    inline void SetupTexParameters(ITexture2D* tex);
+    inline GLenum GLType(Type t);
+    inline GLenum GLColorFormat(ColorFormat f);
 
 public:
     Renderer(Viewport* viewport);
@@ -112,10 +119,10 @@ public:
     virtual Vector<4,float> GetBackgroundColor();
 
     virtual void ApplyViewingVolume(Display::IViewingVolume& volume);
-    virtual void LoadTexture(ITextureResourcePtr texr);
-    virtual void LoadTexture(ITextureResource* texr);
-    virtual void RebindTexture(ITextureResourcePtr texr, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
-    virtual void RebindTexture(ITextureResource* texr, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
+    virtual void LoadTexture(ITexture2DPtr texr);
+    virtual void LoadTexture(ITexture2D* texr);
+    virtual void RebindTexture(ITexture2DPtr texr, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
+    virtual void RebindTexture(ITexture2D* texr, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
     virtual void DrawFace(FacePtr face);
     virtual void DrawFace(FacePtr face, Vector<3,float> color, float width = 1);
     virtual void DrawLine(Line line, Vector<3,float> color, float width = 1);

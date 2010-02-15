@@ -14,7 +14,7 @@
 #include <Geometry/Face.h>
 #include <Geometry/VertexArray.h>
 #include <Meta/OpenGL.h>
-#include <Resources/ITextureResource.h>
+#include <Resources/ITexture2D.h>
 #include <Logging/Logger.h>
 #include <list>
 
@@ -69,7 +69,7 @@ void TextureLoader::VisitVertexArrayNode(VertexArrayNode* node) {
  *
  * @param tex Texture resource pointer.
  */
-    void TextureLoader::LoadTextureResource(ITextureResourcePtr& tex, bool linearInterpolation, bool mipmapping) {
+    void TextureLoader::LoadTextureResource(ITexture2DPtr& tex, bool linearInterpolation, bool mipmapping) {
     if (tex == NULL) return;
     if(tex->GetID() == 0) {
         tex->Load();
@@ -107,6 +107,7 @@ void TextureLoader::VisitVertexArrayNode(VertexArrayNode* node) {
         GLuint depth = 0;
         switch (tex->GetColorFormat()) {
         case LUMINANCE:  depth = GL_LUMINANCE; break;
+        case DEPTH: depth = GL_DEPTH_COMPONENT;  break;
         case RGB: depth = GL_RGB;   break;
         case BGR: depth = GL_BGR;   break;
         case RGBA: depth = GL_RGBA;  break;

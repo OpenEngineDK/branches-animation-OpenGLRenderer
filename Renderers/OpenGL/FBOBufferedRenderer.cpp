@@ -17,7 +17,7 @@ FBOBufferedRenderer::FBOBufferedRenderer(Viewport* viewport)
     Vector<4,int> dim(viewport->GetDimension());
     width  = dim[2];
     height = dim[3];
-    colorbuf = ITextureResourcePtr(new ColorBuffer(*this));
+    colorbuf = ITexture2DPtr(new ColorBuffer(*this));
 }
 
 FBOBufferedRenderer::~FBOBufferedRenderer() {

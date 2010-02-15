@@ -17,14 +17,14 @@ GLCopyBufferedRenderer::GLCopyBufferedRenderer(Viewport* viewport)
     Vector<4,int> dim(viewport->GetDimension());
     width  = dim[2];
     height = dim[3];
-    colorbuf = ITextureResourcePtr(new ColorBuffer(*this));
+    colorbuf = ITexture2DPtr(new ColorBuffer(*this));
 }
 
 GLCopyBufferedRenderer::~GLCopyBufferedRenderer() {
     // the viewport is deleted in the super class (Renderer)
 }
 
-ITextureResourcePtr GLCopyBufferedRenderer::GetColorBuffer() const {
+ITexture2DPtr GLCopyBufferedRenderer::GetColorBuffer() const {
     return colorbuf;
 }
 

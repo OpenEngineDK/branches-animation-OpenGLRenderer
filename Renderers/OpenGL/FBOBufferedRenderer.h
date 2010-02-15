@@ -17,7 +17,7 @@
 #include <Meta/OpenGL.h>
 #include <Renderers/IBufferedRenderer.h>
 #include <Renderers/OpenGL/Renderer.h>
-#include <Resources/ITextureResource.h>
+#include <Resources/Texture2D.h>
 
 namespace OpenEngine {
 namespace Renderers {
@@ -37,7 +37,7 @@ public:
     virtual void Handle(ProcessEventArg arg);
     virtual void Handle(DeinitializeEventArg arg);
 
-    virtual ITextureResourcePtr GetColorBuffer() const;
+    virtual ITexture2DPtr GetColorBuffer() const;
 
     // forward calls to the un-buffered renderer
     Core::IEvent<RenderingEventArg>& InitializeEvent()   { return peer.InitializeEvent(); }
@@ -49,10 +49,10 @@ public:
     Scene::ISceneNode* GetSceneRoot() const              { return peer.GetSceneRoot(); }
     void SetSceneRoot(Scene::ISceneNode* scene)          { peer.SetSceneRoot(scene); }
     void ApplyViewingVolume(Display::IViewingVolume& v)  { peer.ApplyViewingVolume(v); }
-    void LoadTexture(Resources::ITextureResourcePtr t)   { peer.LoadTexture(t); }
-    void LoadTexture(Resources::ITextureResource* t)     { peer.LoadTexture(t); }
-    void RebindTexture(Resources::ITextureResourcePtr t, unsigned int x, unsigned int y, unsigned int w, unsigned int h) { peer.RebindTexture(t, x, y, w, h); }
-    void RebindTexture(Resources::ITextureResource* t, unsigned int x, unsigned int y, unsigned int w, unsigned int h)   { peer.RebindTexture(t, x, y, w, h); }
+    void LoadTexture(Resources::ITexture2DPtr t)   { peer.LoadTexture(t); }
+    void LoadTexture(Resources::ITexture2D* t)     { peer.LoadTexture(t); }
+    void RebindTexture(Resources::ITexture2DPtr t, unsigned int x, unsigned int y, unsigned int w, unsigned int h) { peer.RebindTexture(t, x, y, w, h); }
+    void RebindTexture(Resources::ITexture2D* t, unsigned int x, unsigned int y, unsigned int w, unsigned int h)   { peer.RebindTexture(t, x, y, w, h); }
     void DrawFace(FacePtr f)                                      { peer.DrawFace(f); }
     void DrawFace(FacePtr f, Vector<3,float> c, float w)          { peer.DrawFace(f, c, w); }
     void DrawLine(Line l, Vector<3,float> c, float w)             { peer.DrawLine(l, c, w); }
@@ -69,10 +69,11 @@ private:
     std::string EnumToString(GLenum status);
     void RenderTextureInOrtho();
     // color buffer wrapper
-    ITextureResourcePtr colorbuf;
-    class ColorBuffer : public Resources::ITextureResource {
+    ITexture2DPtr colorbuf;
+    class ColorBuffer : public Resources::Texture2D<unsigned char> {
     public:
-        ColorBuffer(FBOBufferedRenderer& r) : r(r) {
+        ColorBuffer(FBOBufferedRenderer& r) 
+            : Resources::Texture2D<unsigned char>(), r(r) {
             Load();
         }
         void Load() {
@@ -84,13 +85,6 @@ private:
             this->mipmapping = false;
         }
         void Unload() {}
-        int GetID() { return r.img; }
-        void SetID(int id) { throw Exception("Buffered textures can not change identifiers."); }
-        unsigned int GetWidth() { return r.width; }
-        unsigned int GetHeight() { return r.height; }
-        unsigned int GetDepth() { return 32; }
-        unsigned char* GetData() { throw Exception("Buffered textures can not supply data information."); }
-        Resources::ColorFormat GetColorFormat() { return Resources::RGBA; }
     private:
         FBOBufferedRenderer& r;
     };

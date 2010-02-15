@@ -21,7 +21,10 @@
 #include <Scene/PointLightNode.h>
 #include <Scene/SpotLightNode.h>
 
-#include <Resources/ITextureResource.h>
+#include <Resources/ITexture2D.h>
+#include <Resources/ITexture3D.h>
+
+
 using namespace OpenEngine::Resources;
 
 namespace OpenEngine {
@@ -96,6 +99,58 @@ void Renderer::InitializeGLSLVersion() {
                         << logger.end;
 		}
     }
+}
+
+void Renderer::SetupTexParameters(ITexture2D* tex){
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    CHECK_FOR_GL_ERROR();
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
+    if (tex->UseMipmapping()){
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }else{
+        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    CHECK_FOR_GL_ERROR();
+}
+
+GLenum Renderer::GLType(Type t){
+    switch(t){
+    case UBYTE: return GL_UNSIGNED_BYTE; break;
+    case BYTE: return GL_BYTE; break;
+    case UINT: return GL_UNSIGNED_INT; break;
+    case INT: return GL_INT; break;
+    case FLOAT: return GL_FLOAT; break;
+#ifdef DEBUG
+    case NOTYPE:
+        logger.warning << "No type set" << logger.end;
+        break;
+#endif
+    default:
+        logger.warning << "Unsupported texture type: " << t << logger.end;
+        logger.warning << "Defaulting to unsigned byte." << logger.end;
+    }
+    return GL_UNSIGNED_BYTE;
+}
+
+GLenum Renderer::GLColorFormat(ColorFormat f){
+    switch (f) {
+    case LUMINANCE: return GL_LUMINANCE; break;
+    case RGB: return GL_RGB;   break;
+    case RGBA: return GL_RGBA;  break;
+    case BGR: return GL_BGR;   break;
+    case BGRA: return GL_BGRA;  break;
+    case DEPTH: return GL_DEPTH_COMPONENT;  break;
+    default: logger.warning << "Unsupported color format: " << f << logger.end;
+        logger.warning << "Defaulting to RGBA." << logger.end;
+    }
+    return GL_RGBA;
 }
 
 void Renderer::Handle(InitializeEventArg arg) {
@@ -217,12 +272,15 @@ GLSLVersion Renderer::GetGLSLVersion() {
     return glslversion;
 }
 
-void Renderer::LoadTexture(ITextureResourcePtr texr) {
+void Renderer::LoadTexture(ITexture2DPtr texr) {
     LoadTexture(texr.get());
 }
-void Renderer::LoadTexture(ITextureResource* texr) {
+void Renderer::LoadTexture(ITexture2D* texr) {
     // check for null pointers
     if (texr == NULL) return;
+
+    // check if textures has already been bound.
+    if (texr->GetID() != 0) return;
 
     // signal we need the texture data if not loaded.
     bool loaded = true;
@@ -230,115 +288,71 @@ void Renderer::LoadTexture(ITextureResource* texr) {
         loaded = false;
         texr->Load();
     }
-    // bind the texture
-    RebindTexture(texr, 0, 0, texr->GetWidth(), texr->GetHeight());
 
+    // Generate and bind the texture id.
+    GLuint texid;
+    glGenTextures(1, &texid);
+    CHECK_FOR_GL_ERROR();
+
+    texr->SetID(texid);
+    glBindTexture(GL_TEXTURE_2D, texid);
+    CHECK_FOR_GL_ERROR();
+    
+    SetupTexParameters(texr);
+    CHECK_FOR_GL_ERROR();
+
+    GLenum type = GLType(texr->GetType());
+    GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
+
+    glTexImage2D(GL_TEXTURE_2D,
+                 0, // mipmap level
+                 texr->GetChannels(),
+                 texr->GetWidth(),
+                 texr->GetHeight(),
+                 0, // border
+                 colorFormat,
+                 type,
+                 texr->GetVoidDataPtr());
+    CHECK_FOR_GL_ERROR();
+    
     // Return the texture in the state we got it.
     if (!loaded)
         texr->Unload();
 }
 
-void Renderer::RebindTexture(ITextureResourcePtr texr, unsigned int xOffset, unsigned int yOffset, unsigned int width, unsigned int height) {
+void Renderer::RebindTexture(ITexture2DPtr texr, unsigned int xOffset, unsigned int yOffset, unsigned int width, unsigned int height) {
     RebindTexture(texr.get(), xOffset, yOffset, width, height);
 }
-void Renderer::RebindTexture(ITextureResource* texr, unsigned int xOffset, unsigned int yOffset, unsigned int width, unsigned int height) {
+void Renderer::RebindTexture(ITexture2D* texr, unsigned int xOffset, unsigned int yOffset, unsigned int width, unsigned int height) {
     // check for null pointers
     if (texr == NULL) return;
 
-    // signal we need the texture data if not loaded.
-    bool loaded = true;
-    if (texr->GetVoidDataPtr() == NULL){
-        loaded = false;
-        texr->Load();
-    }
+#ifdef OE_SAFE
+    if (texr->GetID() == 0)
+        throw Exception("Trying to rebind unbound texture.");
+#endif
 
-    bool firstload = (texr->GetID() == 0);
-
-    GLuint texid;
-    // first time, generate id and uploade, else update texture
-    if (firstload) {
-        //@todo: check that there is a gl context
-        glGenTextures(1, &texid);
-        CHECK_FOR_GL_ERROR();
-        texr->SetID(texid);
-    } else 
-        texid = texr->GetID();
-
-    // @todo: move this to some kind of destructor
-    //glDeleteTextures(1, &texid); //ignored by gl if not loaded or 0
-
+    // Bind the texture
+    GLuint texid = texr->GetID();
     glBindTexture(GL_TEXTURE_2D, texid);
     CHECK_FOR_GL_ERROR();
 
-    if (texr->GetAPIColorFormat() == 0){
-        switch (texr->GetColorFormat()) {
-        case LUMINANCE: texr->SetAPIColorFormat(GL_LUMINANCE); break;
-        case RGB: texr->SetAPIColorFormat(GL_RGB);   break;
-        case RGBA: texr->SetAPIColorFormat(GL_RGBA);  break;
-        case BGR: texr->SetAPIColorFormat(GL_BGR);   break;
-        case BGRA: texr->SetAPIColorFormat(GL_BGRA);  break;
-        default: logger.warning << "Unsupported color format: " 
-                                << texr->GetColorFormat() << logger.end;
-        }
-    }
+    // Setup texture parameters
+    SetupTexParameters(texr);
 
-    /*
-    GLuint format = 0;
-    switch (texr->GetColorFormat()) {
-    case LUMINANCE:  format = GL_LUMINANCE; break;
-    case RGB: format = GL_RGB;   break;
-    case RGBA: format = GL_RGBA;  break;
-    case BGR: format = GL_BGR;   break;
-    case BGRA: format = GL_BGRA;  break;
-    default: logger.warning << "Unsupported color format: " 
-                            << texr->GetColorFormat() << logger.end;
-    }
-    */
+    GLenum type = GLType(texr->GetType());
+    GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0,
+                    xOffset,
+                    yOffset,
+                    width,
+                    height,
+                    colorFormat,
+                    type,
+                    texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
-    if (texr->UseMipmapping()){
-        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }else{
-        glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    CHECK_FOR_GL_ERROR();
-
-    if (firstload) {
-        glTexImage2D(GL_TEXTURE_2D,
-                     0, // mipmap level
-                     format,
-                     width,
-                     height,
-                     0, // border
-                     texr->GetAPIColorFormat(),
-                     GL_UNSIGNED_BYTE,
-                     texr->GetVoidDataPtr());
-    }else{
-        glTexSubImage2D(GL_TEXTURE_2D,
-                        0,
-                        xOffset,
-                        yOffset,
-                        width,
-                        height,
-                        texr->GetAPIColorFormat(),
-                        GL_UNSIGNED_BYTE,
-                        texr->GetVoidDataPtr());
-    }
-
-    CHECK_FOR_GL_ERROR();
-
-    // Return the texture in the state we got it.
-    if (!loaded)
-        texr->Unload();
 
 }
 

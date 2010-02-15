@@ -17,15 +17,11 @@
 #include <Meta/OpenGL.h>
 #include "boost/timer.hpp"
 
-#include <string>
-#include <vector>
-#include <map>
-
 // forward declarations
 namespace OpenEngine {
     namespace Resources{
-        class ITextureResource;
-        typedef boost::shared_ptr<ITextureResource> ITextureResourcePtr;
+        class ITexture2D;
+        typedef boost::shared_ptr<ITexture2D> ITexture2DPtr;
     }
 }
 
@@ -50,7 +46,7 @@ private:
 		virtual void Unload() = 0;
         virtual void Apply(GLSLResource& self) = 0;
         virtual void Release() = 0;
-        virtual void SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex) = 0;
+        virtual void SetTexture(GLSLResource& self, string name, ITexture2DPtr tex) = 0;
 #undef UNIFORM1
 #define UNIFORM1(type, extension)                                         \
         virtual void SetUniform(string name, type value) = 0; 
@@ -76,7 +72,7 @@ private:
         void Unload();
         void Apply(GLSLResource& self);
         void Release();
-        void SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex);
+        void SetTexture(GLSLResource& self, string name, ITexture2DPtr tex);
 #undef UNIFORM1
 #define UNIFORM1(type, extension)                                         \
         void SetUniform(string name, type value); 
@@ -103,7 +99,7 @@ private:
         void Unload();
         void Apply(GLSLResource& self);
         void Release();
-        void SetTexture(GLSLResource& self, string name, ITextureResourcePtr tex);
+        void SetTexture(GLSLResource& self, string name, ITexture2DPtr tex);
 #include "UniformList.h"
         void BindAttribute(int, string);
         void VertexAttribute(int, Vector<3,float>);
@@ -134,7 +130,7 @@ public:
     
     void ApplyShader();
     void ReleaseShader();
-    void SetTexture(string name, ITextureResourcePtr tex);
+    void SetTexture(string name, ITexture2DPtr tex);
     TextureList GetTextures() { return texs; }
 #include "UniformList.h" // uses previously defined UNIFORMn
     void SetAttribute(string name, Vector<3,float> value);
