@@ -78,6 +78,7 @@ private:
     void InitializeGLSLVersion();
     inline void SetupTexParameters(ITexture2D* tex);
     inline GLenum GLType(Type t);
+    inline GLint GLInternalColorFormat(ColorFormat f);
     inline GLenum GLColorFormat(ColorFormat f);
 
 public:

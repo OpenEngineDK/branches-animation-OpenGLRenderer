@@ -139,15 +139,37 @@ GLenum Renderer::GLType(Type t){
     return GL_UNSIGNED_BYTE;
 }
 
+GLint Renderer::GLInternalColorFormat(ColorFormat f){
+    switch (f) {
+    case LUMINANCE: 
+        return 1; 
+        break;
+    case BGR:
+    case RGB: 
+        return 3;
+        break;
+    case BGRA: 
+    case RGBA: 
+        return 4;  
+        break;
+    case RGBA32F: return GL_RGBA32F; break;
+    case DEPTH: return GL_DEPTH_COMPONENT;  break;
+    default: logger.warning << "Unsupported color format: " << f << logger.end;
+        logger.warning << "Defaulting to RGBA." << logger.end;
+    }
+    return GL_RGBA;
+}
+
+
 GLenum Renderer::GLColorFormat(ColorFormat f){
     switch (f) {
     case LUMINANCE: return GL_LUMINANCE; break;
     case RGB: return GL_RGB;   break;
+    case RGBA32F: 
     case RGBA: return GL_RGBA;  break;
     case BGR: return GL_BGR;   break;
     case BGRA: return GL_BGRA;  break;
     case DEPTH: return GL_DEPTH_COMPONENT;  break;
-    case RGBA32F: return GL_RGBA32F;  break;
     default: logger.warning << "Unsupported color format: " << f << logger.end;
         logger.warning << "Defaulting to RGBA." << logger.end;
     }
@@ -303,11 +325,12 @@ void Renderer::LoadTexture(ITexture2D* texr) {
     CHECK_FOR_GL_ERROR();
 
     GLenum type = GLType(texr->GetType());
+    GLint internalFormat = GLInternalColorFormat(texr->GetColorFormat());
     GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
 
     glTexImage2D(GL_TEXTURE_2D,
                  0, // mipmap level
-                 texr->GetChannels(),
+                 internalFormat,
                  texr->GetWidth(),
                  texr->GetHeight(),
                  0, // border
