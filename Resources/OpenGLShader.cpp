@@ -39,11 +39,9 @@ namespace OpenEngine {
             // Load the resource and its attributes from a file, if a
             // file is available.
             if (!resource.empty()){
-                logger.info << "Load the shader from disk " << logger.end;
                 LoadResource(resource);
             }
 
-            // Load the shader onto the gpu.
 #ifdef OE_SAFE
             if (vertexShaders.empty() && 
                 geometryShaders.empty() && 
@@ -51,7 +49,7 @@ namespace OpenEngine {
                 throw ResourceException("No shaders specified");
 #endif
       
-            logger.info << "Bind the shader program to gpu " << logger.end;
+            // Load the shader onto the gpu.
             BindShaderPrograms();
         }
         
@@ -84,7 +82,7 @@ namespace OpenEngine {
             data[0] = value;                                        \
             uniform uni;                                            \
             uni.loc = 0;                                            \
-            uni.kind = UNIFORM##extension ;                         \
+            uni.kind = UNIFORM##extension;                          \
             uni.data = data;                                        \
             unboundUniforms[name] = uni;                            \
         }                                                       
@@ -96,7 +94,7 @@ namespace OpenEngine {
             value.ToArray(data);                                        \
             uniform uni;                                                \
             uni.loc = 0;                                                \
-            uni.kind = UNIFORM##params##extension ;                     \
+            uni.kind = UNIFORM##params##extension;                      \
             uni.data = data;                                            \
             unboundUniforms[name] = uni;                                \
         }
@@ -225,7 +223,9 @@ namespace OpenEngine {
                 }else if (type == "text:" || type == "tex2D" || type == "tex3D") {
                     const int maxlength = 300;
                     char fileandname[maxlength];
-                    if (sscanf(buf, "text: %s", fileandname) == 1) {
+                    if (sscanf(buf, "text: %s", fileandname) == 1 ||
+                        sscanf(buf, "tex2D: %s", fileandname) == 1 ||
+                        sscanf(buf, "tex3D: %s", fileandname) == 1) {
                         int seperator=0;
                         for(int i=0;i<maxlength;i++) {
                             if(fileandname[i]=='|')
@@ -233,10 +233,10 @@ namespace OpenEngine {
                             if(fileandname[i]=='\0')
                                 break;
                         }
-                        if(seperator==0) {
-                            logger.error << "no separetor(|) between texture name and file, texture not loaded" << logger.end;
-                            continue;
-                        }
+#ifdef OE_SAFE
+                        if(seperator==0)
+                            throw Exception("no separetor(|) between texture name and file");
+#endif
                         string texname = string(fileandname,seperator);
                         string texfile = string(fileandname+seperator+1);
                         if (type == "text:" || type == "tex2D") {
@@ -246,8 +246,13 @@ namespace OpenEngine {
                             ITexture3DPtr t = ResourceManager<ITexture3D>::Create(texfile);
                             SetTexture(texname, t);
                         }
-                    }else
-                        logger.warning << "Line("<<line<<") Invalid texture resource: '" << file << "'" << logger.end;
+                    }
+#ifdef OE_SAFE
+                    else{
+                        logger.error << "Line("<<line<<") Invalid texture resource: '" << file << "'" << logger.end;
+                        throw Exception("Invalid texture resource");
+                    }
+#endif
                 }else if (type == "attr:" || type == "unif:") {
                     char name[255];
                     float attr[4];
@@ -274,7 +279,7 @@ namespace OpenEngine {
         }     
 
         void OpenGLShader::PrintShaderInfoLog(GLuint shader){
-            if(!printinfo) return;
+#ifdef DEBUG
             GLint infologLength = 0, charsWritten = 0;
             GLchar *infoLog;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infologLength);
@@ -287,10 +292,11 @@ namespace OpenEngine {
                 logger.info << "Shader InfoLog:\n \"" << infoLog << "\"" << logger.end;
                 free(infoLog);
             }
+#endif
         }
         
         void OpenGLShader::PrintProgramInfoLog(GLuint program){
-            if(!printinfo) return;
+#ifdef DEBUG
             GLint infologLength = 0, charsWritten = 0;
             GLchar* infoLog;
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infologLength);
@@ -304,6 +310,7 @@ namespace OpenEngine {
                 logger.info << "Program InfoLog:\n \"" << infoLog << "\"" << logger.end;
                 free(infoLog);
             }
+#endif
         }
         
         GLint OpenGLShader::GetUniLoc(GLuint program, const GLchar *name){
@@ -321,39 +328,33 @@ namespace OpenEngine {
             // attach vertex shader
             if (!vertexShaders.empty()){
                 GLuint shader = LoadShader(vertexShaders, GL_VERTEX_SHADER);
-                if (shader !=0)
-                    glAttachShader(shaderProgram, shader);
-                else {
-                    logger.error << "Failed loading vertexshader" << logger.end;
-                    Unload();
-                    return;
-                }
+#ifdef OE_SAFE
+                if (shader == 0)
+                    throw Exception("Failed loading vertexshader");
+#endif
+                glAttachShader(shaderProgram, shader);
             }
 
             /*        
             // attach geometry shader
             if (!geometryShaders.empty()){
                 GLuint shader = LoadShader(geometryShaders, GEOMETRY_SHADER_ARB);
-                if (shader !=0)
-                    glAttachShader(shaderProgram, shader);
-                else {
-                    logger.error << "Failed loading geometryshader" << logger.end;
-                    Unload();
-                    return;
-                }
+#ifdef OE_SAFE
+                if (shader == 0)
+                    throw Exception("Failed loading geometryshader");
+#endif
+                glAttachShader(shaderProgram, shader);
             }
             */
 
             // attach fragment shader
             if (!fragmentShaders.empty()){
                 GLuint shader = LoadShader(fragmentShaders, GL_FRAGMENT_SHADER);
-                if (shader !=0)
-                    glAttachShader(shaderProgram, shader);
-                else {
-                    logger.error << "Failed loading fragmentshader" << logger.end;
-                    Unload();
-                    return;
-                }
+#ifdef OE_SAFE
+                if (shader == 0)
+                    throw Exception("Failed loading fragmentshader");
+#endif
+                glAttachShader(shaderProgram, shader);
             }
             
             // Link the program object and print out the info log
@@ -363,12 +364,10 @@ namespace OpenEngine {
             
             CHECK_FOR_GL_ERROR();
             PrintProgramInfoLog(shaderProgram);
-            
-            if(linked == 0){
-                logger.error << "could not link shader program" << logger.end;
-                Unload();
-                return;
-            }
+#ifdef OE_SAFE            
+            if(linked == 0)
+                throw Exception("Could not link shader program");
+#endif
             
         }
 
@@ -395,8 +394,9 @@ namespace OpenEngine {
             glCompileShader(shader);
             GLint  compiled;
             glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+#ifdef OE_SAFE
             if (compiled==0) {
-                logger.error << "failed compiling shader program consisting of: " << logger.end;
+                logger.error << "Failed compiling shader program consisting of: " << logger.end;
                 for (unsigned int i = 0; i< size; ++i)
                     logger.error << files[i] << logger.end;
                 GLsizei bufsize;
@@ -404,9 +404,9 @@ namespace OpenEngine {
                 char buffer[maxBufSize];
                 glGetShaderInfoLog(shader, maxBufSize, &bufsize, buffer);
                 logger.error << "compile errors: " << buffer << logger.end;
-                glDeleteShader(shader);
-                return 0;
+                throw Exception("Failed compiling shader program.");
             }
+#endif
             PrintShaderInfoLog(shader);
             return shader;
         }
@@ -471,12 +471,12 @@ namespace OpenEngine {
 #undef UNIFORM1
 #define UNIFORM1(type, extension)                                    \
                 case UNIFORM##extension :                            \
-                    delete [] ( type* ) uni.data;                     \
+                    delete [] ( type* ) uni.data;                    \
                     break;
 #undef UNIFORMn
 #define UNIFORMn(params, type, extension)                               \
                 case UNIFORM##params##extension :                       \
-                    delete [] ( type* ) uni.data;                        \
+                    delete [] ( type* ) uni.data;                       \
                     break;
 #include "UniformList.h"
 
