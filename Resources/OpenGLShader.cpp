@@ -161,8 +161,11 @@ namespace OpenEngine {
         void OpenGLShader::ResetProperties(){
             // Move bound uniforms to unbound, to preserve attributes not
             // specified in the glsl file.
+            boundUniforms.insert(unboundUniforms.begin(), unboundUniforms.end());
             unboundUniforms = map<string, uniform>(boundUniforms);
+            boundTex2Ds.insert(unboundTex2Ds.begin(), unboundTex2Ds.end());
             unboundTex2Ds = map<string, sampler2D>(boundTex2Ds);
+            boundTex3Ds.insert(unboundTex3Ds.begin(), unboundTex3Ds.end());
             unboundTex3Ds = map<string, sampler3D>(boundTex3Ds);
             boundUniforms.clear();
             boundTex2Ds.clear();
