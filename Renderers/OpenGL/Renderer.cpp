@@ -131,6 +131,37 @@ void Renderer::SetupTexParameters(ITexture2D* tex){
     CHECK_FOR_GL_ERROR();
 }
 
+void Renderer::SetupTexParameters(ITexture3D* tex){
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    CHECK_FOR_GL_ERROR();
+
+    GLint wrapping;
+    switch(tex->GetWrapping()){
+    case CLAMP_TO_EDGE: wrapping = GL_CLAMP_TO_EDGE; break;
+    case CLAMP: wrapping = GL_CLAMP; break;
+    case REPEAT: wrapping = GL_REPEAT; break;
+#ifdef OE_SAFE
+    default:
+        throw Exception("Unknown texture wrapping");
+#endif
+    }
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S,         wrapping);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T,         wrapping);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R,         wrapping);
+    if (tex->UseMipmapping()){
+        glTexParameteri(GL_TEXTURE_3D, GL_GENERATE_MIPMAP,    GL_TRUE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }else{
+        glTexParameteri(GL_TEXTURE_3D, GL_GENERATE_MIPMAP,    GL_FALSE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    CHECK_FOR_GL_ERROR();
+}
+
 GLenum Renderer::GLType(Type t){
     switch(t){
     case UBYTE: return GL_UNSIGNED_BYTE; break;
@@ -357,6 +388,56 @@ void Renderer::LoadTexture(ITexture2D* texr) {
         texr->Unload();
 }
 
+void Renderer::LoadTexture(ITexture3DPtr texr) {
+    LoadTexture(texr.get());
+}
+void Renderer::LoadTexture(ITexture3D* texr) {
+    // check for null pointers
+    if (texr == NULL) return;
+
+    // check if textures has already been bound.
+    if (texr->GetID() != 0) return;
+
+    // signal we need the texture data if not loaded.
+    bool loaded = true;
+    if (texr->GetVoidDataPtr() == NULL){
+        loaded = false;
+        texr->Load();
+    }
+
+    // Generate and bind the texture id.
+    GLuint texid;
+    glGenTextures(1, &texid);
+    CHECK_FOR_GL_ERROR();
+
+    texr->SetID(texid);
+    glBindTexture(GL_TEXTURE_3D, texid);
+    CHECK_FOR_GL_ERROR();
+    
+    SetupTexParameters(texr);
+    CHECK_FOR_GL_ERROR();
+
+    GLenum type = GLType(texr->GetType());
+    GLint internalFormat = GLInternalColorFormat(texr->GetColorFormat());
+    GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
+
+    glTexImage3D(GL_TEXTURE_3D,
+                 0, // mipmap level
+                 internalFormat,
+                 texr->GetWidth(),
+                 texr->GetHeight(),
+                 texr->GetDepth(),
+                 0, // border
+                 colorFormat,
+                 type,
+                 texr->GetVoidDataPtr());
+    CHECK_FOR_GL_ERROR();
+    
+    // Return the texture in the state we got it.
+    if (!loaded)
+        texr->Unload();
+}
+
 void Renderer::RebindTexture(ITexture2DPtr texr, unsigned int xOffset, unsigned int yOffset, unsigned int width, unsigned int height) {
     RebindTexture(texr.get(), xOffset, yOffset, width, height);
 }
@@ -386,6 +467,44 @@ void Renderer::RebindTexture(ITexture2D* texr, unsigned int xOffset, unsigned in
                     yOffset,
                     width,
                     height,
+                    colorFormat,
+                    type,
+                    texr->GetVoidDataPtr());
+    CHECK_FOR_GL_ERROR();
+
+}
+
+void Renderer::RebindTexture(ITexture3DPtr texr, unsigned int xOffset, unsigned int yOffset, unsigned int zOffset, unsigned int width, unsigned int height, unsigned int depth) {
+    RebindTexture(texr.get(), xOffset, yOffset, zOffset, width, height, depth);
+}
+void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned int yOffset, unsigned int zOffset, unsigned int width, unsigned int height, unsigned int depth) {
+    // check for null pointers
+    if (texr == NULL) return;
+
+#ifdef OE_SAFE
+    if (texr->GetID() == 0)
+        throw Exception("Trying to rebind unbound texture.");
+#endif
+
+    // Bind the texture
+    GLuint texid = texr->GetID();
+    glBindTexture(GL_TEXTURE_3D, texid);
+    CHECK_FOR_GL_ERROR();
+
+    // Setup texture parameters
+    SetupTexParameters(texr);
+
+    GLenum type = GLType(texr->GetType());
+    GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
+
+    glTexSubImage3D(GL_TEXTURE_3D,
+                    0,
+                    xOffset,
+                    yOffset,
+                    zOffset,
+                    width,
+                    height,
+                    depth,
                     colorFormat,
                     type,
                     texr->GetVoidDataPtr());

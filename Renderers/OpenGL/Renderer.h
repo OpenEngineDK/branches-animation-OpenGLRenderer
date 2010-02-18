@@ -77,6 +77,7 @@ private:
 
     void InitializeGLSLVersion();
     inline void SetupTexParameters(ITexture2D* tex);
+    inline void SetupTexParameters(ITexture3D* tex);
     inline GLenum GLType(Type t);
     inline GLint GLInternalColorFormat(ColorFormat f);
     inline GLenum GLColorFormat(ColorFormat f);
@@ -122,8 +123,12 @@ public:
     virtual void ApplyViewingVolume(Display::IViewingVolume& volume);
     virtual void LoadTexture(ITexture2DPtr texr);
     virtual void LoadTexture(ITexture2D* texr);
+    virtual void LoadTexture(ITexture3DPtr texr);
+    virtual void LoadTexture(ITexture3D* texr);
     virtual void RebindTexture(ITexture2DPtr texr, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
     virtual void RebindTexture(ITexture2D* texr, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
+    virtual void RebindTexture(ITexture3DPtr texr, unsigned int x, unsigned int y, unsigned int z, unsigned int w, unsigned int h, unsigned int d);
+    virtual void RebindTexture(ITexture3D* texr, unsigned int x, unsigned int y, unsigned int z, unsigned int w, unsigned int h, unsigned int d);
     virtual void DrawFace(FacePtr face);
     virtual void DrawFace(FacePtr face, Vector<3,float> color, float width = 1);
     virtual void DrawLine(Line line, Vector<3,float> color, float width = 1);

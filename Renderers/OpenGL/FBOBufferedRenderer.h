@@ -49,10 +49,14 @@ public:
     Scene::ISceneNode* GetSceneRoot() const              { return peer.GetSceneRoot(); }
     void SetSceneRoot(Scene::ISceneNode* scene)          { peer.SetSceneRoot(scene); }
     void ApplyViewingVolume(Display::IViewingVolume& v)  { peer.ApplyViewingVolume(v); }
-    void LoadTexture(Resources::ITexture2DPtr t)   { peer.LoadTexture(t); }
+    void LoadTexture(Resources::ITexture2DPtr t)   { peer.LoadTexture(t.get()); }
     void LoadTexture(Resources::ITexture2D* t)     { peer.LoadTexture(t); }
-    void RebindTexture(Resources::ITexture2DPtr t, unsigned int x, unsigned int y, unsigned int w, unsigned int h) { peer.RebindTexture(t, x, y, w, h); }
+    void LoadTexture(Resources::ITexture3DPtr t)   { peer.LoadTexture(t.get()); }
+    void LoadTexture(Resources::ITexture3D* t)     { peer.LoadTexture(t); }
+    void RebindTexture(Resources::ITexture2DPtr t, unsigned int x, unsigned int y, unsigned int w, unsigned int h) { peer.RebindTexture(t.get(), x, y, w, h); }
     void RebindTexture(Resources::ITexture2D* t, unsigned int x, unsigned int y, unsigned int w, unsigned int h)   { peer.RebindTexture(t, x, y, w, h); }
+    void RebindTexture(Resources::ITexture3DPtr t, unsigned int x, unsigned int y, unsigned int z, unsigned int w, unsigned int h, unsigned int d) { peer.RebindTexture(t.get(), x, y, z, w, h, d); }
+    void RebindTexture(Resources::ITexture3D* t, unsigned int x, unsigned int y, unsigned int z, unsigned int w, unsigned int h, unsigned int d)   { peer.RebindTexture(t, x, y, z, w, h, d); }
     void DrawFace(FacePtr f)                                      { peer.DrawFace(f); }
     void DrawFace(FacePtr f, Vector<3,float> c, float w)          { peer.DrawFace(f, c, w); }
     void DrawLine(Line l, Vector<3,float> c, float w)             { peer.DrawLine(l, c, w); }
