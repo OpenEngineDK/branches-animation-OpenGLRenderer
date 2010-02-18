@@ -91,7 +91,7 @@ namespace OpenEngine {
         public:
             OpenGLShader();
             OpenGLShader(string resource);
-            //OpenGLShader(string vertex, string fragment);
+            ~OpenGLShader();
 
             void Load();
             void Unload();

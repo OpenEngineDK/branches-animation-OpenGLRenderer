@@ -35,6 +35,20 @@ namespace OpenEngine {
             shaderProgram = 0;
         }
 
+        OpenGLShader::~OpenGLShader() {
+            // Delete the uniforms data.
+            map<string, uniform>::iterator itr = boundUniforms.begin();
+            while(itr != boundUniforms.end()){
+                DeleteData(itr->second);
+                ++itr;
+            }
+            itr = unboundUniforms.begin();
+            while(itr != unboundUniforms.end()){
+                DeleteData(itr->second);
+                ++itr;
+            }
+        }
+        
         void OpenGLShader::Load() {
             // Load the resource and its attributes from a file, if a
             // file is available.
@@ -378,6 +392,8 @@ namespace OpenEngine {
             GLuint shader = glCreateShader(type);
             
             unsigned int size = files.size();
+            
+            // TODO should it new new'ed? Or deleted?
             const GLchar* shaderBits[size];
 
             // Read all the shaders from disk
@@ -407,6 +423,7 @@ namespace OpenEngine {
                 throw Exception("Failed compiling shader program.");
             }
 #endif
+            
             PrintShaderInfoLog(shader);
             return shader;
         }
