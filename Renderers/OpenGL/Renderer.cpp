@@ -105,24 +105,19 @@ void Renderer::SetupTexParameters(ITexture2D* tex){
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     CHECK_FOR_GL_ERROR();
 
+    GLint wrapping;
     switch(tex->GetWrapping()){
-    case CLAMP_TO_EDGE:
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_EDGE);
-        break;
-    case CLAMP:
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP);
-        break;
-    case REPEAT:
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_REPEAT);
-        break;
+    case CLAMP_TO_EDGE: wrapping = GL_CLAMP_TO_EDGE; break;
+    case CLAMP: wrapping = GL_CLAMP; break;
+    case REPEAT: wrapping = GL_REPEAT; break;
 #ifdef OE_SAFE
     default:
         throw Exception("Unknown texture wrapping");
 #endif
     }
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,         wrapping);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,         wrapping);
     if (tex->UseMipmapping()){
         glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP,    GL_TRUE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -168,6 +163,7 @@ GLint Renderer::GLInternalColorFormat(ColorFormat f){
     case RGBA: 
         return 4;  
         break;
+    case RGB32F: return GL_RGB32F; break;
     case RGBA32F: return GL_RGBA32F; break;
     case DEPTH: return GL_DEPTH_COMPONENT;  break;
     default: logger.warning << "Unsupported color format: " << f << logger.end;
@@ -180,6 +176,7 @@ GLint Renderer::GLInternalColorFormat(ColorFormat f){
 GLenum Renderer::GLColorFormat(ColorFormat f){
     switch (f) {
     case LUMINANCE: return GL_LUMINANCE; break;
+    case RGB32F: 
     case RGB: return GL_RGB;   break;
     case RGBA32F: 
     case RGBA: return GL_RGBA;  break;
