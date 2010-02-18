@@ -6,6 +6,7 @@ SET( EXTENSION_NAME "Extensions_OpenGLRenderer")
 ADD_LIBRARY( ${EXTENSION_NAME}
   Resources/GLSLResource.h
   Resources/GLSLResource.cpp
+  Resources/OpenGLShader.cpp
   Renderers/OpenGL/FBOBufferedRenderer.h
   Renderers/OpenGL/FBOBufferedRenderer.cpp
   Renderers/OpenGL/GLCopyBufferedRenderer.h

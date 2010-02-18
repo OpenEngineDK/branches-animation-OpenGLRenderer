@@ -219,7 +219,7 @@ void GLSLResource::GLSL20Resource::Load(GLSLResource& self) {
     if(!self.vertexShader.empty()) {
         if(printinfo)
             logger.info << "loading vertexshader: " << self.vertexShader << logger.end;
-			GLuint shader = LoadShader(self.vertexShader, GL_VERTEX_SHADER);
+        GLuint shader = LoadShader(self.vertexShader, GL_VERTEX_SHADER);
         if(shader != 0)
             glAttachShader(shaderProgram, shader);
 		else {
@@ -674,12 +674,10 @@ void GLSLResource::ReleaseShader() {
 }
 
 void GLSLResource::GLSL14Resource::Release() {
-    if (programObject==0) return;
     glUseProgramObjectARB(0);
 }
 
 void GLSLResource::GLSL20Resource::Release() {
-    if (shaderProgram==0) return;
     glUseProgram(0);
 }
 
