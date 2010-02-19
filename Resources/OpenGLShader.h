@@ -1,6 +1,6 @@
 // OpenGL Shader Language resource.
 // -------------------------------------------------------------------
-// Copyright (C) 2007 OpenEngine.dk (See AUTHORS) 
+// Copyright (C) 2010 OpenEngine.dk (See AUTHORS) 
 // Modified by Anders Bach Nielsen <abachn@daimi.au.dk> - 21. Nov 2007
 // 
 // This program is free software; It is covered by the GNU General 
@@ -134,7 +134,6 @@ namespace OpenEngine {
             }
             IShaderResourcePtr CreateResource(string file) {
                 return IShaderResourcePtr(new OpenGLShader(file));
-                //return IShaderResourcePtr();
             }
         };
     }

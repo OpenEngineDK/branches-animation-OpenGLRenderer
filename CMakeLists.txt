@@ -7,6 +7,9 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Resources/GLSLResource.h
   Resources/GLSLResource.cpp
   Resources/OpenGLShader.cpp
+  Resources/OpenGLShaderAttributes.cpp
+  Resources/OpenGLShaderUniforms.cpp
+  Resources/OpenGLShaderTextures.cpp
   Renderers/OpenGL/FBOBufferedRenderer.h
   Renderers/OpenGL/FBOBufferedRenderer.cpp
   Renderers/OpenGL/GLCopyBufferedRenderer.h
