@@ -68,6 +68,33 @@ namespace OpenEngine {
         }
 #include "UniformList.h"
 
+#undef UNIFORM1
+#define UNIFORM1(type, extension)                                       \
+        void OpenGLShader::GetUniform(string name, type& value){                      \
+            map<string, uniform>::iterator itr = unboundUniforms.begin(); \
+            if (itr == unboundUniforms.end()){                          \
+                itr = boundUniforms.begin();                            \
+                if (itr == boundUniforms.end())                         \
+                    throw Exception("Uniform " + name + " not found."); \
+            }                                                           \
+            type* v = (type*)itr->second.data;                          \
+            value = *v;                                                 \
+        }
+        
+#undef UNIFORMn
+#define UNIFORMn(params, type, extension)                               \
+        void OpenGLShader::GetUniform(string name, Vector<params, type>& value){      \
+            map<string, uniform>::iterator itr = unboundUniforms.begin(); \
+            if (itr == unboundUniforms.end()){                          \
+                itr = boundUniforms.begin();                            \
+                if (itr == boundUniforms.end())                         \
+                    throw Exception("Uniform " + name + " not found."); \
+            }                                                           \
+            type* v = (type*)itr->second.data;                          \
+            value = Vector<params, type>(v);                            \
+        }
+
+#include "UniformList.h"
 
 
         //  *** Private helper methods ***

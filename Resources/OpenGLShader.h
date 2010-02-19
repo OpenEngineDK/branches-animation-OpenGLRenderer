@@ -101,16 +101,20 @@ namespace OpenEngine {
 
             void SetTexture(string name, ITexture2DPtr tex, bool force = false);
             void SetTexture(string name, ITexture3DPtr tex, bool force = false);
+            void GetTexture(string name, ITexture2DPtr& tex);
+            void GetTexture(string name, ITexture3DPtr& tex);
             TextureList GetTextures();
 
             // Uniform functions
             // @TODO get functions
 #undef UNIFORM1
 #define UNIFORM1(type, extension)                                   \
-            void SetUniform(string name, type value, bool force = false); 
+            void SetUniform(string name, type value, bool force = false); \
+            void GetUniform(string name, type& value);
 #undef UNIFORMn
 #define UNIFORMn(params, type, extension)                               \
-            void SetUniform(string name, Vector<params, type> value, bool force = false);
+            void SetUniform(string name, Vector<params, type> value, bool force = false); \
+            void GetUniform(string name, Vector<params, type>& value);
             
 #include "UniformList.h"
 
