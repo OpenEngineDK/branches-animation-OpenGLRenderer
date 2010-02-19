@@ -14,27 +14,57 @@ namespace OpenEngine {
     namespace Resources {
 
 #undef UNIFORM1
-#define UNIFORM1(type, extension)                                   \
-        void OpenGLShader::SetUniform(string name, type value){     \
-            type *data = new type[1];                               \
-            data[0] = value;                                        \
-            uniform uni;                                            \
-            uni.loc = 0;                                            \
-            uni.kind = UNIFORM##extension;                          \
-            uni.data = data;                                        \
-            unboundUniforms[name] = uni;                            \
+#define UNIFORM1(type, extension)                                       \
+        void OpenGLShader::SetUniform(string name, type value, bool force){ \
+            type *data = new type[1];                                   \
+            data[0] = value;                                            \
+            if (force){                                                 \
+                map<string, uniform>::iterator bound = boundUniforms.find(name); \
+                if (bound != boundUniforms.end()){                      \
+                    DeleteData(bound->second);                          \
+                    bound->second.data = data;                          \
+                    BindUniform(bound->second);                         \
+                }else{                                                  \
+                    uniform uni;                                        \
+                    uni.loc = GetUniLoc(shaderProgram, name.c_str());   \
+                    uni.kind = UNIFORM##extension;                      \
+                    BindUniform(uni);                                   \
+                    boundUniforms[name] = uni;                          \
+                }                                                       \
+            }else{                                                      \
+                uniform uni;                                            \
+                uni.loc = 0;                                            \
+                uni.kind = UNIFORM##extension;                          \
+                uni.data = data;                                        \
+                unboundUniforms[name] = uni;                            \
+            }                                                           \
         }                                                       
-            
+        
 #undef UNIFORMn
 #define UNIFORMn(params, type, extension)                               \
-        void OpenGLShader::SetUniform(string name, Vector<params, type> value){ \
+        void OpenGLShader::SetUniform(string name, Vector<params, type> value, bool force){ \
             type *data = new type[params];                              \
             value.ToArray(data);                                        \
-            uniform uni;                                                \
-            uni.loc = 0;                                                \
-            uni.kind = UNIFORM##params##extension;                      \
-            uni.data = data;                                            \
-            unboundUniforms[name] = uni;                                \
+            if (force){                                                 \
+                map<string, uniform>::iterator bound = boundUniforms.find(name); \
+                if (bound != boundUniforms.end()){                      \
+                    DeleteData(bound->second);                          \
+                    bound->second.data = data;                          \
+                    BindUniform(bound->second);                         \
+                }else{                                                  \
+                    uniform uni;                                        \
+                    uni.loc = GetUniLoc(shaderProgram, name.c_str());   \
+                    uni.kind = UNIFORM##params##extension;              \
+                    BindUniform(uni);                                   \
+                    boundUniforms[name] = uni;                          \
+                }                                                       \
+            }else{                                                      \
+                uniform uni;                                            \
+                uni.loc = 0;                                            \
+                uni.kind = UNIFORM##params##extension;                  \
+                uni.data = data;                                        \
+                unboundUniforms[name] = uni;                            \
+            }                                                           \
         }
 #include "UniformList.h"
 

@@ -16,20 +16,50 @@
 namespace OpenEngine {
     namespace Resources {
 
-        void OpenGLShader::SetTexture(string name, ITexture2DPtr tex){
+        void OpenGLShader::SetTexture(string name, ITexture2DPtr tex, bool force){
             sampler2D sam;
-            sam.loc = 0;
-            sam.texUnit = 0;
             sam.tex = tex;
-            unboundTex2Ds[name] = sam;
+            if (force){
+                map<string, sampler2D>::iterator bound = boundTex2Ds.find(name);
+                if (bound != boundTex2Ds.end()){ 
+                    // sampler already bound, replace it's texture
+                    bound->second.tex = sam.tex;
+                }else{
+                    // Set the samplers values and add it to the bound
+                    // map.
+                    sam.loc = GetUniLoc(shaderProgram, name.c_str());
+                    sam.texUnit = nextTexUnit++;
+                    glUniform1i(sam.loc, sam.texUnit);
+                    boundTex2Ds[name] = sam;
+                }
+            }else{
+                sam.loc = 0;
+                sam.texUnit = 0;
+                unboundTex2Ds[name] = sam;
+            }
         }
 
-        void OpenGLShader::SetTexture(string name, ITexture3DPtr tex){
+        void OpenGLShader::SetTexture(string name, ITexture3DPtr tex, bool force){
             sampler3D sam;
-            sam.loc = 0;
-            sam.texUnit = 0;
             sam.tex = tex;
-            unboundTex3Ds[name] = sam;
+            if (force){
+                map<string, sampler3D>::iterator bound = boundTex3Ds.find(name);
+                if (bound != boundTex3Ds.end()){ 
+                    // sampler already bound, replace it's texture
+                    bound->second.tex = sam.tex;
+                }else{
+                    // Set the samplers values and add it to the bound
+                    // map.
+                    sam.loc = GetUniLoc(shaderProgram, name.c_str());
+                    sam.texUnit = nextTexUnit++;
+                    glUniform1i(sam.loc, sam.texUnit);
+                    boundTex3Ds[name] = sam;
+                }
+            }else{
+                sam.loc = 0;
+                sam.texUnit = 0;
+                unboundTex3Ds[name] = sam;
+            }
         }
 
         TextureList OpenGLShader::GetTextures(){

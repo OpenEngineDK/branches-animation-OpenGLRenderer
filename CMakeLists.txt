@@ -4,8 +4,8 @@ IF(GLEW_FOUND)
 SET( EXTENSION_NAME "Extensions_OpenGLRenderer")
 
 ADD_LIBRARY( ${EXTENSION_NAME}
-  Resources/GLSLResource.h
-  Resources/GLSLResource.cpp
+#  Resources/GLSLResource.h
+#  Resources/GLSLResource.cpp
   Resources/OpenGLShader.cpp
   Resources/OpenGLShaderAttributes.cpp
   Resources/OpenGLShaderUniforms.cpp

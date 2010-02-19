@@ -99,18 +99,18 @@ namespace OpenEngine {
             void ApplyShader();
             void ReleaseShader();
 
-            void SetTexture(string name, ITexture2DPtr tex);
-            void SetTexture(string name, ITexture3DPtr tex);
+            void SetTexture(string name, ITexture2DPtr tex, bool force = false);
+            void SetTexture(string name, ITexture3DPtr tex, bool force = false);
             TextureList GetTextures();
 
             // Uniform functions
             // @TODO get functions
 #undef UNIFORM1
 #define UNIFORM1(type, extension)                                   \
-            void SetUniform(string name, type value); 
+            void SetUniform(string name, type value, bool force = false); 
 #undef UNIFORMn
 #define UNIFORMn(params, type, extension)                               \
-            void SetUniform(string name, Vector<params, type> value);
+            void SetUniform(string name, Vector<params, type> value, bool force = false);
             
 #include "UniformList.h"
 
