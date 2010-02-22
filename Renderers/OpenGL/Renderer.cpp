@@ -194,6 +194,7 @@ GLint Renderer::GLInternalColorFormat(ColorFormat f){
     case RGBA: 
         return 4;  
         break;
+    case LUMINANCE_ALPHA: return GL_LUMINANCE_ALPHA; break;
     case RGB32F: return GL_RGB32F; break;
     case RGBA32F: return GL_RGBA32F; break;
     case DEPTH: return GL_DEPTH_COMPONENT;  break;
@@ -207,6 +208,7 @@ GLint Renderer::GLInternalColorFormat(ColorFormat f){
 GLenum Renderer::GLColorFormat(ColorFormat f){
     switch (f) {
     case LUMINANCE: return GL_LUMINANCE; break;
+    case LUMINANCE_ALPHA: return GL_LUMINANCE_ALPHA; break;
     case RGB32F: 
     case RGB: return GL_RGB;   break;
     case RGBA32F: 
