@@ -317,8 +317,6 @@ namespace OpenEngine {
             GLuint shader = glCreateShader(type);
             
             unsigned int size = files.size();
-            
-            // TODO should it new new'ed? Or deleted?
             const GLchar* shaderBits[size];
 
             // Read all the shaders from disk

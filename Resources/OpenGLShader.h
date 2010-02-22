@@ -106,7 +106,6 @@ namespace OpenEngine {
             TextureList GetTextures();
 
             // Uniform functions
-            // @TODO get functions
 #undef UNIFORM1
 #define UNIFORM1(type, extension)                                   \
             void SetUniform(string name, type value, bool force = false); \
