@@ -113,6 +113,8 @@ void TextureLoader::VisitVertexArrayNode(VertexArrayNode* node) {
         case RGBA: depth = GL_RGBA;  break;
         case BGRA: depth = GL_BGRA;  break;
         case RGBA32F: depth = GL_RGBA32F;  break;
+        default:
+            depth = GL_RGBA;
         }
 
         glTexImage2D(GL_TEXTURE_2D, 0, depth, tex->GetWidth(), tex->GetHeight(), 0,

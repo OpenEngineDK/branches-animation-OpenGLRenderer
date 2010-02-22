@@ -17,7 +17,7 @@
 #include <Math/Matrix.h>
 #include <Geometry/Face.h>
 #include <vector>
-#include <Resources/ResourceFormats.h>
+#include <Resources/ITexture.h>
 #include <Meta/OpenGL.h>
 
 
@@ -47,7 +47,7 @@ using OpenEngine::Core::InitializeEventArg;
 using OpenEngine::Core::ProcessEventArg;
 using OpenEngine::Core::DeinitializeEventArg;
 using OpenEngine::Core::Event;
-using OpenEngine::Resources::Type;
+using OpenEngine::Resources::Types::Type;
 using OpenEngine::Resources::ColorFormat;
 
 
