@@ -64,6 +64,7 @@ enum GLSLVersion { GLSL_UNKNOWN, GLSL_NONE, GLSL_14, GLSL_20 };
 class Renderer : public IRenderer {
 private:
     static GLSLVersion glslversion;
+    bool compressionSupport;
     Scene::ISceneNode* root;
     Viewport* viewport;
     Vector<4,float> backgroundColor;

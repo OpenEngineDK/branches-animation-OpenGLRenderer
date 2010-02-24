@@ -182,7 +182,7 @@ GLenum Renderer::GLType(Type t){
 }
 
 void Renderer::SetTextureCompression(ITexture* tex){
-    if (tex->UseCompression()){
+    if (compressionSupport && tex->UseCompression()){
         switch(tex->GetColorFormat()){
         case ALPHA:
             tex->SetColorFormat(ALPHA_COMPRESSED);
@@ -223,8 +223,8 @@ GLint Renderer::GLInternalColorFormat(ColorFormat f){
     case ALPHA_COMPRESSED: return GL_COMPRESSED_ALPHA;
     case LUMINANCE_COMPRESSED: return GL_COMPRESSED_LUMINANCE;
     case LUMINANCE_ALPHA_COMPRESSED: return GL_COMPRESSED_LUMINANCE_ALPHA;
-    case RGB_COMPRESSED: return GL_COMPRESSED_RGB;
-    case RGBA_COMPRESSED: return GL_COMPRESSED_RGBA;
+    case RGB_COMPRESSED: return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+    case RGBA_COMPRESSED: return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
     case RGB32F: return GL_RGB32F;
     case RGBA32F: return GL_RGBA32F;
     case DEPTH: return GL_DEPTH_COMPONENT;
@@ -272,6 +272,11 @@ void Renderer::Handle(InitializeEventArg arg) {
 
     InitializeGLSLVersion(); //@todo: HACK - to get Inseminator to work
     CHECK_FOR_GL_ERROR();
+
+    // Check if texture compression with s3tc and dxt1 is supported.
+    compressionSupport = 
+        glewGetExtension("GL_EXT_texture_compression_dxt1") == GL_TRUE &&
+        glewGetExtension("GL_EXT_texture_compression_s3tc") == GL_TRUE;
 
     Vector<4,float> bgc = backgroundColor;
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
@@ -431,10 +436,6 @@ void Renderer::LoadTexture(ITexture2D* texr) {
                  texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
     
-    GLint hat;
-    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED, &hat);
-    CHECK_FOR_GL_ERROR();
-
     // Return the texture in the state we got it.
     if (!loaded)
         texr->Unload();
