@@ -181,42 +181,87 @@ GLenum Renderer::GLType(Type t){
     return GL_UNSIGNED_BYTE;
 }
 
+void Renderer::SetTextureCompression(ITexture* tex){
+    if (tex->UseCompression()){
+        switch(tex->GetColorFormat()){
+        case ALPHA:
+            tex->SetColorFormat(ALPHA_COMPRESSED);
+            break;
+        case LUMINANCE:
+            tex->SetColorFormat(LUMINANCE_COMPRESSED);
+            break;
+        case LUMINANCE_ALPHA:
+            tex->SetColorFormat(LUMINANCE_ALPHA_COMPRESSED);
+            break;
+        case RGB:
+            tex->SetColorFormat(RGB_COMPRESSED);
+            break;
+        case RGBA:
+            tex->SetColorFormat(RGBA_COMPRESSED);
+            break;
+        default:
+            // default just here to squelch the compiler
+            ;
+        }
+    }
+}
+
 GLint Renderer::GLInternalColorFormat(ColorFormat f){
     switch (f) {
+    case ALPHA: 
     case LUMINANCE: 
         return 1; 
-        break;
+    case LUMINANCE_ALPHA: 
+        return 2;
     case BGR:
     case RGB: 
         return 3;
-        break;
     case BGRA: 
-    case RGBA: 
         return 4;  
-        break;
-    case LUMINANCE_ALPHA: return GL_LUMINANCE_ALPHA; break;
-    case RGB32F: return GL_RGB32F; break;
-    case RGBA32F: return GL_RGBA32F; break;
-    case DEPTH: return GL_DEPTH_COMPONENT;  break;
-    default: logger.warning << "Unsupported color format: " << f << logger.end;
+    case RGBA: 
+        return GL_RGBA;
+    case ALPHA_COMPRESSED: return GL_COMPRESSED_ALPHA;
+    case LUMINANCE_COMPRESSED: return GL_COMPRESSED_LUMINANCE;
+    case LUMINANCE_ALPHA_COMPRESSED: return GL_COMPRESSED_LUMINANCE_ALPHA;
+    case RGB_COMPRESSED: return GL_COMPRESSED_RGB;
+    case RGBA_COMPRESSED: return GL_COMPRESSED_RGBA;
+    case RGB32F: return GL_RGB32F;
+    case RGBA32F: return GL_RGBA32F;
+    case DEPTH: return GL_DEPTH_COMPONENT;
+    default: 
+        logger.warning << "Unsupported color format: " << f << logger.end;
         logger.warning << "Defaulting to RGBA." << logger.end;
     }
     return GL_RGBA;
 }
 
-
 GLenum Renderer::GLColorFormat(ColorFormat f){
     switch (f) {
-    case LUMINANCE: return GL_LUMINANCE; break;
-    case LUMINANCE_ALPHA: return GL_LUMINANCE_ALPHA; break;
+    case ALPHA:
+    case ALPHA_COMPRESSED:
+        return GL_ALPHA;
+    case LUMINANCE: 
+    case LUMINANCE_COMPRESSED: 
+        return GL_LUMINANCE;
+    case LUMINANCE_ALPHA: 
+    case LUMINANCE_ALPHA_COMPRESSED: 
+        return GL_LUMINANCE_ALPHA;
+    case RGB: 
     case RGB32F: 
-    case RGB: return GL_RGB;   break;
+    case RGB_COMPRESSED: 
+        return GL_RGB;
+    case RGBA: 
+    case RGBA_COMPRESSED: 
     case RGBA32F: 
-    case RGBA: return GL_RGBA;  break;
-    case BGR: return GL_BGR;   break;
-    case BGRA: return GL_BGRA;  break;
-    case DEPTH: return GL_DEPTH_COMPONENT;  break;
-    default: logger.warning << "Unsupported color format: " << f << logger.end;
+        return GL_RGBA;
+    case BGR: 
+        return GL_BGR;
+    case BGRA: 
+        return GL_BGRA;
+    case DEPTH: 
+        return GL_DEPTH_COMPONENT;
+    default: 
+        logger.warning << "Unsupported color format: " << f << logger.end;
         logger.warning << "Defaulting to RGBA." << logger.end;
     }
     return GL_RGBA;
@@ -370,6 +415,7 @@ void Renderer::LoadTexture(ITexture2D* texr) {
     SetupTexParameters(texr);
     CHECK_FOR_GL_ERROR();
 
+    SetTextureCompression(texr);
     GLenum type = GLType(texr->GetType());
     GLint internalFormat = GLInternalColorFormat(texr->GetColorFormat());
     GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
@@ -385,6 +431,10 @@ void Renderer::LoadTexture(ITexture2D* texr) {
                  texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
     
+    GLint hat;
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_COMPRESSED, &hat);
+    CHECK_FOR_GL_ERROR();
+
     // Return the texture in the state we got it.
     if (!loaded)
         texr->Unload();
