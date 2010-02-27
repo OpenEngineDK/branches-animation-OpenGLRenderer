@@ -248,6 +248,61 @@ GLenum Renderer::GLColorFormat(ColorFormat f){
     return GL_RGBA;
 }
 
+GLenum Renderer::GLBufferType(BufferType t){
+    switch(t){
+    case ARRAY:
+        return GL_ARRAY_BUFFER;
+    case INDEX_ARRAY:
+        return GL_ELEMENT_ARRAY_BUFFER;
+    case PIXEL_PACK:
+        return GL_PIXEL_PACK_BUFFER;
+    case PIXEL_UNPACK:
+        return GL_PIXEL_UNPACK_BUFFER;
+    }
+    return GL_ARRAY_BUFFER;
+}
+
+unsigned int Renderer::GLTypeSize(Type t){
+    switch(t){
+    case UBYTE:
+        return sizeof(GLubyte);
+    case BYTE:
+        return sizeof(GLbyte);
+    case UINT:
+        return sizeof(GLuint);
+    case INT:
+        return sizeof(GLint);
+    case FLOAT:
+        return sizeof(GLfloat);
+    case NOTYPE:
+        return 0;
+    }
+    return sizeof(GLshort);
+}
+
+GLenum Renderer::GLAccessType(AccessType a, UpdateMode u){
+    if (u == STATIC){
+        switch(a){
+        case READ:
+            return GL_STATIC_READ;
+        case WRITE:
+            return GL_STATIC_DRAW;
+        case COPY:
+            return GL_STATIC_COPY;
+        }
+    }else if (u == DYNAMIC){
+        switch(a){
+        case READ:
+            return GL_DYNAMIC_READ;
+        case WRITE:
+            return GL_DYNAMIC_DRAW;
+        case COPY:
+            return GL_DYNAMIC_COPY;
+        }
+    }
+    return GL_STATIC_DRAW;
+}
+
 void Renderer::Handle(InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
@@ -540,6 +595,39 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
                     texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
 
+}
+
+void Renderer::BindBufferObject(IBufferObject* bo){
+#ifdef OE_SAFE
+    if (bo == NULL) throw Exception("Cannot bind NULL buffer object.");
+    if (bo->GetID() != 0) throw Exception("Cannot bind already bouind buffer object.");
+#endif
+
+    // Load the buffer object if not already loaded.
+    bool loaded = bo->GetVoidDataPtr() != NULL;
+    if (!loaded)
+        bo->Load();
+
+    GLuint id;
+    glGenBuffers(1, &id);
+    CHECK_FOR_GL_ERROR();
+    
+    GLenum bufferType = GLBufferType(bo->GetBufferType());
+
+    bo->SetID(id);
+    glBindBuffer(bufferType, id);
+    CHECK_FOR_GL_ERROR();
+    
+    unsigned int size = GLTypeSize(bo->GetType()) * bo->GetSize() * bo->GetDimension();
+    GLenum access = GLAccessType(bo->GetAccessType(), bo->GetUpdateMode());
+    
+    glBufferData(bufferType, 
+                 size,
+                 bo->GetVoidDataPtr(), access);
+
+    if (!loaded)
+        bo->Unload();
+    
 }
 
 void Renderer::DrawFace(FacePtr f) {
