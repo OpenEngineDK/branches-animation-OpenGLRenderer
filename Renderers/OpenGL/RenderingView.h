@@ -88,7 +88,7 @@ protected:
     inline void RenderNormals(FacePtr face);
     inline void RenderHardNormal(FacePtr face);
     inline void ApplyMaterial(MaterialPtr mat);
-    inline void ApplyMesh(Mesh* mesh);
+    void ApplyMesh(Mesh* mesh);
     inline void ApplyDrawPrimitive(DrawPrimitive* prim);
     inline void ApplyModel(Model* model);
     inline void ApplyRenderState(RenderStateNode* node);

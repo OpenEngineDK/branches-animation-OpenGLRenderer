@@ -61,7 +61,11 @@ RenderingView::RenderingView(Viewport& viewport)
     currentRenderState->EnableOption(RenderStateNode::DEPTH_TEST);
     currentRenderState->DisableOption(RenderStateNode::LIGHTING); //@todo
     currentRenderState->DisableOption(RenderStateNode::WIREFRAME);
-
+    
+    vertices = IBufferObjectPtr();
+    normals = IBufferObjectPtr();
+    colors = IBufferObjectPtr();
+    texCoords = IBufferObjectList();
 }
 
 /**
@@ -323,14 +327,27 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
 void RenderingView::ApplyMesh(Mesh* mesh){
     if (mesh == NULL){
         // Disable client states enabled by previous mesh.
-        if (vertices != NULL) glDisableClientState(GL_VERTEX_ARRAY);
-        if (normals != NULL) glDisableClientState(GL_NORMAL_ARRAY);
-        if (colors != NULL) glDisableClientState(GL_COLOR_ARRAY);
+        if (vertices != NULL) {
+            glDisableClientState(GL_VERTEX_ARRAY);
+            vertices.reset();
+        }
+        if (normals != NULL){ 
+            glDisableClientState(GL_NORMAL_ARRAY);
+            normals.reset();
+        }
+        if (colors != NULL){ 
+            glDisableClientState(GL_COLOR_ARRAY);
+            colors.reset();
+        }
 
         for (int count = texCoords.size()-1; count >= 0 ; --count){
             glClientActiveTexture(GL_TEXTURE0 + count);
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         }
+        texCoords.clear();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }else{
         
         IBufferObjectPtr v = mesh->GetVertices();
@@ -340,14 +357,9 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         }else if (v != vertices){
             // new vertices, bind them
             glEnableClientState(GL_VERTEX_ARRAY);
-#ifdef GL_VERSION_2_0
             // BufferObject support
             glBindBuffer(GL_ARRAY_BUFFER, v->GetID());
             glVertexPointer(v->GetDimension(), GL_FLOAT, 0, 0);
-#else
-            // Use Vertex Arrays.
-            glVertexPointer(v()->GetDimension(), GL_FLOAT, 0, v->GetVoidDataPtr());
-#endif
         }
         vertices = v;
 
@@ -356,12 +368,8 @@ void RenderingView::ApplyMesh(Mesh* mesh){
             glDisableClientState(GL_NORMAL_ARRAY);
         }else if (n != normals){
             glEnableClientState(GL_NORMAL_ARRAY);
-#ifdef GL_VERSION_2_0
-            glBindBuffer(GL_ARRAY_BUFFER, normals->GetID());
+            glBindBuffer(GL_ARRAY_BUFFER, n->GetID());
             glNormalPointer(GL_FLOAT, 0, 0);
-#else
-            glNormalPointer(GL_FLOAT, 0, normals->GetVoidDataPtr());
-#endif
         }
         normals = n;
     
@@ -370,12 +378,8 @@ void RenderingView::ApplyMesh(Mesh* mesh){
             glDisableClientState(GL_COLOR_ARRAY);
         }else if (c != colors){
             glEnableClientState(GL_COLOR_ARRAY);
-#ifdef GL_VERSION_2_0
-            glBindBuffer(GL_ARRAY_BUFFER, colors->GetID());
+            glBindBuffer(GL_ARRAY_BUFFER, c->GetID());
             glColorPointer(colors->GetDimension(), GL_FLOAT, 0, 0);
-#else
-            glColorPointer(colors->GetDimension(), GL_FLOAT, 0, colors->GetVoidDataPtr());
-#endif
         }
         colors = c;
 
@@ -393,12 +397,8 @@ void RenderingView::ApplyMesh(Mesh* mesh){
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
             else if (newTc != oldTc && texCoords.size() <= count){
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-#ifdef GL_VERSION_2_0
                 glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
                 glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, 0);
-#else
-                glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, newTc->GetVoidDataPtr());
-#endif
             }
 
             if (newItr != tcs.end()) ++newItr;
