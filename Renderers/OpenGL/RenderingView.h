@@ -14,13 +14,25 @@
 #include <Renderers/IRenderingView.h>
 #include <Scene/RenderStateNode.h>
 #include <Scene/BlendingNode.h>
-#include <vector>
+#include <list>
 
 namespace OpenEngine {
+    // Forward declarations.
+    namespace Geometry {
+        class Mesh;
+        class DrawPrimitive;
+        class Model;
+    }
+    namespace Resources {
+        class IBufferObject;
+        typedef boost::shared_ptr<IBufferObject> IBufferObjectPtr;
+        typedef std::list<IBufferObjectPtr > IBufferObjectList;
+    }
 namespace Renderers {
 namespace OpenGL {
 
 using namespace OpenEngine::Renderers;
+using namespace OpenEngine::Resources;
 using namespace OpenEngine::Scene;
 using namespace OpenEngine::Geometry;
 using namespace std;
@@ -56,6 +68,10 @@ protected:
     IShaderResourcePtr currentShader;
     int binormalid;
     int tangentid;
+    IBufferObjectPtr vertices;
+    IBufferObjectPtr normals;
+    IBufferObjectPtr colors;
+    IBufferObjectList texCoords;
 
     RenderStateNode* currentRenderState;
 
@@ -72,6 +88,9 @@ protected:
     inline void RenderNormals(FacePtr face);
     inline void RenderHardNormal(FacePtr face);
     inline void ApplyMaterial(MaterialPtr mat);
+    inline void ApplyMesh(Mesh* mesh);
+    inline void ApplyDrawPrimitive(DrawPrimitive* prim);
+    inline void ApplyModel(Model* model);
     inline void ApplyRenderState(RenderStateNode* node);
 };
 

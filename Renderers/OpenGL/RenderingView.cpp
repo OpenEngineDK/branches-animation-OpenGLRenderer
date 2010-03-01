@@ -20,6 +20,9 @@
 #include <Resources/ITexture2D.h>
 #include <Display/Viewport.h>
 #include <Display/IViewingVolume.h>
+#include <Geometry/Mesh.h>
+#include <Geometry/DrawPrimitive.h>
+#include <Geometry/Model.h>
 
 #include <Meta/OpenGL.h>
 #include <Math/Math.h>
@@ -31,6 +34,9 @@ namespace OpenGL {
 using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
 using OpenEngine::Geometry::FaceSet;
+using OpenEngine::Geometry::Mesh;
+using OpenEngine::Geometry::Model;
+using OpenEngine::Geometry::DrawPrimitive;
 using OpenEngine::Geometry::VertexArray;
 using OpenEngine::Resources::IShaderResource;
 using OpenEngine::Resources::ITexture2D;
@@ -308,6 +314,124 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->shininess);
     CHECK_FOR_GL_ERROR();
+}
+
+/**
+ * Applies the given mesh. Applying the empty or NULL mesh will
+ * disable enabled client states.
+ */
+void RenderingView::ApplyMesh(Mesh* mesh){
+    if (mesh == NULL){
+        // Disable client states enabled by previous mesh.
+        if (vertices != NULL) glDisableClientState(GL_VERTEX_ARRAY);
+        if (normals != NULL) glDisableClientState(GL_NORMAL_ARRAY);
+        if (colors != NULL) glDisableClientState(GL_COLOR_ARRAY);
+
+        for (int count = texCoords.size()-1; count >= 0 ; --count){
+            glClientActiveTexture(GL_TEXTURE0 + count);
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+        }
+    }else{
+        
+        IBufferObjectPtr v = mesh->GetVertices();
+        if (v == NULL){
+            // No vertices, disable them.
+            glDisableClientState(GL_VERTEX_ARRAY);
+        }else if (v != vertices){
+            // new vertices, bind them
+            glEnableClientState(GL_VERTEX_ARRAY);
+#ifdef GL_VERSION_2_0
+            // BufferObject support
+            glBindBuffer(GL_ARRAY_BUFFER, v->GetID());
+            glVertexPointer(v->GetDimension(), GL_FLOAT, 0, 0);
+#else
+            // Use Vertex Arrays.
+            glVertexPointer(v()->GetDimension(), GL_FLOAT, 0, v->GetVoidDataPtr());
+#endif
+        }
+        vertices = v;
+
+        IBufferObjectPtr n = mesh->GetNormals();
+        if (n == NULL){
+            glDisableClientState(GL_NORMAL_ARRAY);
+        }else if (n != normals){
+            glEnableClientState(GL_NORMAL_ARRAY);
+#ifdef GL_VERSION_2_0
+            glBindBuffer(GL_ARRAY_BUFFER, normals->GetID());
+            glNormalPointer(GL_FLOAT, 0, 0);
+#else
+            glNormalPointer(GL_FLOAT, 0, normals->GetVoidDataPtr());
+#endif
+        }
+        normals = n;
+    
+        IBufferObjectPtr c = mesh->GetColors();
+        if (c == NULL){
+            glDisableClientState(GL_COLOR_ARRAY);
+        }else if (c != colors){
+            glEnableClientState(GL_COLOR_ARRAY);
+#ifdef GL_VERSION_2_0
+            glBindBuffer(GL_ARRAY_BUFFER, colors->GetID());
+            glColorPointer(colors->GetDimension(), GL_FLOAT, 0, 0);
+#else
+            glColorPointer(colors->GetDimension(), GL_FLOAT, 0, colors->GetVoidDataPtr());
+#endif
+        }
+        colors = c;
+
+        IBufferObjectList tcs = mesh->GetTexCoords();
+        IBufferObjectList::iterator newItr = tcs.begin();
+        IBufferObjectList::iterator oldItr = texCoords.begin();
+        unsigned char maxCount = max(texCoords.size(), tcs.size());
+        for (unsigned char count = 0; count < maxCount; ++count){
+        
+            glClientActiveTexture(GL_TEXTURE0 + count);
+            IBufferObjectPtr newTc = (*newItr);
+            IBufferObjectPtr oldTc = (*oldItr);
+        
+            if (tcs.size() <= count)
+                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            else if (newTc != oldTc && texCoords.size() <= count){
+                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+#ifdef GL_VERSION_2_0
+                glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
+                glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, 0);
+#else
+                glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, newTc->GetVoidDataPtr());
+#endif
+            }
+
+            if (newItr != tcs.end()) ++newItr;
+            if (oldItr != texCoords.end()) ++oldItr;
+        }
+        texCoords = tcs;
+    }
+}
+
+void RenderingView::ApplyDrawPrimitive(DrawPrimitive* prim){
+    // Apply the mesh.
+    ApplyMesh(prim->GetMesh().get());
+
+    // Apply the material.
+    ApplyMaterial(prim->GetMaterial());
+
+    // Apply the index buffer and draw
+    
+
+    // Clean up on isle 4.
+    
+}
+
+/**
+ * Applies all the draw batches in the model.
+ */
+void RenderingView::ApplyModel(Model* model){
+    DrawPrimitiveList list = model->GetDrawPrimitives();
+    DrawPrimitiveList::iterator itr = list.begin();
+    while (itr != list.end()){
+        ApplyDrawPrimitive((*itr).get());
+        ++itr;
+    }
 }
 
 /**
