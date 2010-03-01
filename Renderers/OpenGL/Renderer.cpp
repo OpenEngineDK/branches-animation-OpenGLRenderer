@@ -314,6 +314,8 @@ void Renderer::Handle(InitializeEventArg arg) {
         glewGetExtension("GL_EXT_texture_compression_dxt1") == GL_TRUE &&
         glewGetExtension("GL_EXT_texture_compression_s3tc") == GL_TRUE;
 
+    bufferSupport = glewIsSupported("GL_VERSION_2_0");
+
     Vector<4,float> bgc = backgroundColor;
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
@@ -421,6 +423,10 @@ void Renderer::ApplyViewingVolume(IViewingVolume& volume) {
 
 bool Renderer::IsGLSLSupported() {
     return (glslversion != GLSL_NONE && glslversion != GLSL_UNKNOWN);
+}
+
+bool Renderer::BufferSupport(){
+    return bufferSupport;
 }
 
 GLSLVersion Renderer::GetGLSLVersion() {

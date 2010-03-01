@@ -70,6 +70,8 @@ class Renderer : public IRenderer {
 private:
     static GLSLVersion glslversion;
     bool compressionSupport;
+    bool bufferSupport;
+    
     Scene::ISceneNode* root;
     Viewport* viewport;
     Vector<4,float> backgroundColor;
@@ -119,6 +121,8 @@ public:
      * @return True if support is found.
      */
     static bool IsGLSLSupported();
+
+    virtual bool BufferSupport();
 
     /**
      * Get the supported version of OpenGL Shader Language.

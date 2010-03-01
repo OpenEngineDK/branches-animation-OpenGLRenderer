@@ -58,7 +58,7 @@ public:
     void Render(IRenderer* renderer, ISceneNode* root);
     void Handle(RenderingEventArg arg);
     IRenderer* GetRenderer();
-
+    
 protected:
     IRenderer* renderer;
 
@@ -72,6 +72,7 @@ protected:
     IBufferObjectPtr normals;
     IBufferObjectPtr colors;
     IBufferObjectList texCoords;
+    IBufferObjectPtr indexBuffer;
 
     RenderStateNode* currentRenderState;
 

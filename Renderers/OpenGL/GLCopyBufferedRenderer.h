@@ -65,6 +65,7 @@ public:
     void DrawSphere(Vector<3,float> c, float r, Vector<3,float> col) { peer.DrawSphere(c, r, col); }
     void SetBackgroundColor(Vector<4,float> color) { peer.SetBackgroundColor(color); }
     Vector<4,float> GetBackgroundColor() { return peer.GetBackgroundColor(); }
+    bool BufferSupport() { return peer.BufferSupport(); }
 
 private:
  

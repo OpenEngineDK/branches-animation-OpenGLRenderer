@@ -66,6 +66,7 @@ RenderingView::RenderingView(Viewport& viewport)
     normals = IBufferObjectPtr();
     colors = IBufferObjectPtr();
     texCoords = IBufferObjectList();
+    indexBuffer = IndexBufferObjectPtr();
 }
 
 /**
@@ -346,10 +347,13 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         }
         texCoords.clear();
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        if (renderer->BufferSupport()){
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+        }
     }else{
-        
+
+        bool bufferSupport = renderer->BufferSupport();
+
         IBufferObjectPtr v = mesh->GetVertices();
         if (v == NULL){
             // No vertices, disable them.
@@ -357,31 +361,43 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         }else if (v != vertices){
             // new vertices, bind them
             glEnableClientState(GL_VERTEX_ARRAY);
-            // BufferObject support
-            glBindBuffer(GL_ARRAY_BUFFER, v->GetID());
-            glVertexPointer(v->GetDimension(), GL_FLOAT, 0, 0);
+            if (bufferSupport){
+                // BufferObject support
+                glBindBuffer(GL_ARRAY_BUFFER, v->GetID());
+                glVertexPointer(v->GetDimension(), GL_FLOAT, 0, 0);
+            } else
+                glVertexPointer(v->GetDimension(), GL_FLOAT, 0, v->GetVoidDataPtr());
         }
         vertices = v;
+        CHECK_FOR_GL_ERROR();
 
         IBufferObjectPtr n = mesh->GetNormals();
         if (n == NULL){
             glDisableClientState(GL_NORMAL_ARRAY);
         }else if (n != normals){
             glEnableClientState(GL_NORMAL_ARRAY);
-            glBindBuffer(GL_ARRAY_BUFFER, n->GetID());
-            glNormalPointer(GL_FLOAT, 0, 0);
+            if (bufferSupport){
+                glBindBuffer(GL_ARRAY_BUFFER, n->GetID());
+                glNormalPointer(GL_FLOAT, 0, 0);
+            } else
+                glNormalPointer(GL_FLOAT, 0, n->GetVoidDataPtr());
         }
         normals = n;
+        CHECK_FOR_GL_ERROR();
     
         IBufferObjectPtr c = mesh->GetColors();
         if (c == NULL){
             glDisableClientState(GL_COLOR_ARRAY);
         }else if (c != colors){
             glEnableClientState(GL_COLOR_ARRAY);
-            glBindBuffer(GL_ARRAY_BUFFER, c->GetID());
-            glColorPointer(colors->GetDimension(), GL_FLOAT, 0, 0);
+            if (bufferSupport){
+                glBindBuffer(GL_ARRAY_BUFFER, c->GetID());
+                glColorPointer(colors->GetDimension(), GL_FLOAT, 0, 0);
+            }else
+                glColorPointer(colors->GetDimension(), GL_FLOAT, 0, c->GetVoidDataPtr());
         }
         colors = c;
+        CHECK_FOR_GL_ERROR();
 
         IBufferObjectList tcs = mesh->GetTexCoords();
         IBufferObjectList::iterator newItr = tcs.begin();
@@ -397,29 +413,49 @@ void RenderingView::ApplyMesh(Mesh* mesh){
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
             else if (newTc != oldTc && texCoords.size() <= count){
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
-                glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, 0);
+                if (bufferSupport){
+                    glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
+                    glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, 0);
+                }else
+                    glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, newTc->GetVoidDataPtr());
             }
 
             if (newItr != tcs.end()) ++newItr;
             if (oldItr != texCoords.end()) ++oldItr;
         }
         texCoords = tcs;
+        CHECK_FOR_GL_ERROR();
     }
 }
 
 void RenderingView::ApplyDrawPrimitive(DrawPrimitive* prim){
-    // Apply the mesh.
-    ApplyMesh(prim->GetMesh().get());
+    bool bufferSupport = renderer->BufferSupport();
 
-    // Apply the material.
-    ApplyMaterial(prim->GetMaterial());
+    if (prim == NULL){
+        ApplyMesh(NULL);
 
-    // Apply the index buffer and draw
-    
-
-    // Clean up on isle 4.
-    
+        if (bufferSupport)
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        
+    } else {
+        // Apply the mesh.
+        ApplyMesh(prim->GetMesh().get());
+        
+        // Apply the material.
+        ApplyMaterial(prim->GetMaterial());
+        
+        // Apply the index buffer and draw
+        indexBuffer = prim->GetIndexBuffer();
+        GLsizei count = prim->GetDrawingRange();
+        unsigned int offset = prim->GetIndexOffset();
+        if (bufferSupport){
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer->GetID());
+            glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, (GLvoid*)offset);
+        }else{
+            GLuint* data = (GLuint*)indexBuffer->GetVoidDataPtr();
+            glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, data + offset);
+        }
+    }
 }
 
 /**
@@ -432,6 +468,8 @@ void RenderingView::ApplyModel(Model* model){
         ApplyDrawPrimitive((*itr).get());
         ++itr;
     }
+    
+    ApplyDrawPrimitive(NULL);
 }
 
 /**
