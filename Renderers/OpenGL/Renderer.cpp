@@ -614,26 +614,30 @@ void Renderer::BindBufferObject(IBufferObject* bo){
     if (!loaded)
         bo->Load();
 
-    GLuint id;
-    glGenBuffers(1, &id);
-    CHECK_FOR_GL_ERROR();
+    if (bufferSupport){
+        GLuint id;
+        glGenBuffers(1, &id);
+        CHECK_FOR_GL_ERROR();
     
-    GLenum bufferType = GLBufferType(bo->GetBufferType());
+        GLenum bufferType = GLBufferType(bo->GetBufferType());
 
-    bo->SetID(id);
-    glBindBuffer(bufferType, id);
-    CHECK_FOR_GL_ERROR();
+        bo->SetID(id);
+        glBindBuffer(bufferType, id);
+        CHECK_FOR_GL_ERROR();
     
-    unsigned int size = GLTypeSize(bo->GetType()) * bo->GetSize() * bo->GetDimension();
-    GLenum access = GLAccessType(bo->GetAccessType(), bo->GetUpdateMode());
-    
-    glBufferData(bufferType, 
-                 size,
-                 bo->GetVoidDataPtr(), access);
-
-    if (!loaded)
-        bo->Unload();
-    
+        unsigned int size = GLTypeSize(bo->GetType()) * bo->GetSize() * bo->GetDimension();
+        GLenum access = GLAccessType(bo->GetAccessType(), bo->GetUpdateMode());
+        
+        glBufferData(bufferType, 
+                     size,
+                     bo->GetVoidDataPtr(), access);
+        
+        if (!loaded)
+            bo->Unload();
+    }
+    // Do not unload if there's no buffer support. We will need the
+    // data in memory client side to be able to pass it to the
+    // graphics card..
 }
 
 void Renderer::DrawFace(FacePtr f) {

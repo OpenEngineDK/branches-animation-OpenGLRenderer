@@ -326,6 +326,11 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
  * disable enabled client states.
  */
 void RenderingView::ApplyMesh(Mesh* mesh){
+    /**
+     * @TODO What happens when you call glBindBuffer on a gl 1.4
+     * machine? It'll probably crash so handle this by checking if
+     * anything was ever bound and only then unbind it.
+     */
     if (mesh == NULL){
         // Disable client states enabled by previous mesh.
         if (vertices != NULL) {
@@ -347,12 +352,8 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         }
         texCoords.clear();
 
-        if (renderer->BufferSupport()){
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
-        }
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }else{
-
-        bool bufferSupport = renderer->BufferSupport();
 
         IBufferObjectPtr v = mesh->GetVertices();
         if (v == NULL){
@@ -361,12 +362,14 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         }else if (v != vertices){
             // new vertices, bind them
             glEnableClientState(GL_VERTEX_ARRAY);
-            if (bufferSupport){
+            if (v->GetID() != 0){
                 // BufferObject support
                 glBindBuffer(GL_ARRAY_BUFFER, v->GetID());
                 glVertexPointer(v->GetDimension(), GL_FLOAT, 0, 0);
-            } else
+            } else{
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glVertexPointer(v->GetDimension(), GL_FLOAT, 0, v->GetVoidDataPtr());
+            }
         }
         vertices = v;
         CHECK_FOR_GL_ERROR();
@@ -376,11 +379,13 @@ void RenderingView::ApplyMesh(Mesh* mesh){
             glDisableClientState(GL_NORMAL_ARRAY);
         }else if (n != normals){
             glEnableClientState(GL_NORMAL_ARRAY);
-            if (bufferSupport){
+            if (n->GetID() != 0){
                 glBindBuffer(GL_ARRAY_BUFFER, n->GetID());
                 glNormalPointer(GL_FLOAT, 0, 0);
-            } else
+            } else{
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glNormalPointer(GL_FLOAT, 0, n->GetVoidDataPtr());
+            }
         }
         normals = n;
         CHECK_FOR_GL_ERROR();
@@ -390,11 +395,13 @@ void RenderingView::ApplyMesh(Mesh* mesh){
             glDisableClientState(GL_COLOR_ARRAY);
         }else if (c != colors){
             glEnableClientState(GL_COLOR_ARRAY);
-            if (bufferSupport){
+            if (c->GetID() != 0){
                 glBindBuffer(GL_ARRAY_BUFFER, c->GetID());
                 glColorPointer(colors->GetDimension(), GL_FLOAT, 0, 0);
-            }else
+            }else{
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glColorPointer(colors->GetDimension(), GL_FLOAT, 0, c->GetVoidDataPtr());
+            }
         }
         colors = c;
         CHECK_FOR_GL_ERROR();
@@ -413,11 +420,13 @@ void RenderingView::ApplyMesh(Mesh* mesh){
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
             else if (newTc != oldTc && texCoords.size() <= count){
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                if (bufferSupport){
+                if (newTc->GetID() != 0){
                     glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
                     glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, 0);
-                }else
+                }else{
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
                     glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, newTc->GetVoidDataPtr());
+                }
             }
 
             if (newItr != tcs.end()) ++newItr;
@@ -429,13 +438,10 @@ void RenderingView::ApplyMesh(Mesh* mesh){
 }
 
 void RenderingView::ApplyDrawPrimitive(DrawPrimitive* prim){
-    bool bufferSupport = renderer->BufferSupport();
-
     if (prim == NULL){
         ApplyMesh(NULL);
 
-        if (bufferSupport)
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         
     } else {
         // Apply the mesh.
@@ -448,10 +454,11 @@ void RenderingView::ApplyDrawPrimitive(DrawPrimitive* prim){
         indexBuffer = prim->GetIndexBuffer();
         GLsizei count = prim->GetDrawingRange();
         unsigned int offset = prim->GetIndexOffset();
-        if (bufferSupport){
+        if (indexBuffer->GetID() != 0){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer->GetID());
             glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, (GLvoid*)offset);
         }else{
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             GLuint* data = (GLuint*)indexBuffer->GetVoidDataPtr();
             glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, data + offset);
         }
