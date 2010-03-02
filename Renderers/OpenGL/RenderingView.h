@@ -90,7 +90,7 @@ protected:
     inline void RenderTangents(FacePtr face);
     inline void RenderNormals(FacePtr face);
     inline void RenderHardNormal(FacePtr face);
-    inline void ApplyMaterial(MaterialPtr mat);
+    inline void ApplyMaterial(Geometry::MaterialPtr mat);
     void ApplyMesh(Mesh* mesh);
     inline void ApplyDrawPrimitive(DrawPrimitive* prim);
     inline void ApplyModel(Model* model);
