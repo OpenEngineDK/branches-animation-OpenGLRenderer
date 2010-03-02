@@ -352,8 +352,9 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         }
         texCoords.clear();
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
     }else{
+
+        bool bufferSupport = renderer->BufferSupport();
 
         IBufferObjectPtr v = mesh->GetVertices();
         if (v == NULL){
@@ -362,14 +363,11 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         }else if (v != vertices){
             // new vertices, bind them
             glEnableClientState(GL_VERTEX_ARRAY);
-            if (v->GetID() != 0){
-                // BufferObject support
-                glBindBuffer(GL_ARRAY_BUFFER, v->GetID());
+            if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, v->GetID());
+            if (v->GetID() != 0)
                 glVertexPointer(v->GetDimension(), GL_FLOAT, 0, 0);
-            } else{
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            else
                 glVertexPointer(v->GetDimension(), GL_FLOAT, 0, v->GetVoidDataPtr());
-            }
         }
         vertices = v;
         CHECK_FOR_GL_ERROR();
@@ -379,13 +377,11 @@ void RenderingView::ApplyMesh(Mesh* mesh){
             glDisableClientState(GL_NORMAL_ARRAY);
         }else if (n != normals){
             glEnableClientState(GL_NORMAL_ARRAY);
-            if (n->GetID() != 0){
-                glBindBuffer(GL_ARRAY_BUFFER, n->GetID());
+            if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, n->GetID());
+            if (n->GetID() != 0)
                 glNormalPointer(GL_FLOAT, 0, 0);
-            } else{
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            else
                 glNormalPointer(GL_FLOAT, 0, n->GetVoidDataPtr());
-            }
         }
         normals = n;
         CHECK_FOR_GL_ERROR();
@@ -395,13 +391,11 @@ void RenderingView::ApplyMesh(Mesh* mesh){
             glDisableClientState(GL_COLOR_ARRAY);
         }else if (c != colors){
             glEnableClientState(GL_COLOR_ARRAY);
-            if (c->GetID() != 0){
-                glBindBuffer(GL_ARRAY_BUFFER, c->GetID());
+            if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, c->GetID());
+            if (c->GetID() != 0)
                 glColorPointer(colors->GetDimension(), GL_FLOAT, 0, 0);
-            }else{
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
+            else
                 glColorPointer(colors->GetDimension(), GL_FLOAT, 0, c->GetVoidDataPtr());
-            }
         }
         colors = c;
         CHECK_FOR_GL_ERROR();
@@ -420,19 +414,20 @@ void RenderingView::ApplyMesh(Mesh* mesh){
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
             else if (newTc != oldTc && texCoords.size() <= count){
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                if (newTc->GetID() != 0){
-                    glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
+                if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
+                if (newTc->GetID() != 0)
                     glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, 0);
-                }else{
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
+                else
                     glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, newTc->GetVoidDataPtr());
-                }
             }
 
             if (newItr != tcs.end()) ++newItr;
             if (oldItr != texCoords.end()) ++oldItr;
         }
         texCoords = tcs;
+        CHECK_FOR_GL_ERROR();
+
+        if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, 0);
         CHECK_FOR_GL_ERROR();
     }
 }
@@ -441,27 +436,27 @@ void RenderingView::ApplyDrawPrimitive(DrawPrimitive* prim){
     if (prim == NULL){
         ApplyMesh(NULL);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        
     } else {
         // Apply the mesh.
         ApplyMesh(prim->GetMesh().get());
         
         // Apply the material.
         ApplyMaterial(prim->GetMaterial());
+
+        bool bufferSupport = renderer->BufferSupport();
         
         // Apply the index buffer and draw
         indexBuffer = prim->GetIndexBuffer();
         GLsizei count = prim->GetDrawingRange();
         unsigned int offset = prim->GetIndexOffset();
+        if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer->GetID());
         if (indexBuffer->GetID() != 0){
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer->GetID());
-            glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, (GLvoid*)offset);
+            glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, (GLvoid*)(offset * sizeof(GLuint)));
         }else{
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            GLuint* data = (GLuint*)indexBuffer->GetVoidDataPtr();
-            glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, data + offset);
+            glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, indexBuffer->GetData() + offset);
         }
+
+        if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 }
 

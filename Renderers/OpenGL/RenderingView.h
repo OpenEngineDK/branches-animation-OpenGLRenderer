@@ -27,6 +27,8 @@ namespace OpenEngine {
         class IBufferObject;
         typedef boost::shared_ptr<IBufferObject> IBufferObjectPtr;
         typedef std::list<IBufferObjectPtr > IBufferObjectList;
+        class IndexBufferObject;
+        typedef boost::shared_ptr<IndexBufferObject> IndexBufferObjectPtr;
     }
 namespace Renderers {
 namespace OpenGL {
@@ -72,7 +74,7 @@ protected:
     IBufferObjectPtr normals;
     IBufferObjectPtr colors;
     IBufferObjectList texCoords;
-    IBufferObjectPtr indexBuffer;
+    IndexBufferObjectPtr indexBuffer;
 
     RenderStateNode* currentRenderState;
 
