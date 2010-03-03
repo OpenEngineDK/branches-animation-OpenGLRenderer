@@ -164,13 +164,13 @@ void Renderer::SetupTexParameters(ITexture3D* tex){
 
 GLenum Renderer::GLType(Type t){
     switch(t){
-    case UBYTE: return GL_UNSIGNED_BYTE; break;
-    case BYTE: return GL_BYTE; break;
-    case UINT: return GL_UNSIGNED_INT; break;
-    case INT: return GL_INT; break;
-    case FLOAT: return GL_FLOAT; break;
+    case Types::UBYTE: return GL_UNSIGNED_BYTE; break;
+    case Types::BYTE: return GL_BYTE; break;
+    case Types::UINT: return GL_UNSIGNED_INT; break;
+    case Types::INT: return GL_INT; break;
+    case Types::FLOAT: return GL_FLOAT; break;
 #ifdef DEBUG
-    case NOTYPE:
+    case Types::NOTYPE:
         logger.warning << "No type set" << logger.end;
         break;
 #endif
