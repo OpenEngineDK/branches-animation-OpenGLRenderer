@@ -23,6 +23,7 @@
 #include <Geometry/Mesh.h>
 #include <Geometry/DrawPrimitive.h>
 #include <Geometry/Model.h>
+#include <Scene/ModelNode.h>
 
 #include <Meta/OpenGL.h>
 #include <Math/Math.h>
@@ -449,11 +450,12 @@ void RenderingView::ApplyDrawPrimitive(DrawPrimitive* prim){
         indexBuffer = prim->GetIndexBuffer();
         GLsizei count = prim->GetDrawingRange();
         unsigned int offset = prim->GetIndexOffset();
+        GeometryPrimitive type = prim->GetPrimitive();
         if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer->GetID());
         if (indexBuffer->GetID() != 0){
-            glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, (GLvoid*)(offset * sizeof(GLuint)));
+            glDrawElements(type, count, GL_UNSIGNED_INT, (GLvoid*)(offset * sizeof(GLuint)));
         }else{
-            glDrawElements(GL_TRIANGLE_STRIP, count, GL_UNSIGNED_INT, indexBuffer->GetData() + offset);
+            glDrawElements(type, count, GL_UNSIGNED_INT, indexBuffer->GetData() + offset);
         }
 
         if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -472,6 +474,11 @@ void RenderingView::ApplyModel(Model* model){
     }
     
     ApplyDrawPrimitive(NULL);
+}
+
+void RenderingView::VisitModelNode(ModelNode* node) {
+    ApplyModel(node->model);
+    node->VisitSubNodes(*this);
 }
 
 /**

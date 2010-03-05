@@ -50,6 +50,7 @@ class RenderingView : virtual public IRenderingView {
 public:
     RenderingView(Viewport& viewport);
     virtual ~RenderingView();
+    void VisitModelNode(ModelNode* node);
     void VisitGeometryNode(GeometryNode* node);
     void VisitVertexArrayNode(VertexArrayNode* node);
     void VisitTransformationNode(TransformationNode* node);
