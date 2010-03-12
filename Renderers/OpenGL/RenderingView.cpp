@@ -21,7 +21,7 @@
 #include <Display/Viewport.h>
 #include <Display/IViewingVolume.h>
 #include <Geometry/GeometrySet.h>
-#include <Geometry/DrawPrimitive.h>
+#include <Geometry/Mesh.h>
 #include <Geometry/Model.h>
 #include <Scene/ModelNode.h>
 
@@ -37,7 +37,7 @@ using OpenEngine::Math::Matrix;
 using OpenEngine::Geometry::FaceSet;
 using OpenEngine::Geometry::GeometrySet;
 using OpenEngine::Geometry::Model;
-using OpenEngine::Geometry::DrawPrimitive;
+using OpenEngine::Geometry::Mesh;
 using OpenEngine::Geometry::VertexArray;
 using OpenEngine::Resources::IShaderResource;
 using OpenEngine::Resources::ITexture2D;
@@ -433,7 +433,7 @@ void RenderingView::ApplyGeometrySet(GeometrySet* geom){
     }
 }
 
-void RenderingView::ApplyDrawPrimitive(DrawPrimitive* prim){
+void RenderingView::ApplyMesh(Mesh* prim){
     if (prim == NULL){
         ApplyGeometrySet(NULL);
 
@@ -466,14 +466,14 @@ void RenderingView::ApplyDrawPrimitive(DrawPrimitive* prim){
  * Applies all the draw batches in the model.
  */
 void RenderingView::ApplyModel(Model* model){
-    DrawPrimitiveList list = model->GetDrawPrimitives();
-    DrawPrimitiveList::iterator itr = list.begin();
+    MeshList list = model->GetMeshs();
+    MeshList::iterator itr = list.begin();
     while (itr != list.end()){
-        ApplyDrawPrimitive((*itr).get());
+        ApplyMesh((*itr).get());
         ++itr;
     }
     
-    ApplyDrawPrimitive(NULL);
+    ApplyMesh(NULL);
 }
 
 void RenderingView::VisitModelNode(ModelNode* node) {

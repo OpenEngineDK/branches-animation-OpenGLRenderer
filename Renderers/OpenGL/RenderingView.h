@@ -20,7 +20,7 @@ namespace OpenEngine {
     // Forward declarations.
     namespace Geometry {
         class GeometrySet;
-        class DrawPrimitive;
+        class Mesh;
         class Model;
     }
     namespace Resources {
@@ -93,7 +93,7 @@ protected:
     inline void RenderHardNormal(FacePtr face);
     inline void ApplyMaterial(Geometry::MaterialPtr mat);
     void ApplyGeometrySet(GeometrySet* geom);
-    inline void ApplyDrawPrimitive(DrawPrimitive* prim);
+    inline void ApplyMesh(Mesh* prim);
     inline void ApplyModel(Model* model);
     inline void ApplyRenderState(RenderStateNode* node);
 };
