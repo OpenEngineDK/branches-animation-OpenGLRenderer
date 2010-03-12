@@ -24,11 +24,11 @@ namespace OpenEngine {
         class Model;
     }
     namespace Resources {
-        class IBufferObject;
-        typedef boost::shared_ptr<IBufferObject> IBufferObjectPtr;
-        typedef std::list<IBufferObjectPtr > IBufferObjectList;
-        class IndexBufferObject;
-        typedef boost::shared_ptr<IndexBufferObject> IndexBufferObjectPtr;
+        class IDataBlock;
+        typedef boost::shared_ptr<IDataBlock> IDataBlockPtr;
+        typedef std::list<IDataBlockPtr > IDataBlockList;
+        class DataIndices;
+        typedef boost::shared_ptr<DataIndices> DataIndicesPtr;
     }
 namespace Renderers {
 namespace OpenGL {
@@ -71,11 +71,11 @@ protected:
     IShaderResourcePtr currentShader;
     int binormalid;
     int tangentid;
-    IBufferObjectPtr vertices;
-    IBufferObjectPtr normals;
-    IBufferObjectPtr colors;
-    IBufferObjectList texCoords;
-    IndexBufferObjectPtr indexBuffer;
+    IDataBlockPtr vertices;
+    IDataBlockPtr normals;
+    IDataBlockPtr colors;
+    IDataBlockList texCoords;
+    DataIndicesPtr indexBuffer;
 
     RenderStateNode* currentRenderState;
 

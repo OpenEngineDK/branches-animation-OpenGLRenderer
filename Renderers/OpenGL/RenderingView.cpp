@@ -63,11 +63,11 @@ RenderingView::RenderingView(Viewport& viewport)
     currentRenderState->DisableOption(RenderStateNode::LIGHTING); //@todo
     currentRenderState->DisableOption(RenderStateNode::WIREFRAME);
     
-    vertices = IBufferObjectPtr();
-    normals = IBufferObjectPtr();
-    colors = IBufferObjectPtr();
-    texCoords = IBufferObjectList();
-    indexBuffer = IndexBufferObjectPtr();
+    vertices = IDataBlockPtr();
+    normals = IDataBlockPtr();
+    colors = IDataBlockPtr();
+    texCoords = IDataBlockList();
+    indexBuffer = DataIndicesPtr();
 }
 
 /**
@@ -357,7 +357,7 @@ void RenderingView::ApplyMesh(Mesh* mesh){
 
         bool bufferSupport = renderer->BufferSupport();
 
-        IBufferObjectPtr v = mesh->GetVertices();
+        IDataBlockPtr v = mesh->GetVertices();
         if (v == NULL){
             // No vertices, disable them.
             glDisableClientState(GL_VERTEX_ARRAY);
@@ -373,7 +373,7 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         vertices = v;
         CHECK_FOR_GL_ERROR();
 
-        IBufferObjectPtr n = mesh->GetNormals();
+        IDataBlockPtr n = mesh->GetNormals();
         if (n == NULL){
             glDisableClientState(GL_NORMAL_ARRAY);
         }else if (n != normals){
@@ -387,7 +387,7 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         normals = n;
         CHECK_FOR_GL_ERROR();
     
-        IBufferObjectPtr c = mesh->GetColors();
+        IDataBlockPtr c = mesh->GetColors();
         if (c == NULL){
             glDisableClientState(GL_COLOR_ARRAY);
         }else if (c != colors){
@@ -401,15 +401,15 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         colors = c;
         CHECK_FOR_GL_ERROR();
 
-        IBufferObjectList tcs = mesh->GetTexCoords();
-        IBufferObjectList::iterator newItr = tcs.begin();
-        IBufferObjectList::iterator oldItr = texCoords.begin();
+        IDataBlockList tcs = mesh->GetTexCoords();
+        IDataBlockList::iterator newItr = tcs.begin();
+        IDataBlockList::iterator oldItr = texCoords.begin();
         unsigned char maxCount = max(texCoords.size(), tcs.size());
         for (unsigned char count = 0; count < maxCount; ++count){
         
             glClientActiveTexture(GL_TEXTURE0 + count);
-            IBufferObjectPtr newTc = (*newItr);
-            IBufferObjectPtr oldTc = (*oldItr);
+            IDataBlockPtr newTc = (*newItr);
+            IDataBlockPtr oldTc = (*oldItr);
         
             if (tcs.size() <= count)
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);

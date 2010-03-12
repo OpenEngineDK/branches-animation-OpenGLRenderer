@@ -18,7 +18,7 @@
 #include <Geometry/Face.h>
 #include <vector>
 #include <Resources/ITexture.h>
-#include <Resources/IBufferObject.h>
+#include <Resources/IDataBlock.h>
 #include <Meta/OpenGL.h>
 
 namespace OpenEngine {
@@ -53,7 +53,7 @@ using OpenEngine::Resources::ITexture;
 using OpenEngine::Resources::AccessType;
 using OpenEngine::Resources::BufferType;
 using OpenEngine::Resources::UpdateMode;
-using OpenEngine::Resources::IBufferObject;
+using OpenEngine::Resources::IDataBlock;
 
 
 /**
@@ -143,7 +143,7 @@ public:
     virtual void RebindTexture(ITexture2D* texr, unsigned int x, unsigned int y, unsigned int w, unsigned int h);
     virtual void RebindTexture(ITexture3DPtr texr, unsigned int x, unsigned int y, unsigned int z, unsigned int w, unsigned int h, unsigned int d);
     virtual void RebindTexture(ITexture3D* texr, unsigned int x, unsigned int y, unsigned int z, unsigned int w, unsigned int h, unsigned int d);
-    virtual void BindBufferObject(IBufferObject* bo);
+    virtual void BindDataBlock(IDataBlock* bo);
     virtual void DrawFace(FacePtr face);
     virtual void DrawFace(FacePtr face, Vector<3,float> color, float width = 1);
     virtual void DrawLine(Line line, Vector<3,float> color, float width = 1);

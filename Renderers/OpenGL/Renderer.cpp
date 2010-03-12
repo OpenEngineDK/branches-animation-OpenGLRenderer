@@ -603,7 +603,7 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
 
 }
 
-void Renderer::BindBufferObject(IBufferObject* bo){
+void Renderer::BindDataBlock(IDataBlock* bo){
 #ifdef OE_SAFE
     if (bo == NULL) throw Exception("Cannot bind NULL buffer object.");
     if (bo->GetID() != 0) throw Exception("Cannot bind already bouind buffer object.");
