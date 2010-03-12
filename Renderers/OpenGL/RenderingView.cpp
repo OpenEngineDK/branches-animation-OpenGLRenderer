@@ -20,7 +20,7 @@
 #include <Resources/ITexture2D.h>
 #include <Display/Viewport.h>
 #include <Display/IViewingVolume.h>
-#include <Geometry/Mesh.h>
+#include <Geometry/GeometrySet.h>
 #include <Geometry/DrawPrimitive.h>
 #include <Geometry/Model.h>
 #include <Scene/ModelNode.h>
@@ -35,7 +35,7 @@ namespace OpenGL {
 using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
 using OpenEngine::Geometry::FaceSet;
-using OpenEngine::Geometry::Mesh;
+using OpenEngine::Geometry::GeometrySet;
 using OpenEngine::Geometry::Model;
 using OpenEngine::Geometry::DrawPrimitive;
 using OpenEngine::Geometry::VertexArray;
@@ -326,14 +326,14 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
  * Applies the given mesh. Applying the empty or NULL mesh will
  * disable enabled client states.
  */
-void RenderingView::ApplyMesh(Mesh* mesh){
+void RenderingView::ApplyGeometrySet(GeometrySet* geom){
     /**
      * @TODO What happens when you call glBindBuffer on a gl 1.4
      * machine? It'll probably crash so handle this by checking if
      * anything was ever bound and only then unbind it.
      */
-    if (mesh == NULL){
-        // Disable client states enabled by previous mesh.
+    if (geom == NULL){
+        // Disable client states enabled by previous geom.
         if (vertices != NULL) {
             glDisableClientState(GL_VERTEX_ARRAY);
             vertices.reset();
@@ -357,7 +357,7 @@ void RenderingView::ApplyMesh(Mesh* mesh){
 
         bool bufferSupport = renderer->BufferSupport();
 
-        IDataBlockPtr v = mesh->GetVertices();
+        IDataBlockPtr v = geom->GetVertices();
         if (v == NULL){
             // No vertices, disable them.
             glDisableClientState(GL_VERTEX_ARRAY);
@@ -373,7 +373,7 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         vertices = v;
         CHECK_FOR_GL_ERROR();
 
-        IDataBlockPtr n = mesh->GetNormals();
+        IDataBlockPtr n = geom->GetNormals();
         if (n == NULL){
             glDisableClientState(GL_NORMAL_ARRAY);
         }else if (n != normals){
@@ -387,7 +387,7 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         normals = n;
         CHECK_FOR_GL_ERROR();
     
-        IDataBlockPtr c = mesh->GetColors();
+        IDataBlockPtr c = geom->GetColors();
         if (c == NULL){
             glDisableClientState(GL_COLOR_ARRAY);
         }else if (c != colors){
@@ -401,7 +401,7 @@ void RenderingView::ApplyMesh(Mesh* mesh){
         colors = c;
         CHECK_FOR_GL_ERROR();
 
-        IDataBlockList tcs = mesh->GetTexCoords();
+        IDataBlockList tcs = geom->GetTexCoords();
         IDataBlockList::iterator newItr = tcs.begin();
         IDataBlockList::iterator oldItr = texCoords.begin();
         unsigned char maxCount = max(texCoords.size(), tcs.size());
@@ -435,11 +435,11 @@ void RenderingView::ApplyMesh(Mesh* mesh){
 
 void RenderingView::ApplyDrawPrimitive(DrawPrimitive* prim){
     if (prim == NULL){
-        ApplyMesh(NULL);
+        ApplyGeometrySet(NULL);
 
     } else {
         // Apply the mesh.
-        ApplyMesh(prim->GetMesh().get());
+        ApplyGeometrySet(prim->GetGeometrySet().get());
         
         // Apply the material.
         ApplyMaterial(prim->GetMaterial());
