@@ -605,14 +605,10 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
 
 void Renderer::BindDataBlock(IDataBlock* bo){
 #ifdef OE_SAFE
-    if (bo == NULL) throw Exception("Cannot bind NULL buffer object.");
-    if (bo->GetID() != 0) throw Exception("Cannot bind already bouind buffer object.");
+    if (bo == NULL) throw Exception("Cannot bind NULL data block.");
+    if (bo->GetID() != 0) throw Exception("Cannot bind already bound data block.");
+    if (bo->GetVoidDataPtr() == NULL) throw Exception("Cannot bind already data block with no data.");
 #endif
-
-    // Load the buffer object if not already loaded.
-    bool loaded = bo->GetVoidDataPtr() != NULL;
-    if (!loaded)
-        bo->Load();
 
     if (bufferSupport){
         GLuint id;
@@ -632,7 +628,7 @@ void Renderer::BindDataBlock(IDataBlock* bo){
                      size,
                      bo->GetVoidDataPtr(), access);
         
-        if (!loaded)
+        if (bo->GetUnloadPolicy() == UNLOAD_AUTOMATIC)
             bo->Unload();
     }
     // Do not unload if there's no buffer support. We will need the

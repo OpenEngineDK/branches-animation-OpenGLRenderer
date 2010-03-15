@@ -356,7 +356,7 @@ void RenderingView::ApplyGeometrySet(GeometrySet* geom){
     }else{
 
         bool bufferSupport = renderer->BufferSupport();
-
+        
         IDataBlockPtr v = geom->GetVertices();
         if (v == NULL){
             // No vertices, disable them.
@@ -364,6 +364,7 @@ void RenderingView::ApplyGeometrySet(GeometrySet* geom){
         }else if (v != vertices){
             // new vertices, bind them
             glEnableClientState(GL_VERTEX_ARRAY);
+            // Only bind the buffer if it is supported
             if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, v->GetID());
             if (v->GetID() != 0)
                 glVertexPointer(v->GetDimension(), GL_FLOAT, 0, 0);
