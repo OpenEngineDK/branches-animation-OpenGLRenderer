@@ -280,24 +280,20 @@ unsigned int Renderer::GLTypeSize(Type t){
     return sizeof(GLshort);
 }
 
-GLenum Renderer::GLAccessType(AccessType a, UpdateMode u){
+GLenum Renderer::GLAccessType(BufferType b, UpdateMode u){
     if (u == STATIC){
-        switch(a){
-        case READ:
-            return GL_STATIC_READ;
-        case WRITE:
-            return GL_STATIC_DRAW;
-        case COPY:
+        switch (b){
+        case PIXEL_PACK:
             return GL_STATIC_COPY;
+        default:
+            return GL_STATIC_DRAW;
         }
     }else if (u == DYNAMIC){
-        switch(a){
-        case READ:
-            return GL_DYNAMIC_READ;
-        case WRITE:
-            return GL_DYNAMIC_DRAW;
-        case COPY:
+        switch (b){
+        case PIXEL_PACK:
             return GL_DYNAMIC_COPY;
+        default:
+            return GL_DYNAMIC_DRAW;
         }
     }
     return GL_STATIC_DRAW;
@@ -622,7 +618,7 @@ void Renderer::BindDataBlock(IDataBlock* bo){
         CHECK_FOR_GL_ERROR();
     
         unsigned int size = GLTypeSize(bo->GetType()) * bo->GetSize() * bo->GetDimension();
-        GLenum access = GLAccessType(bo->GetAccessType(), bo->GetUpdateMode());
+        GLenum access = GLAccessType(bo->GetBufferType(), bo->GetUpdateMode());
         
         glBufferData(bufferType, 
                      size,
