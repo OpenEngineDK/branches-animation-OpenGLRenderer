@@ -35,6 +35,14 @@ using OpenEngine::Utils::Convert;
   #include <GL/glu.h>
 #endif
 
+#ifndef GL_RGB32F
+#define GL_RGB32F 34837
+#endif
+#ifndef GL_RGBA32F
+#define GL_RGBA32F 34838
+#endif
+
+
 /**
  *  Should never be used in the code, use CHECK_FOR_GL_ERROR(); instead
  */
