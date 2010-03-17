@@ -24,6 +24,7 @@
 #include <Geometry/Mesh.h>
 #include <Geometry/Model.h>
 #include <Scene/ModelNode.h>
+#include <Resources/DataBlock.h>
 
 #include <Meta/OpenGL.h>
 #include <Math/Math.h>

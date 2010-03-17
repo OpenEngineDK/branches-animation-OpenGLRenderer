@@ -28,7 +28,7 @@ namespace OpenEngine {
         typedef boost::shared_ptr<IDataBlock> IDataBlockPtr;
         typedef std::list<IDataBlockPtr > IDataBlockList;
         class DataIndices;
-        typedef boost::shared_ptr<DataIndices> DataIndicesPtr;
+        typedef boost::shared_ptr<DataIndices > DataIndicesPtr;
     }
 namespace Renderers {
 namespace OpenGL {
