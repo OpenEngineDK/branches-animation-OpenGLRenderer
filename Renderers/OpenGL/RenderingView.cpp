@@ -450,7 +450,7 @@ void RenderingView::ApplyMesh(Mesh* prim){
         bool bufferSupport = renderer->BufferSupport();
         
         // Apply the index buffer and draw
-        indexBuffer = prim->GetIndexBuffer();
+        indexBuffer = prim->GetDataIndices();
         GLsizei count = prim->GetDrawingRange();
         unsigned int offset = prim->GetIndexOffset();
         GeometryPrimitive type = prim->GetPrimitive();
