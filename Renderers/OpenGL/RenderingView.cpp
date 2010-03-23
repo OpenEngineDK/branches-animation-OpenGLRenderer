@@ -282,7 +282,6 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     
         // if the face has no texture reset the current texture 
         else if (mat->texr == NULL) {
-            logger.info << "texture is NULL" << logger.end;
             glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
             glDisable(GL_TEXTURE_2D);
             CHECK_FOR_GL_ERROR();
@@ -298,7 +297,6 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
             if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
                 throw Exception("texture not bound, id: " + currentTexture);
 #endif
-            logger.info << "bind textude id: " << currentTexture << logger.end;
             glBindTexture(GL_TEXTURE_2D, currentTexture);
             CHECK_FOR_GL_ERROR();
         }
