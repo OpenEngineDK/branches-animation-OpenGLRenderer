@@ -397,9 +397,9 @@ void RenderingView::ApplyGeometrySet(GeometrySet* geom){
             glEnableClientState(GL_COLOR_ARRAY);
             if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, c->GetID());
             if (c->GetID() != 0)
-                glColorPointer(colors->GetDimension(), GL_FLOAT, 0, 0);
+                glColorPointer(c->GetDimension(), GL_FLOAT, 0, 0);
             else
-                glColorPointer(colors->GetDimension(), GL_FLOAT, 0, c->GetVoidDataPtr());
+                glColorPointer(c->GetDimension(), GL_FLOAT, 0, c->GetVoidDataPtr());
         }
         colors = c;
         CHECK_FOR_GL_ERROR();
