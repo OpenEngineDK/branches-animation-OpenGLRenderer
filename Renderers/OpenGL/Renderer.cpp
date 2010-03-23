@@ -16,7 +16,6 @@
 #include <Display/IViewingVolume.h>
 
 #include <Scene/TransformationNode.h>
-#include <Scene/LightNode.h>
 #include <Scene/DirectionalLightNode.h>
 #include <Scene/PointLightNode.h>
 #include <Scene/SpotLightNode.h>
