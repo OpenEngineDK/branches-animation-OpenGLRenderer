@@ -50,14 +50,11 @@ using OpenEngine::Renderers::RenderingEventArg;
  * @class LightRenderer LightRenderer.h Renderers/OpenGL/LightRenderer.h
  */
 class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventArg> {
- private:
+private:
     float pos[4], dir[4];
-    GLint lightCount;
+    GLint count;
     Display::Viewport& viewport;    
-
-
- public:
-
+public:
     LightRenderer(Display::Viewport& vp); 
     ~LightRenderer();
         
@@ -66,7 +63,6 @@ class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventAr
     void VisitDirectionalLightNode(DirectionalLightNode* node);
     void VisitPointLightNode(PointLightNode* node);
     void VisitSpotLightNode(SpotLightNode* node);
-        
 };
 
 } // NS OpenGL

@@ -9,7 +9,6 @@
 
 #include <Renderers/OpenGL/LightRenderer.h>
 #include <Scene/TransformationNode.h>
-#include <Scene/LightNode.h>
 #include <Scene/DirectionalLightNode.h>
 #include <Scene/PointLightNode.h>
 #include <Scene/SpotLightNode.h>
@@ -23,17 +22,15 @@ namespace OpenGL {
 
 using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
-
 using OpenEngine::Display::Viewport;
 
 LightRenderer::LightRenderer(Viewport& vp)
-    : lightCount(0)
+    : count(0)
     , viewport(vp) {
     pos[0] = 0.0;
     pos[1] = 0.0;
     pos[2] = 0.0;
     pos[3] = 1.0;
-
     dir[0] = 0.0;
     dir[1] = -1.0;
     dir[2] = 0.0;
@@ -43,7 +40,6 @@ LightRenderer::LightRenderer(Viewport& vp)
 LightRenderer::~LightRenderer() {}
         
 void LightRenderer::VisitTransformationNode(TransformationNode* node) {
-    CHECK_FOR_GL_ERROR();
     // push transformation matrix to model view stack
     Matrix<4,4,float> m = node->GetTransformationMatrix();
     float f[16];
@@ -58,124 +54,92 @@ void LightRenderer::VisitTransformationNode(TransformationNode* node) {
 }
     
 void LightRenderer::VisitDirectionalLightNode(DirectionalLightNode* node) {
-    CHECK_FOR_GL_ERROR();
-
-    if (!node->active) {
-        node->VisitSubNodes(*this);            
-        return;
-    } 
-    
-    if (lightCount <= GL_MAX_LIGHTS) {
-        GLint light = GL_LIGHT0+lightCount;
-        float color[4];
-        glLightfv(light, GL_POSITION, dir);
-        node->ambient.ToArray(color);
-        glLightfv(light, GL_AMBIENT, color);
-        node->diffuse.ToArray(color);
-        glLightfv(light, GL_DIFFUSE, color);
-        node->specular.ToArray(color);
-        glLightfv(light, GL_SPECULAR, color);
-        glEnable(light);
-        lightCount++;
-    }
-    else {
-        logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " 
-                       << lightCount << logger.end;
-    }
+#ifdef OE_SAFE
+    GLint max;
+    glGetIntegerv(GL_MAX_LIGHTS, &max);
+    if (count >= max) 
+        throw new Exception("OpenGL max lights exceeded.");
+#endif
+    GLint light = GL_LIGHT0+count;
+    float color[4];
+    glLightfv(light, GL_POSITION, dir);
+    node->ambient.ToArray(color);
+    glLightfv(light, GL_AMBIENT, color);
+    node->diffuse.ToArray(color);
+    glLightfv(light, GL_DIFFUSE, color);
+    node->specular.ToArray(color);
+    glLightfv(light, GL_SPECULAR, color);
+    glEnable(light);
+    count++;
     CHECK_FOR_GL_ERROR();
     node->VisitSubNodes(*this);            
 }
     
 void LightRenderer::VisitPointLightNode(PointLightNode* node) {
-    CHECK_FOR_GL_ERROR();
-
-    if (!node->active) {
-        node->VisitSubNodes(*this);            
-        return;
-    } 
-    if (lightCount <= GL_MAX_LIGHTS) {
-        GLint light = GL_LIGHT0+lightCount;
-        float color[4];
-        glLightfv(light, GL_POSITION, pos);
-        node->ambient.ToArray(color);
-        glLightfv(light, GL_AMBIENT, color);
-        node->diffuse.ToArray(color);
-        glLightfv(light, GL_DIFFUSE, color);
-        node->specular.ToArray(color);
-        glLightfv(light, GL_SPECULAR, color);
-        glLightf(light, GL_CONSTANT_ATTENUATION, node->constAtt);
-        glLightf(light, GL_LINEAR_ATTENUATION, node->linearAtt);
-        glLightf(light, GL_QUADRATIC_ATTENUATION, node->quadAtt);
-        glEnable(light);
-        lightCount++;
-    }
-    else {
-        logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " 
-                       << lightCount << logger.end;
-    }
+#ifdef OE_SAFE
+    GLint max;
+    glGetIntegerv(GL_MAX_LIGHTS, &max);
+    if (count >= max) 
+        throw new Exception("OpenGL max lights exceeded.");
+#endif
+    GLint light = GL_LIGHT0 + count;
+    float color[4];
+    glLightfv(light, GL_POSITION, pos);
+    node->ambient.ToArray(color);
+    glLightfv(light, GL_AMBIENT, color);
+    node->diffuse.ToArray(color);
+    glLightfv(light, GL_DIFFUSE, color);
+    node->specular.ToArray(color);
+    glLightfv(light, GL_SPECULAR, color);
+    glLightf(light, GL_CONSTANT_ATTENUATION, node->constAtt);
+    glLightf(light, GL_LINEAR_ATTENUATION, node->linearAtt);
+    glLightf(light, GL_QUADRATIC_ATTENUATION, node->quadAtt);
+    glEnable(light);
+    ++count;
     CHECK_FOR_GL_ERROR();
     node->VisitSubNodes(*this);
 }
 
 void LightRenderer::VisitSpotLightNode(SpotLightNode* node) {
-    CHECK_FOR_GL_ERROR();
-    if (!node->active) {
-        node->VisitSubNodes(*this);            
-        return;
-    } 
-    
-    if (lightCount <= GL_MAX_LIGHTS) {
-        GLint light = GL_LIGHT0+lightCount;
-        float color[4];
-        glLightfv(light, GL_POSITION, pos);
-        glLightfv(light, GL_SPOT_DIRECTION, dir);
-        glLightf(light, GL_SPOT_CUTOFF, node->cutoff);            
-        glLightf(light, GL_SPOT_EXPONENT, node->exponent);            
-        node->ambient.ToArray(color);
-        glLightfv(light, GL_AMBIENT, color);
-        node->diffuse.ToArray(color);
-        glLightfv(light, GL_DIFFUSE, color);
-        node->specular.ToArray(color);
-        glLightfv(light, GL_SPECULAR, color);
-        glLightf(light, GL_CONSTANT_ATTENUATION, node->constAtt);
-        glLightf(light, GL_LINEAR_ATTENUATION, node->linearAtt);
-        glLightf(light, GL_QUADRATIC_ATTENUATION, node->quadAtt);
-        glEnable(light);
-        lightCount++;
-    }
-    else {
-        logger.warning << "OpenGL: Too many lights in scene. Ignoring light no. " 
-                       << lightCount << logger.end;
-    }
+#ifdef OE_SAFE
+    GLint max;
+    glGetIntegerv(GL_MAX_LIGHTS, &max);
+    if (count >= max) 
+        throw new Exception("OpenGL max lights exceeded.");
+#endif
+    GLint light = GL_LIGHT0+count;
+    float color[4];
+    glLightfv(light, GL_POSITION, pos);
+    glLightfv(light, GL_SPOT_DIRECTION, dir);
+    glLightf(light, GL_SPOT_CUTOFF, node->cutoff);            
+    glLightf(light, GL_SPOT_EXPONENT, node->exponent);            
+    node->ambient.ToArray(color);
+    glLightfv(light, GL_AMBIENT, color);
+    node->diffuse.ToArray(color);
+    glLightfv(light, GL_DIFFUSE, color);
+    node->specular.ToArray(color);
+    glLightfv(light, GL_SPECULAR, color);
+    glLightf(light, GL_CONSTANT_ATTENUATION, node->constAtt);
+    glLightf(light, GL_LINEAR_ATTENUATION, node->linearAtt);
+    glLightf(light, GL_QUADRATIC_ATTENUATION, node->quadAtt);
+    glEnable(light);
+    ++count;
     CHECK_FOR_GL_ERROR();
     node->VisitSubNodes(*this);            
 }
 
 void LightRenderer::Handle(RenderingEventArg arg) {
-    CHECK_FOR_GL_ERROR();
-
-    // turn off lights
-    for (int i = 0; i < lightCount; i++) {
-        glDisable(GL_LIGHT0 + i);
-    }
-    CHECK_FOR_GL_ERROR();
-
-    // rotate the world to compensate for the camera    
+    count = 0;
     arg.renderer.ApplyViewingVolume(*viewport.GetViewingVolume());
-    CHECK_FOR_GL_ERROR();
-
-    lightCount = 0;
     glMatrixMode(GL_MODELVIEW);
     arg.renderer.GetSceneRoot()->Accept(*this);
-
-    if (lightCount == 0)
-        glDisable(GL_LIGHTING);
-    else
-        glEnable(GL_LIGHTING);
-    CHECK_FOR_GL_ERROR();
+    GLint max;
+    glGetIntegerv(GL_MAX_LIGHTS, &max);
+    for (int i = count; i < max; ++i) {
+        glDisable(GL_LIGHT0 + i);
+        CHECK_FOR_GL_ERROR();
+    }
 }
-
-
 
 } // NS OpenGL
 } // NS OpenEngine
