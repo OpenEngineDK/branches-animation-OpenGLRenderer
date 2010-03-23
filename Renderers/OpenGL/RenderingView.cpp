@@ -22,13 +22,13 @@
 #include <Display/IViewingVolume.h>
 #include <Geometry/GeometrySet.h>
 #include <Geometry/Mesh.h>
-#include <Geometry/Model.h>
-#include <Scene/ModelNode.h>
 #include <Scene/MeshNode.h>
 #include <Resources/DataBlock.h>
 
 #include <Meta/OpenGL.h>
 #include <Math/Math.h>
+
+#include <Logging/Logger.h>
 
 namespace OpenEngine {
 namespace Renderers {
@@ -38,7 +38,6 @@ using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
 using OpenEngine::Geometry::FaceSet;
 using OpenEngine::Geometry::GeometrySet;
-using OpenEngine::Geometry::Model;
 using OpenEngine::Geometry::Mesh;
 using OpenEngine::Geometry::VertexArray;
 using OpenEngine::Resources::IShaderResource;
@@ -283,6 +282,7 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     
         // if the face has no texture reset the current texture 
         else if (mat->texr == NULL) {
+            logger.info << "texture is NULL" << logger.end;
             glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
             glDisable(GL_TEXTURE_2D);
             CHECK_FOR_GL_ERROR();
@@ -298,10 +298,11 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
             if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
                 throw Exception("texture not bound, id: " + currentTexture);
 #endif
+            logger.info << "bind textude id: " << currentTexture << logger.end;
             glBindTexture(GL_TEXTURE_2D, currentTexture);
             CHECK_FOR_GL_ERROR();
         }
-    
+        
         // Apply materials
         // TODO: Decide whether we want both front and back
         //       materials (maybe a material property).
@@ -452,7 +453,7 @@ void RenderingView::ApplyMesh(Mesh* prim){
         indexBuffer = prim->GetDataIndices();
         GLsizei count = prim->GetDrawingRange();
         unsigned int offset = prim->GetIndexOffset();
-        GeometryPrimitive type = prim->GetPrimitive();
+        Geometry::Type type = prim->GetType();
         if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer->GetID());
         if (indexBuffer->GetID() != 0){
             glDrawElements(type, count, GL_UNSIGNED_INT, (GLvoid*)(offset * sizeof(GLuint)));
@@ -462,25 +463,6 @@ void RenderingView::ApplyMesh(Mesh* prim){
 
         if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
-}
-
-/**
- * Applies all the draw batches in the model.
- */
-void RenderingView::ApplyModel(Model* model){
-    MeshList list = model->GetMeshs();
-    MeshList::iterator itr = list.begin();
-    while (itr != list.end()){
-        ApplyMesh((*itr).get());
-        ++itr;
-    }
-    
-    ApplyMesh(NULL);
-}
-
-void RenderingView::VisitModelNode(ModelNode* node) {
-    ApplyModel(node->model);
-    node->VisitSubNodes(*this);
 }
 
 /**
