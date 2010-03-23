@@ -20,6 +20,7 @@ namespace OpenEngine {
     // Forward declarations.
     namespace Geometry {
         class GeometrySet;
+        typedef boost::shared_ptr<GeometrySet> GeometrySetPtr;
         class Mesh;
         class Model;
     }
@@ -93,7 +94,7 @@ protected:
     inline void RenderNormals(FacePtr face);
     inline void RenderHardNormal(FacePtr face);
     inline void ApplyMaterial(Geometry::MaterialPtr mat);
-    void ApplyGeometrySet(GeometrySet* geom);
+    void ApplyGeometrySet(GeometrySetPtr geom);
     inline void ApplyMesh(Mesh* prim);
     inline void ApplyModel(Model* model);
     inline void ApplyRenderState(RenderStateNode* node);

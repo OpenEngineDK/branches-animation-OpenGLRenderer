@@ -252,88 +252,87 @@ void RenderingView::VisitTransformationNode(TransformationNode* node) {
 }
 
 void RenderingView::ApplyMaterial(MaterialPtr mat) {
-    // check if shaders should be applied
-    if (Renderer::IsGLSLSupported()) {
-
-        // if the shader changes release the old shader
-        if (currentShader != NULL && currentShader != mat->shad) {
-            currentShader->ReleaseShader();
-            currentShader.reset();
+    if (mat == NULL) {
+        // Reset state to default
+    }else{
+        // check if shaders should be applied
+        if (Renderer::IsGLSLSupported()) {
+            
+            // if the shader changes release the old shader
+            if (currentShader != NULL && currentShader != mat->shad) {
+                currentShader->ReleaseShader();
+                currentShader.reset();
+            }
+            
+            // check if a shader shall be applied
+            if (renderShader &&
+                mat->shad != NULL &&              // and the shader is not null
+                currentShader != mat->shad) {     // and the shader is different from the current
+                // get the bi-normal and tangent ids
+                binormalid = mat->shad->GetAttributeID("binormal");
+                tangentid = mat->shad->GetAttributeID("tangent");
+                mat->shad->ApplyShader();
+                // set the current shader
+                currentShader = mat->shad;
+            }
         }
-        
-        // check if a shader shall be applied
-        if (renderShader &&
-            mat->shad != NULL &&              // and the shader is not null
-            currentShader != mat->shad) {     // and the shader is different from the current
-            // get the bi-normal and tangent ids
-            binormalid = mat->shad->GetAttributeID("binormal");
-            tangentid = mat->shad->GetAttributeID("tangent");
-            mat->shad->ApplyShader();
-            // set the current shader
-            currentShader = mat->shad;
+    
+        // if a shader is in use reset the current texture,
+        // but dont disable in GL because the shader may use textures. 
+        if (currentShader != NULL) currentTexture = 0;
+    
+        // if the face has no texture reset the current texture 
+        else if (mat->texr == NULL) {
+            glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
+            glDisable(GL_TEXTURE_2D);
+            CHECK_FOR_GL_ERROR();
+            currentTexture = 0;
         }
-    }
     
-    // if a shader is in use reset the current texture,
-    // but dont disable in GL because the shader may use textures. 
-    if (currentShader != NULL) currentTexture = 0;
-    
-    // if the face has no texture reset the current texture 
-    else if (mat->texr == NULL) {
-        glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
-        glDisable(GL_TEXTURE_2D);
-        CHECK_FOR_GL_ERROR();
-        currentTexture = 0;
-    }
-    
-    // check if texture shall be applied
-    else if (renderTexture &&
-             currentTexture != mat->texr->GetID()) {  // and face texture is different then the current one
-        currentTexture = mat->texr->GetID();
-        glEnable(GL_TEXTURE_2D);
+        // check if texture shall be applied
+        else if (renderTexture &&
+                 currentTexture != mat->texr->GetID()) {  // and face texture is different then the current one
+            currentTexture = mat->texr->GetID();
+            glEnable(GL_TEXTURE_2D);
 #ifdef DEBUG
-        if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
-            throw Exception("texture not bound, id: " + currentTexture);
+            if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
+                throw Exception("texture not bound, id: " + currentTexture);
 #endif
-        glBindTexture(GL_TEXTURE_2D, currentTexture);
+            glBindTexture(GL_TEXTURE_2D, currentTexture);
+            CHECK_FOR_GL_ERROR();
+        }
+    
+        // Apply materials
+        // TODO: Decide whether we want both front and back
+        //       materials (maybe a material property).
+        float col[4];
+    
+        mat->diffuse.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+        CHECK_FOR_GL_ERROR();
+    
+        mat->ambient.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
+        CHECK_FOR_GL_ERROR();
+    
+        mat->specular.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
+        CHECK_FOR_GL_ERROR();
+    
+        mat->emission.ToArray(col);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
+        CHECK_FOR_GL_ERROR();
+    
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->shininess);
         CHECK_FOR_GL_ERROR();
     }
-    
-    // Apply materials
-    // TODO: Decide whether we want both front and back
-    //       materials (maybe a material property).
-    float col[4];
-    
-    mat->diffuse.ToArray(col);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
-    CHECK_FOR_GL_ERROR();
-    
-    mat->ambient.ToArray(col);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
-    CHECK_FOR_GL_ERROR();
-    
-    mat->specular.ToArray(col);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
-    CHECK_FOR_GL_ERROR();
-    
-    mat->emission.ToArray(col);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
-    CHECK_FOR_GL_ERROR();
-    
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->shininess);
-    CHECK_FOR_GL_ERROR();
 }
 
 /**
  * Applies the given mesh. Applying the empty or NULL mesh will
  * disable enabled client states.
  */
-void RenderingView::ApplyGeometrySet(GeometrySet* geom){
-    /**
-     * @TODO What happens when you call glBindBuffer on a gl 1.4
-     * machine? It'll probably crash so handle this by checking if
-     * anything was ever bound and only then unbind it.
-     */
+void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
     if (geom == NULL){
         // Disable client states enabled by previous geom.
         if (vertices != NULL) {
@@ -389,7 +388,7 @@ void RenderingView::ApplyGeometrySet(GeometrySet* geom){
         }
         normals = n;
         CHECK_FOR_GL_ERROR();
-    
+
         IDataBlockPtr c = geom->GetColors();
         if (c == NULL){
             glDisableClientState(GL_COLOR_ARRAY);
@@ -438,11 +437,11 @@ void RenderingView::ApplyGeometrySet(GeometrySet* geom){
 
 void RenderingView::ApplyMesh(Mesh* prim){
     if (prim == NULL){
-        ApplyGeometrySet(NULL);
+        ApplyGeometrySet(GeometrySetPtr());
 
     } else {
         // Apply the mesh.
-        ApplyGeometrySet(prim->GetGeometrySet().get());
+        ApplyGeometrySet(prim->GetGeometrySet());
         
         // Apply the material.
         ApplyMaterial(prim->GetMaterial());
