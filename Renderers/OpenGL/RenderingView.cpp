@@ -24,6 +24,7 @@
 #include <Geometry/Mesh.h>
 #include <Geometry/Model.h>
 #include <Scene/ModelNode.h>
+#include <Scene/MeshNode.h>
 #include <Resources/DataBlock.h>
 
 #include <Meta/OpenGL.h>
@@ -480,6 +481,16 @@ void RenderingView::ApplyModel(Model* model){
 
 void RenderingView::VisitModelNode(ModelNode* node) {
     ApplyModel(node->model);
+    node->VisitSubNodes(*this);
+}
+
+/**
+ * Process a mesh node.
+ *
+ * @param node Mesh node to render
+ */
+void RenderingView::VisitMeshNode(MeshNode* node) {
+    ApplyMesh(node->GetMesh().get());
     node->VisitSubNodes(*this);
 }
 
