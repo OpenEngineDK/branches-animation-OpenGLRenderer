@@ -68,7 +68,7 @@ RenderingView::RenderingView(Viewport& viewport)
     normals = IDataBlockPtr();
     colors = IDataBlockPtr();
     texCoords = IDataBlockList();
-    indexBuffer = DataIndicesPtr();
+    indexBuffer = IndicesPtr();
 }
 
 /**
@@ -448,7 +448,7 @@ void RenderingView::ApplyMesh(Mesh* prim){
         bool bufferSupport = renderer->BufferSupport();
         
         // Apply the index buffer and draw
-        indexBuffer = prim->GetDataIndices();
+        indexBuffer = prim->GetIndices();
         GLsizei count = prim->GetDrawingRange();
         unsigned int offset = prim->GetIndexOffset();
         Geometry::Type type = prim->GetType();

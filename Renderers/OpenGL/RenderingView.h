@@ -28,8 +28,8 @@ namespace OpenEngine {
         class IDataBlock;
         typedef boost::shared_ptr<IDataBlock> IDataBlockPtr;
         typedef std::list<IDataBlockPtr > IDataBlockList;
-        class DataIndices;
-        typedef boost::shared_ptr<DataIndices > DataIndicesPtr;
+        class Indices;
+        typedef boost::shared_ptr<Indices > IndicesPtr;
     }
 namespace Renderers {
 namespace OpenGL {
@@ -76,7 +76,7 @@ protected:
     IDataBlockPtr normals;
     IDataBlockPtr colors;
     IDataBlockList texCoords;
-    DataIndicesPtr indexBuffer;
+    IndicesPtr indexBuffer;
 
     RenderStateNode* currentRenderState;
 
