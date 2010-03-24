@@ -251,80 +251,76 @@ void RenderingView::VisitTransformationNode(TransformationNode* node) {
 }
 
 void RenderingView::ApplyMaterial(MaterialPtr mat) {
-    if (mat == NULL) {
-        // Reset state to default
-    }else{
-        // check if shaders should be applied
-        if (Renderer::IsGLSLSupported()) {
+    // check if shaders should be applied
+    if (Renderer::IsGLSLSupported()) {
             
-            // if the shader changes release the old shader
-            if (currentShader != NULL && currentShader != mat->shad) {
-                currentShader->ReleaseShader();
-                currentShader.reset();
-            }
+        // if the shader changes release the old shader
+        if (currentShader != NULL && currentShader != mat->shad) {
+            currentShader->ReleaseShader();
+            currentShader.reset();
+        }
             
-            // check if a shader shall be applied
-            if (renderShader &&
-                mat->shad != NULL &&              // and the shader is not null
-                currentShader != mat->shad) {     // and the shader is different from the current
-                // get the bi-normal and tangent ids
-                binormalid = mat->shad->GetAttributeID("binormal");
-                tangentid = mat->shad->GetAttributeID("tangent");
-                mat->shad->ApplyShader();
-                // set the current shader
-                currentShader = mat->shad;
-            }
+        // check if a shader shall be applied
+        if (renderShader &&
+            mat->shad != NULL &&              // and the shader is not null
+            currentShader != mat->shad) {     // and the shader is different from the current
+            // get the bi-normal and tangent ids
+            binormalid = mat->shad->GetAttributeID("binormal");
+            tangentid = mat->shad->GetAttributeID("tangent");
+            mat->shad->ApplyShader();
+            // set the current shader
+            currentShader = mat->shad;
         }
+    }
     
-        // if a shader is in use reset the current texture,
-        // but dont disable in GL because the shader may use textures. 
-        if (currentShader != NULL) currentTexture = 0;
+    // if a shader is in use reset the current texture,
+    // but dont disable in GL because the shader may use textures. 
+    if (currentShader != NULL) currentTexture = 0;
     
-        // if the face has no texture reset the current texture 
-        else if (mat->texr == NULL) {
-            glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
-            glDisable(GL_TEXTURE_2D);
-            CHECK_FOR_GL_ERROR();
-            currentTexture = 0;
-        }
+    // if the face has no texture reset the current texture 
+    else if (mat->texr == NULL) {
+        glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
+        glDisable(GL_TEXTURE_2D);
+        CHECK_FOR_GL_ERROR();
+        currentTexture = 0;
+    }
     
-        // check if texture shall be applied
-        else if (renderTexture &&
-                 currentTexture != mat->texr->GetID()) {  // and face texture is different then the current one
-            currentTexture = mat->texr->GetID();
-            glEnable(GL_TEXTURE_2D);
+    // check if texture shall be applied
+    else if (renderTexture &&
+             currentTexture != mat->texr->GetID()) {  // and face texture is different then the current one
+        currentTexture = mat->texr->GetID();
+        glEnable(GL_TEXTURE_2D);
 #ifdef DEBUG
-            if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
-                throw Exception("texture not bound, id: " + currentTexture);
+        if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
+            throw Exception("texture not bound, id: " + currentTexture);
 #endif
-            glBindTexture(GL_TEXTURE_2D, currentTexture);
-            CHECK_FOR_GL_ERROR();
-        }
-        
-        // Apply materials
-        // TODO: Decide whether we want both front and back
-        //       materials (maybe a material property).
-        float col[4];
-    
-        mat->diffuse.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
-        CHECK_FOR_GL_ERROR();
-    
-        mat->ambient.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
-        CHECK_FOR_GL_ERROR();
-    
-        mat->specular.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
-        CHECK_FOR_GL_ERROR();
-    
-        mat->emission.ToArray(col);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
-        CHECK_FOR_GL_ERROR();
-    
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->shininess);
+        glBindTexture(GL_TEXTURE_2D, currentTexture);
         CHECK_FOR_GL_ERROR();
     }
+        
+    // Apply materials
+    // TODO: Decide whether we want both front and back
+    //       materials (maybe a material property).
+    float col[4];
+    
+    mat->diffuse.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+    CHECK_FOR_GL_ERROR();
+    
+    mat->ambient.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
+    CHECK_FOR_GL_ERROR();
+    
+    mat->specular.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
+    CHECK_FOR_GL_ERROR();
+    
+    mat->emission.ToArray(col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
+    CHECK_FOR_GL_ERROR();
+    
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->shininess);
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -407,19 +403,18 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
         IDataBlockList::iterator oldItr = texCoords.begin();
         unsigned char maxCount = max(texCoords.size(), tcs.size());
         for (unsigned char count = 0; count < maxCount; ++count){
-        
             glClientActiveTexture(GL_TEXTURE0 + count);
             IDataBlockPtr newTc = (*newItr);
             IDataBlockPtr oldTc = (*oldItr);
-        
-            if (tcs.size() <= count)
+
+            if (tcs.size() <= count){
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-            else if (newTc != oldTc && texCoords.size() <= count){
+            }else if (newTc != oldTc || texCoords.size() <= count+1){
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
                 if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
-                if (newTc->GetID() != 0)
+                if (newTc->GetID() != 0){
                     glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, 0);
-                else
+                }else
                     glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, newTc->GetVoidDataPtr());
             }
 
