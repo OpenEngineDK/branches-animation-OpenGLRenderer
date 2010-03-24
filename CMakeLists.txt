@@ -14,6 +14,8 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Renderers/OpenGL/FBOBufferedRenderer.cpp
   Renderers/OpenGL/GLCopyBufferedRenderer.h
   Renderers/OpenGL/GLCopyBufferedRenderer.cpp
+  Renderers/OpenGL/StereoRenderer.h
+  Renderers/OpenGL/StereoRenderer.cpp
   Renderers/OpenGL/Renderer.h
   Renderers/OpenGL/Renderer.cpp
   Renderers/OpenGL/RenderingView.h

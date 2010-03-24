@@ -12,43 +12,54 @@ namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
+using namespace Display;
+
 StereoRenderer::StereoRenderer(Viewport* viewport)
-    : root(NULL) 
-    , viewport(viewport)
+    : Renderer(viewport)
 {
-    backgroundColor = Vector<4,float>(1.0);
+    
 }
 
 StereoRenderer::~StereoRenderer() {
-    delete viewport;
+    
 }
 
-/**
- * @note The processing function assumes that the scene has not been
- *       replaced by null since the initialization face. 
- */
+void StereoRenderer::SetStereoCamera(StereoCamera* sc) {
+    stereoCam = sc;
+}
+
+void StereoRenderer::Handle(InitializeEventArg arg) {
+    Renderer::Handle(arg);
+}
+
 void StereoRenderer::Handle(ProcessEventArg arg) {
-    // @todo: assert we are in preprocess stage
+    const bool rbstereo = true;
+    stereoCam->SignalRendering(arg.approx);
+    
+    GetViewport().SetViewingVolume(stereoCam->GetLeft());
 
-    Vector<4,float> bgc = backgroundColor;
-    glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
+    glDrawBuffer(GL_BACK_LEFT);
+    glColorMask (GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (rbstereo)
+        glColorMask (GL_FALSE, GL_FALSE, GL_TRUE, GL_FALSE);
 
-    // Clear the screen and the depth buffer.
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    Renderer::Handle(arg);
 
-    // run the processing phases
-    RenderingEventArg rarg(*this, arg.start, arg.approx);
-    this->preProcess.Notify(rarg);
-    this->stage = RENDERER_PROCESS;
-    this->process.Notify(rarg);
-    this->stage = RENDERER_POSTPROCESS;
-    this->postProcess.Notify(rarg);
-    this->stage = RENDERER_PREPROCESS;
+    GetViewport().SetViewingVolume(stereoCam->GetRight());
+
+    glDrawBuffer(GL_BACK_RIGHT);
+    glColorMask (GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (rbstereo)
+        glColorMask (GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+    Renderer::Handle(arg);
 }
 
 void StereoRenderer::Handle(DeinitializeEventArg arg) {
-    this->stage = RENDERER_DEINITIALIZE;
-    this->deinitialize.Notify(RenderingEventArg(*this));
+    Renderer::Handle(arg);
+
 }
 
 } // NS OpenGL

@@ -15,6 +15,7 @@
 #include <Scene/ISceneNode.h>
 #include <Math/Matrix.h>
 #include <vector>
+#include <Display/StereoCamera.h>
 
 namespace OpenEngine {
 
@@ -44,10 +45,12 @@ using OpenEngine::Core::Event;
  */
 class StereoRenderer : public Renderer {
 private:
-
+    Display::StereoCamera* stereoCam;
 public:
     StereoRenderer(Viewport* viewport);
     virtual ~StereoRenderer();
+
+    void SetStereoCamera(Display::StereoCamera* sc);
 
     void Handle(InitializeEventArg arg);
     void Handle(ProcessEventArg arg);

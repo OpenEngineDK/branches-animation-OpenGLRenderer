@@ -347,6 +347,8 @@ void Renderer::Handle(InitializeEventArg arg) {
 void Renderer::Handle(ProcessEventArg arg) {
     // @todo: assert we are in preprocess stage
 
+    viewport->GetViewingVolume()->SignalRendering(arg.approx);
+
     Vector<4,float> bgc = backgroundColor;
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
