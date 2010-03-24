@@ -332,15 +332,18 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
         // Disable client states enabled by previous geom.
         if (vertices != NULL) {
             glDisableClientState(GL_VERTEX_ARRAY);
-            vertices.reset();
+            //vertices.reset();
+            vertices = IDataBlockPtr();
         }
         if (normals != NULL){ 
             glDisableClientState(GL_NORMAL_ARRAY);
-            normals.reset();
+            //normals.reset();
+            normals = IDataBlockPtr();
         }
         if (colors != NULL){ 
             glDisableClientState(GL_COLOR_ARRAY);
-            colors.reset();
+            //colors.reset();
+            colors = IDataBlockPtr();
         }
 
         for (int count = texCoords.size()-1; count >= 0 ; --count){
@@ -366,6 +369,8 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
                 glVertexPointer(v->GetDimension(), GL_FLOAT, 0, 0);
             else
                 glVertexPointer(v->GetDimension(), GL_FLOAT, 0, v->GetVoidDataPtr());
+        }else{
+            glEnableClientState(GL_VERTEX_ARRAY);
         }
         vertices = v;
         CHECK_FOR_GL_ERROR();
@@ -455,6 +460,8 @@ void RenderingView::ApplyMesh(Mesh* prim){
         }
 
         if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        // TODO (asger) Why do we need this?
+        ApplyGeometrySet(GeometrySetPtr());
     }
 }
 
