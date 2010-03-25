@@ -162,25 +162,6 @@ void Renderer::SetupTexParameters(ITexture3D* tex){
     CHECK_FOR_GL_ERROR();
 }
 
-GLenum Renderer::GLType(Type t){
-    switch(t){
-    case Types::UBYTE: return GL_UNSIGNED_BYTE; break;
-    case Types::BYTE: return GL_BYTE; break;
-    case Types::UINT: return GL_UNSIGNED_INT; break;
-    case Types::INT: return GL_INT; break;
-    case Types::FLOAT: return GL_FLOAT; break;
-#ifdef DEBUG
-    case Types::NOTYPE:
-        logger.warning << "No type set" << logger.end;
-        break;
-#endif
-    default:
-        logger.warning << "Unsupported texture type: " << t << logger.end;
-        logger.warning << "Defaulting to unsigned byte." << logger.end;
-    }
-    return GL_UNSIGNED_BYTE;
-}
-
 void Renderer::SetTextureCompression(ITexture* tex){
     if (compressionSupport && tex->UseCompression()){
         switch(tex->GetColorFormat()){
@@ -421,7 +402,6 @@ void Renderer::LoadTexture(ITexture2D* texr) {
     CHECK_FOR_GL_ERROR();
 
     SetTextureCompression(texr);
-    GLenum type = GLType(texr->GetType());
     GLint internalFormat = GLInternalColorFormat(texr->GetColorFormat());
     GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
 
@@ -432,7 +412,7 @@ void Renderer::LoadTexture(ITexture2D* texr) {
                  texr->GetHeight(),
                  0, // border
                  colorFormat,
-                 type,
+                 texr->GetType(),
                  texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
     
@@ -470,7 +450,6 @@ void Renderer::LoadTexture(ITexture3D* texr) {
     SetupTexParameters(texr);
     CHECK_FOR_GL_ERROR();
 
-    GLenum type = GLType(texr->GetType());
     GLint internalFormat = GLInternalColorFormat(texr->GetColorFormat());
     GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
 
@@ -482,7 +461,7 @@ void Renderer::LoadTexture(ITexture3D* texr) {
                  texr->GetDepth(),
                  0, // border
                  colorFormat,
-                 type,
+                 texr->GetType(),
                  texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
     
@@ -511,7 +490,6 @@ void Renderer::RebindTexture(ITexture2D* texr, unsigned int xOffset, unsigned in
     // Setup texture parameters
     SetupTexParameters(texr);
 
-    GLenum type = GLType(texr->GetType());
     GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
 
     glTexSubImage2D(GL_TEXTURE_2D,
@@ -521,7 +499,7 @@ void Renderer::RebindTexture(ITexture2D* texr, unsigned int xOffset, unsigned in
                     width,
                     height,
                     colorFormat,
-                    type,
+                    texr->GetType(),
                     texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
 
@@ -547,7 +525,6 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
     // Setup texture parameters
     SetupTexParameters(texr);
 
-    GLenum type = GLType(texr->GetType());
     GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
 
     glTexSubImage3D(GL_TEXTURE_3D,
@@ -559,7 +536,7 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
                     height,
                     depth,
                     colorFormat,
-                    type,
+                    texr->GetType(),
                     texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
 

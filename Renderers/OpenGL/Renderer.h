@@ -80,7 +80,6 @@ private:
     inline void SetupTexParameters(ITexture2D* tex);
     inline void SetupTexParameters(ITexture3D* tex);
     inline void SetTextureCompression(ITexture* tex);
-    inline GLenum GLType(Type t);
     inline GLint GLInternalColorFormat(ColorFormat f);
     inline GLenum GLColorFormat(ColorFormat f);
 
