@@ -68,7 +68,7 @@ public:
 private:
  
     Renderer peer;
-    GLuint fbo, depthbuffer, img;
+    GLuint depthbuffer, img;
     unsigned int width, height;
     // color buffer wrapper
     ITexture2DPtr colorbuf;

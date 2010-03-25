@@ -10,7 +10,6 @@ namespace OpenGL {
 
 GLCopyBufferedRenderer::GLCopyBufferedRenderer(Viewport* viewport)
     : peer(Renderer(viewport))
-    , fbo(0)
     , depthbuffer(0)
     , img(0)
 {
@@ -41,6 +40,7 @@ void GLCopyBufferedRenderer::Handle(InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
     glBindTexture(GL_TEXTURE_2D, img);
     CHECK_FOR_GL_ERROR();
+    colorbuf->SetID(img);
 
     //glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -68,8 +68,6 @@ void GLCopyBufferedRenderer::Handle(ProcessEventArg arg) {
     glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, width, height, 0);
     CHECK_FOR_GL_ERROR();
 
-    //colorbuf->ChangedEvent().
-    //    Notify(Resources::TextureChangedEventArg(colorbuf));
 }
 
 void GLCopyBufferedRenderer::Handle(DeinitializeEventArg arg) {
