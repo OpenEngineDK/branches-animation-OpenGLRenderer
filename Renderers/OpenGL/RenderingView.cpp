@@ -460,8 +460,6 @@ void RenderingView::ApplyMesh(Mesh* prim){
         }
 
         if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        // TODO (asger) Why do we need this?
-        ApplyGeometrySet(GeometrySetPtr());
     }
 }
 
@@ -486,6 +484,9 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
     currentShader.reset();
     binormalid = -1; 
     tangentid = -1;
+
+    // Reset geometry state
+    ApplyGeometrySet(GeometrySetPtr());
 
     // Remember last bound texture and shader
     FaceList::iterator itr;
@@ -543,6 +544,9 @@ void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
     currentShader.reset();
     binormalid = -1; 
     tangentid = -1;
+    
+    // Reset geometry state
+    ApplyGeometrySet(GeometrySetPtr());
 
     CHECK_FOR_GL_ERROR();
 
