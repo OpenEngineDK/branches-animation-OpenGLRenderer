@@ -50,7 +50,7 @@ using OpenEngine::Core::Event;
 using OpenEngine::Resources::Types::Type;
 using OpenEngine::Resources::ColorFormat;
 using OpenEngine::Resources::ITexture;
-using OpenEngine::Resources::BufferType;
+using OpenEngine::Resources::BlockType;
 using OpenEngine::Resources::UpdateMode;
 using OpenEngine::Resources::IDataBlock;
 
@@ -89,9 +89,9 @@ private:
     inline GLint GLInternalColorFormat(ColorFormat f);
     inline GLenum GLColorFormat(ColorFormat f);
 
-    inline GLenum GLBufferType(BufferType t);
+    inline GLenum GLBufferType(BlockType t);
     inline unsigned int GLTypeSize(Type t);
-    inline GLenum GLAccessType(BufferType b, UpdateMode u);
+    inline GLenum GLAccessType(BlockType b, UpdateMode u);
 
 public:
     Renderer(Viewport* viewport);
