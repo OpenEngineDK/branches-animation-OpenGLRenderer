@@ -247,20 +247,6 @@ GLenum Renderer::GLColorFormat(ColorFormat f){
     return GL_RGBA;
 }
 
-GLenum Renderer::GLBufferType(BlockType t){
-    switch(t){
-    case ARRAY:
-        return GL_ARRAY_BUFFER;
-    case INDEX_ARRAY:
-        return GL_ELEMENT_ARRAY_BUFFER;
-    case PIXEL_PACK:
-        return GL_PIXEL_PACK_BUFFER;
-    case PIXEL_UNPACK:
-        return GL_PIXEL_UNPACK_BUFFER;
-    }
-    return GL_ARRAY_BUFFER;
-}
-
 unsigned int Renderer::GLTypeSize(Type t){
     switch(t){
     case UBYTE:
@@ -612,16 +598,14 @@ void Renderer::BindDataBlock(IDataBlock* bo){
         glGenBuffers(1, &id);
         CHECK_FOR_GL_ERROR();
     
-        GLenum bufferType = GLBufferType(bo->GetBlockType());
-
         bo->SetID(id);
-        glBindBuffer(bufferType, id);
+        glBindBuffer(bo->GetBlockType(), id);
         CHECK_FOR_GL_ERROR();
     
         unsigned int size = GLTypeSize(bo->GetType()) * bo->GetSize() * bo->GetDimension();
         GLenum access = GLAccessType(bo->GetBlockType(), bo->GetUpdateMode());
         
-        glBufferData(bufferType, 
+        glBufferData(bo->GetBlockType(), 
                      size,
                      bo->GetVoidDataPtr(), access);
         

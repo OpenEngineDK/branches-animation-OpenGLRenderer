@@ -89,7 +89,6 @@ private:
     inline GLint GLInternalColorFormat(ColorFormat f);
     inline GLenum GLColorFormat(ColorFormat f);
 
-    inline GLenum GLBufferType(BlockType t);
     inline unsigned int GLTypeSize(Type t);
     inline GLenum GLAccessType(BlockType b, UpdateMode u);
 
