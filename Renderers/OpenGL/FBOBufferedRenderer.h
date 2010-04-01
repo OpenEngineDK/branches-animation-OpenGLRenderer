@@ -83,7 +83,7 @@ private:
             Load();
         }
         void Load() {
-            this->id = r.img;
+            this->id = 0;
             this->width = r.width;
             this->height = r.height;
             this->channels = 4;

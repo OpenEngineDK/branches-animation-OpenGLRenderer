@@ -63,6 +63,8 @@ void FBOBufferedRenderer::Handle(InitializeEventArg arg) {
     // Adding a Texture
     glGenTextures(1, &img);
     CHECK_FOR_GL_ERROR();
+    colorbuf->SetID(img);
+
     glBindTexture(GL_TEXTURE_2D, img);
     CHECK_FOR_GL_ERROR();
 
