@@ -80,7 +80,7 @@ namespace OpenEngine {
             void ResetProperties();
             void PrintShaderInfoLog(GLuint shader);
             void PrintProgramInfoLog(GLuint program);
-            GLint GetUniLoc(GLuint program, const GLchar *name);
+            GLint GetUniLoc(const GLchar *name);
             void BindShaderPrograms();
             GLuint LoadShader(vector<string>, int);
             void BindUniforms();
@@ -99,6 +99,8 @@ namespace OpenEngine {
             void ApplyShader();
             void ReleaseShader();
 
+            unsigned int GetUniformID(string name);
+            
             void SetTexture(string name, ITexture2DPtr tex, bool force = false);
             void SetTexture(string name, ITexture3DPtr tex, bool force = false);
             void GetTexture(string name, ITexture2DPtr& tex);

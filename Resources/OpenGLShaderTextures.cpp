@@ -27,7 +27,7 @@ namespace OpenEngine {
                 }else{
                     // Set the samplers values and add it to the bound
                     // map.
-                    sam.loc = GetUniLoc(shaderProgram, name.c_str());
+                    sam.loc = GetUniLoc(name.c_str());
                     sam.texUnit = nextTexUnit++;
                     glUniform1i(sam.loc, sam.texUnit);
                     boundTex2Ds[name] = sam;
@@ -50,7 +50,7 @@ namespace OpenEngine {
                 }else{
                     // Set the samplers values and add it to the bound
                     // map.
-                    sam.loc = GetUniLoc(shaderProgram, name.c_str());
+                    sam.loc = GetUniLoc(name.c_str());
                     sam.texUnit = nextTexUnit++;
                     glUniform1i(sam.loc, sam.texUnit);
                     boundTex3Ds[name] = sam;
@@ -123,7 +123,7 @@ namespace OpenEngine {
                 }else{
                     // Set the samplers values and add it to the bound
                     // map.
-                    sam.loc = GetUniLoc(shaderProgram, name.c_str());
+                    sam.loc = GetUniLoc(name.c_str());
                     sam.texUnit = nextTexUnit++;
                     glUniform1i(sam.loc, sam.texUnit);
                     boundTex2Ds[name] = sam;
@@ -144,7 +144,7 @@ namespace OpenEngine {
                 }else{
                     // Set the samplers values and add it to the bound
                     // map.
-                    sam.loc = GetUniLoc(shaderProgram, name.c_str());
+                    sam.loc = GetUniLoc(name.c_str());
                     sam.texUnit = nextTexUnit++;
                     glUniform1i(sam.loc, sam.texUnit);
                     boundTex3Ds[name] = sam;

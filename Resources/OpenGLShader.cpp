@@ -89,6 +89,10 @@ namespace OpenEngine {
             glUseProgram(0);
         }
 
+        unsigned int OpenGLShader::GetUniformID(string name){            
+            return GetUniLoc(name.c_str());
+        }
+
         //  *** Private helper methods ***
         
         /**
@@ -252,8 +256,8 @@ namespace OpenEngine {
 #endif
         }
         
-        GLint OpenGLShader::GetUniLoc(GLuint program, const GLchar *name){
-            GLint loc = glGetUniformLocation(program, name);
+        GLint OpenGLShader::GetUniLoc(const GLchar *name){
+            GLint loc = glGetUniformLocation(shaderProgram, name);
 #ifdef OE_SAFE
             if (loc == -1)
                 throw Exception( string("No such uniform named \"") + name + "\"");

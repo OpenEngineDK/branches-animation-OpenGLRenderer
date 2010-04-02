@@ -26,7 +26,7 @@ namespace OpenEngine {
                     BindUniform(bound->second);                         \
                 }else{                                                  \
                     uniform uni;                                        \
-                    uni.loc = GetUniLoc(shaderProgram, name.c_str());   \
+                    uni.loc = GetUniLoc(name.c_str());   \
                     uni.kind = UNIFORM##extension;                      \
                     BindUniform(uni);                                   \
                     boundUniforms[name] = uni;                          \
@@ -53,7 +53,7 @@ namespace OpenEngine {
                     BindUniform(bound->second);                         \
                 }else{                                                  \
                     uniform uni;                                        \
-                    uni.loc = GetUniLoc(shaderProgram, name.c_str());   \
+                    uni.loc = GetUniLoc(name.c_str());   \
                     uni.kind = UNIFORM##params##extension;              \
                     BindUniform(uni);                                   \
                     boundUniforms[name] = uni;                          \
@@ -121,7 +121,7 @@ namespace OpenEngine {
                 }else{
                     // Else get the location of the uniform, bind it
                     // and copy it to the bound array.
-                    uni.loc = GetUniLoc(shaderProgram, name.c_str());
+                    uni.loc = GetUniLoc(name.c_str());
                     BindUniform(uni);
                     boundUniforms[name] = uni;
                 }
