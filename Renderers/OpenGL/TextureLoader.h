@@ -16,6 +16,10 @@
 
 // forward declarations
 namespace OpenEngine {
+    namespace Geometry{
+        class Material;
+        typedef boost::shared_ptr<Material> MaterialPtr;
+    }
     namespace Resources{
         class ITexture2D;
         typedef boost::shared_ptr<ITexture2D> ITexture2DPtr;
@@ -32,6 +36,7 @@ using OpenEngine::Scene::VertexArrayNode;
 using OpenEngine::Scene::ISceneNodeVisitor;
 using OpenEngine::Resources::ITexture2DPtr;
 using OpenEngine::Renderers::RenderingEventArg;
+using OpenEngine::Geometry::MaterialPtr;
 
 /**
  * OpenGL specific texture loader.
@@ -44,6 +49,7 @@ public:
     ~TextureLoader();
 
     static void LoadTextureResource(ITexture2DPtr tex, bool linearInterpolation = true, bool mipmapping = true);
+    void LoadMaterial(MaterialPtr mat);
     virtual void VisitGeometryNode(GeometryNode* node);
     virtual void VisitVertexArrayNode(VertexArrayNode* node);
     virtual void Handle(RenderingEventArg arg);

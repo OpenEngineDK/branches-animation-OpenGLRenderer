@@ -618,12 +618,12 @@ void Renderer::BindDataBlock(IDataBlock* bo){
 }
 
 void Renderer::DrawFace(FacePtr f) {
-    if (f->mat->texr == NULL) {
+    if (f->mat->Get2DTextures().size() == 0) {
         glBindTexture(GL_TEXTURE_2D, 0);
         glDisable(GL_TEXTURE_2D);
     } else {
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, f->mat->texr->GetID());
+        glBindTexture(GL_TEXTURE_2D, f->mat->Get2DTextures().front().second->GetID());
     }
     float col[4];
     f->mat->diffuse.ToArray(col);

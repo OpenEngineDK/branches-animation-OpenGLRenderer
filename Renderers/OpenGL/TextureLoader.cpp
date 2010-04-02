@@ -46,7 +46,7 @@ void TextureLoader::VisitGeometryNode(GeometryNode* node) {
     if (faces == NULL) return;
     for (FaceList::iterator face = faces->begin(); face != faces->end(); face++) {
         // load face textures
-        LoadTextureResource((*face)->mat->texr);
+        LoadMaterial((*face)->mat);
     }
 }
 
@@ -60,16 +60,29 @@ void TextureLoader::VisitVertexArrayNode(VertexArrayNode* node) {
     // Iterate through list of Vertex Arrays
     for (list<VertexArray*>::iterator itr = vaList.begin(); itr!=vaList.end(); itr++) {
         // Load vertex array texture
-        LoadTextureResource((*itr)->mat->texr);
+        LoadMaterial((*itr)->mat);
     }
 }
+
+void TextureLoader::LoadMaterial(MaterialPtr mat){
+    list<pair <string, ITexture2DPtr> > texs2D = mat->Get2DTextures();
+    list<pair <string, ITexture2DPtr> >::iterator itr = texs2D.begin();
+    while(itr != texs2D.end()){
+        ITexture2DPtr t = itr->second;
+        if (t != NULL && t->GetID() == 0) {
+            LoadTextureResource(t);
+        }            
+        ++itr;
+    }
+}
+
 
 /**
  * Load a texture resource.
  *
  * @param tex Texture resource pointer.
  */
-    void TextureLoader::LoadTextureResource(ITexture2DPtr tex, bool linearInterpolation, bool mipmapping) {
+void TextureLoader::LoadTextureResource(ITexture2DPtr tex, bool linearInterpolation, bool mipmapping) {
     if (tex == NULL) return;
     if(tex->GetID() == 0) {
         tex->Load();

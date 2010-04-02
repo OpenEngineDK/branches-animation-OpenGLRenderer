@@ -227,6 +227,7 @@ void RenderingView::VisitRenderStateNode(RenderStateNode* node) {
     // restore previous state
     currentRenderState = prevCurrent;
     delete changes;
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -245,6 +246,7 @@ void RenderingView::VisitTransformationNode(TransformationNode* node) {
     CHECK_FOR_GL_ERROR();
     // traverse sub nodes
     node->VisitSubNodes(*this);
+    CHECK_FOR_GL_ERROR();
     // pop transformation matrix
     glPopMatrix();
     CHECK_FOR_GL_ERROR();
@@ -278,7 +280,7 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     if (currentShader != NULL) currentTexture = 0;
     
     // if the face has no texture reset the current texture 
-    else if (mat->texr == NULL) {
+    else if (mat->Get2DTextures().size() == 0) {
         glBindTexture(GL_TEXTURE_2D, 0); // @todo, remove this if not needed, release texture
         glDisable(GL_TEXTURE_2D);
         CHECK_FOR_GL_ERROR();
@@ -287,8 +289,8 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     
     // check if texture shall be applied
     else if (renderTexture &&
-             currentTexture != mat->texr->GetID()) {  // and face texture is different then the current one
-        currentTexture = mat->texr->GetID();
+             currentTexture != mat->Get2DTextures().front().second->GetID()) {  // and face texture is different then the current one
+        currentTexture = mat->Get2DTextures().front().second->GetID();
         glEnable(GL_TEXTURE_2D);
 #ifdef DEBUG
         if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
@@ -301,22 +303,16 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     // Apply materials
     // TODO: Decide whether we want both front and back
     //       materials (maybe a material property).
-    float col[4];
-    
-    mat->diffuse.ToArray(col);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat->diffuse.ToArray());
     CHECK_FOR_GL_ERROR();
     
-    mat->ambient.ToArray(col);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat->ambient.ToArray());
     CHECK_FOR_GL_ERROR();
     
-    mat->specular.ToArray(col);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat->specular.ToArray());
     CHECK_FOR_GL_ERROR();
     
-    mat->emission.ToArray(col);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, col);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat->emission.ToArray());
     CHECK_FOR_GL_ERROR();
     
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->shininess);
@@ -461,6 +457,7 @@ void RenderingView::ApplyMesh(Mesh* prim){
 
         if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -471,6 +468,7 @@ void RenderingView::ApplyMesh(Mesh* prim){
 void RenderingView::VisitMeshNode(MeshNode* node) {
     ApplyMesh(node->GetMesh().get());
     node->VisitSubNodes(*this);
+    CHECK_FOR_GL_ERROR();
 }
 
 /**
@@ -613,6 +611,7 @@ void RenderingView::VisitBlendingNode(BlendingNode* node) {
     // apply original blend state
     SwitchBlending(source, destination, equation);
     if (!blending) glDisable(GL_BLEND);
+    CHECK_FOR_GL_ERROR();
 }
 
 void RenderingView::SwitchBlending(BlendingNode::BlendingFactor source, 
