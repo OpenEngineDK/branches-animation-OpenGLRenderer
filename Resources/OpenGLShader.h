@@ -99,7 +99,7 @@ namespace OpenEngine {
             void ApplyShader();
             void ReleaseShader();
 
-            unsigned int GetUniformID(string name);
+            int GetUniformID(string name);
             
             void SetTexture(string name, ITexture2DPtr tex, bool force = false);
             void SetTexture(string name, ITexture3DPtr tex, bool force = false);

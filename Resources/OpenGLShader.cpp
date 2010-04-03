@@ -89,8 +89,8 @@ namespace OpenEngine {
             glUseProgram(0);
         }
 
-        unsigned int OpenGLShader::GetUniformID(string name){            
-            return GetUniLoc(name.c_str());
+        int OpenGLShader::GetUniformID(string name){            
+            return glGetUniformLocation(shaderProgram, name.c_str());
         }
 
         //  *** Private helper methods ***
