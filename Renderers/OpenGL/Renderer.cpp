@@ -22,6 +22,7 @@
 
 #include <Resources/ITexture2D.h>
 #include <Resources/ITexture3D.h>
+#include <Resources/FrameBuffer.h>
 
 
 using namespace OpenEngine::Resources;
@@ -584,6 +585,53 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
                     texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
 
+}
+
+void Renderer::BindFrameBuffer(FrameBuffer* fb){
+#ifdef OE_SAFE
+    if (fb == NULL) throw Exception("Cannot bind NULL frame buffer");
+    if (fb->GetID() != 0) throw Exception("Will not bind already bound frame buffer.");
+#endif
+
+    GLuint fboID;
+    glGenFramebuffersEXT(1, &fboID);
+    CHECK_FOR_GL_ERROR();
+    fb->SetID(fboID);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
+    CHECK_FOR_GL_ERROR();
+
+    if (fb->GetDepthTexture() != NULL){
+        LoadTexture(fb->GetDepthTexture());
+        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
+                                  GL_DEPTH_ATTACHMENT_EXT,
+                                  GL_TEXTURE_2D, fb->GetDepthTexture()->GetID(), 0);
+    }else{
+        Vector<4, int> viewDim = fb->GetDimension();
+        unsigned int width = viewDim[2] - viewDim[0];
+        unsigned int height = viewDim[3] - viewDim[1];
+        
+        GLuint depth;
+        glGenRenderbuffersEXT(1, &depth);
+        glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth);
+        glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, width, height);
+        glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+        
+        glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                     GL_RENDERBUFFER_EXT, depth);
+        CHECK_FOR_GL_ERROR();
+    }
+
+    for (unsigned int i = 0; i < fb->GetNumberOfAttachments(); ++i){
+        ITexture2DPtr tex = fb->GetTexAttachement(i);
+        LoadTexture(tex.get());
+        
+        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
+                                  GL_COLOR_ATTACHMENT0_EXT,
+                                  GL_TEXTURE_2D, tex->GetID(), 0);
+        CHECK_FOR_GL_ERROR();
+    }
+
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
 void Renderer::BindDataBlock(IDataBlock* bo){

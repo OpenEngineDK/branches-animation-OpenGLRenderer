@@ -57,6 +57,7 @@ public:
     void RebindTexture(Resources::ITexture2D* t, unsigned int x, unsigned int y, unsigned int w, unsigned int h) { peer.RebindTexture(t, x, y, w, h); }
     void RebindTexture(Resources::ITexture3DPtr t, unsigned int x, unsigned int y, unsigned int z, unsigned int w, unsigned int h, unsigned int d) { peer.RebindTexture(t.get(), x, y, z, w, h, d); }
     void RebindTexture(Resources::ITexture3D* t, unsigned int x, unsigned int y, unsigned int z, unsigned int w, unsigned int h, unsigned int d)   { peer.RebindTexture(t, x, y, z, w, h, d); }
+    void BindFrameBuffer(FrameBuffer* fb)         { peer.BindFrameBuffer(fb); }
     void BindDataBlock(Resources::IDataBlock* bo)     { peer.BindDataBlock(bo); }
     void DrawFace(FacePtr f)                                      { peer.DrawFace(f); }
     void DrawFace(FacePtr f, Vector<3,float> c, float w)          { peer.DrawFace(f, c, w); }
