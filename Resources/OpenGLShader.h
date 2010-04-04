@@ -43,6 +43,10 @@ namespace OpenEngine {
                 UniformKind kind;
                 void* data;
             };
+            struct matrix {
+                GLuint loc;
+                Matrix<4, 4, float> mat;
+            };
             struct sampler2D{
                 GLuint loc;
                 GLint texUnit;
@@ -70,6 +74,9 @@ namespace OpenEngine {
             map<string, uniform> boundUniforms;
             map<string, uniform> unboundUniforms;
 
+            map<string, matrix> boundMatUnis;
+            map<string, matrix> unboundMatUnis;
+
             map<string, sampler2D> boundTex2Ds;
             map<string, sampler2D> unboundTex2Ds;
 
@@ -85,6 +92,7 @@ namespace OpenEngine {
             GLuint LoadShader(vector<string>, int);
             void BindUniforms();
             void BindUniform(uniform uni);
+            void BindUniform(matrix mat);
             void DeleteData(uniform uni);
             void BindTextures();
             
@@ -118,6 +126,8 @@ namespace OpenEngine {
             void GetUniform(string name, Vector<params, type>& value);
             
 #include "UniformList.h"
+            void SetUniform(string name, Matrix<4, 4, float> value, bool force = false);
+            void GetUniform(string name, Matrix<4, 4, float>& value);
 
             // Attribute functions
             //@ todo add buffer object functions (uhmmmm vbo's.....)
