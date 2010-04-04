@@ -66,6 +66,10 @@ public:
 protected:
     IRenderer* renderer;
 
+    Matrix<4, 4, float> modelViewMatrix[16];
+    unsigned int mvIndex;
+    void ApplyViewingVolume(Display::IViewingVolume& volume);
+
     bool renderBinormal, renderTangent, renderSoftNormal, renderHardNormal;
     bool renderTexture, renderShader;
     unsigned int currentTexture;

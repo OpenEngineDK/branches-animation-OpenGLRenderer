@@ -321,7 +321,7 @@ namespace OpenEngine {
             GLuint shader = glCreateShader(type);
             
             unsigned int size = files.size();
-            const GLchar* shaderBits[size];
+            const GLchar** shaderBits = new const GLchar*[size];
 
             // Read all the shaders from disk
             for (unsigned int i = 0; i < size; ++i){

@@ -53,7 +53,7 @@ using OpenEngine::Scene::RenderStateNode;
  */
 RenderingView::RenderingView(Viewport& viewport)
     : IRenderingView(viewport),
-      renderer(NULL) {
+      renderer(NULL), mvIndex(0) {
     renderBinormal=renderTangent=renderSoftNormal=renderHardNormal = false;
     renderTexture = renderShader = true;
     currentRenderState = new RenderStateNode();
@@ -98,6 +98,7 @@ void RenderingView::Handle(RenderingEventArg arg) {
 
         // apply the volume
         arg.renderer.ApplyViewingVolume(*volume);
+        modelViewMatrix[mvIndex] = volume->GetViewMatrix();
     }
     CHECK_FOR_GL_ERROR();
 
@@ -128,6 +129,11 @@ void RenderingView::Render(IRenderer* renderer, ISceneNode* root) {
  */
 void RenderingView::VisitRenderNode(RenderNode* node) {
     node->Apply(this);
+}
+
+void RenderingView::ApplyViewingVolume(Display::IViewingVolume& volume){
+    renderer->ApplyViewingVolume(volume);
+    modelViewMatrix[mvIndex] = volume.GetViewMatrix();
 }
 
 void RenderingView::ApplyRenderState(RenderStateNode* node) {
@@ -241,14 +247,17 @@ void RenderingView::VisitTransformationNode(TransformationNode* node) {
     float f[16];
     m.ToArray(f);
     glPushMatrix();
+    ++mvIndex;
     CHECK_FOR_GL_ERROR();
     glMultMatrixf(f);
+    modelViewMatrix[mvIndex] = m * modelViewMatrix[mvIndex-1];
     CHECK_FOR_GL_ERROR();
     // traverse sub nodes
     node->VisitSubNodes(*this);
     CHECK_FOR_GL_ERROR();
     // pop transformation matrix
     glPopMatrix();
+    --mvIndex;
     CHECK_FOR_GL_ERROR();
 }
 
@@ -402,8 +411,8 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
         IDataBlockList tcs = geom->GetTexCoords();
         IDataBlockList::iterator newItr = tcs.begin();
         IDataBlockList::iterator oldItr = texCoords.begin();
-        unsigned char maxCount = max(texCoords.size(), tcs.size());
-        for (unsigned char count = 0; count < maxCount; ++count){
+        unsigned int maxCount = max(texCoords.size(), tcs.size());
+        for (unsigned int count = 0; count < maxCount; ++count){
             glClientActiveTexture(GL_TEXTURE0 + count);
             IDataBlockPtr newTc = (*newItr);
             IDataBlockPtr oldTc = (*oldItr);
