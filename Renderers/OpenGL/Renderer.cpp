@@ -322,6 +322,7 @@ void Renderer::Handle(InitializeEventArg arg) {
     if (root == NULL)
         throw Exception("No scene root found while rendering.");
 
+    this->stage = RENDERER_INITIALIZE;
     this->initialize.Notify(RenderingEventArg(*this));
     this->stage = RENDERER_PREPROCESS;
     CHECK_FOR_GL_ERROR();
