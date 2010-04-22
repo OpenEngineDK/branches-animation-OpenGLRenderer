@@ -62,6 +62,19 @@ namespace OpenGL {
     }
 
     void TextureCanvas::Handle(RedrawEventArg arg) {
+        glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        // Start by flipping the screen which is the
+        // result from last engine loop.
+        if (vv != NULL) {
+            vv->SignalRendering(arg.approx);
+            // Set viewport size 
+            Vector<4,int> d(0, 0, ctex->width, ctex->height);
+            glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
+            CHECK_FOR_GL_ERROR();
+
+        }
+        CHECK_FOR_GL_ERROR();
         redrawEvent.Notify(RedrawEventArg(*this, arg.start, arg.approx));
         glBindTexture(GL_TEXTURE_2D, ctex->id);
         CHECK_FOR_GL_ERROR();
@@ -71,8 +84,7 @@ namespace OpenGL {
         CHECK_FOR_GL_ERROR();
     }
 
-    void TextureCanvas::Handle(DeinitializeEventArg arg) {
- 
+    void TextureCanvas::Handle(DeinitializeEventArg arg) { 
     }
 
     unsigned int TextureCanvas::GetWidth() const {

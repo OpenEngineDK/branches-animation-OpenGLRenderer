@@ -31,7 +31,7 @@ void ColorStereoRenderer::Handle(InitializeEventArg arg) {
 }
 
 void ColorStereoRenderer::Handle(RedrawEventArg arg) {
-    this->width = arg.canvas.GetWidth();
+    width = arg.canvas.GetWidth();
     height = arg.canvas.GetHeight();
     scene = arg.canvas.GetScene();
     depth = arg.canvas.GetDepth();
@@ -42,13 +42,10 @@ void ColorStereoRenderer::Handle(RedrawEventArg arg) {
 
     vv = stereo->GetLeft();
     glColorMask (GL_FALSE, GL_FALSE, GL_TRUE, GL_FALSE);
-
     redrawEvent.Notify(RedrawEventArg(*this, arg.start, arg.approx));
-
     vv = stereo->GetRight();
     glColorMask (GL_TRUE, GL_FALSE, GL_FALSE, GL_FALSE);
     redrawEvent.Notify(RedrawEventArg(*this, arg.start, arg.approx));
-
     glColorMask (GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 }
 

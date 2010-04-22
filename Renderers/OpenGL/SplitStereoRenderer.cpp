@@ -31,7 +31,7 @@ void SplitStereoRenderer::Handle(InitializeEventArg arg) {
 }
 
 void SplitStereoRenderer::Handle(RedrawEventArg arg) {
-    this->width = arg.canvas.GetWidth();
+    width = arg.canvas.GetWidth()*0.5;
     height = arg.canvas.GetHeight();
     scene = arg.canvas.GetScene();
     depth = arg.canvas.GetDepth();
@@ -40,17 +40,15 @@ void SplitStereoRenderer::Handle(RedrawEventArg arg) {
 
     // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    unsigned int halfw = arg.canvas.GetWidth() * 0.5;
-    unsigned int height = arg.canvas.GetHeight();
     vv = stereo->GetLeft();
 
-    Vector<4,int> d(0, 0, halfw, height);
+    Vector<4,int> d(0, 0, width, height);
     glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
     CHECK_FOR_GL_ERROR();
     redrawEvent.Notify(RedrawEventArg(*this, arg.start, arg.approx));
 
     vv = stereo->GetRight();
-    d = Vector<4,int>(halfw, 0, halfw, height);
+    d = Vector<4,int>(width, 0, width, height);
     glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
     redrawEvent.Notify(RedrawEventArg(*this, arg.start, arg.approx));
 }
