@@ -39,6 +39,7 @@ TARGET_LINK_LIBRARIES( ${EXTENSION_NAME}
   OpenEngine_Scene
   OpenEngine_Geometry
   OpenEngine_Renderers
+  OpenEngine_Display
   ${OPENGL_LIBRARY}
   ${GLEW_LIBRARIES}
   ${SDL_LIBRARY}
