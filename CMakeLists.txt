@@ -16,6 +16,8 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   # Renderers/OpenGL/GLCopyBufferedRenderer.cpp
   Renderers/OpenGL/ColorStereoRenderer.h
   Renderers/OpenGL/ColorStereoRenderer.cpp
+  Renderers/OpenGL/SplitStereoRenderer.h
+  Renderers/OpenGL/SplitStereoRenderer.cpp
   Renderers/OpenGL/Renderer.h
   Renderers/OpenGL/Renderer.cpp
   Renderers/OpenGL/RenderingView.h

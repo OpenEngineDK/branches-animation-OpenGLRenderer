@@ -335,7 +335,7 @@ void Renderer::Handle(RedrawEventArg arg) {
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
     // Clear the screen and the depth buffer.
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    // glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     IViewingVolume* volume = arg.canvas.GetViewingVolume();
     // If no viewing volume is set for the viewport ignore it.
@@ -344,7 +344,7 @@ void Renderer::Handle(RedrawEventArg arg) {
 
         // Set viewport size 
         Vector<4,int> d(0, 0, arg.canvas.GetWidth(), arg.canvas.GetHeight());
-        glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
+        // glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
         CHECK_FOR_GL_ERROR();
 
         // apply the volume
