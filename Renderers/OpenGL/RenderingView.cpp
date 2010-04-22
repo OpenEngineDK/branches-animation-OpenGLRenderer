@@ -52,7 +52,7 @@ using OpenEngine::Scene::RenderStateNode;
  * @param viewport Viewport in which to render.
  */
 RenderingView::RenderingView() 
-    : renderer(NULL), mvIndex(0) {
+    : mvIndex(0) {
     renderBinormal=renderTangent=renderSoftNormal=renderHardNormal = false;
     renderTexture = renderShader = true;
     currentRenderState = new RenderStateNode();
@@ -77,15 +77,16 @@ RenderingView::~RenderingView() {}
 
 void RenderingView::Handle(RenderingEventArg arg) {
     #ifdef OE_DEBUG
-    if (root == NULL) 
+    if (arg.canvas.GetScene() == NULL) 
         throw Exception("No scene root found while rendering.");
     #endif
-    this->arg = &arg;
 
+    this->arg = &arg;
     // setup default render state
     // RenderStateNode* renderStateNode = new RenderStateNode();
     ApplyRenderState(currentRenderState);
     arg.canvas.GetScene()->Accept(*this);
+    this->arg = NULL;
 }
 
 /**
@@ -94,13 +95,13 @@ void RenderingView::Handle(RenderingEventArg arg) {
  * @param node Rendering node to apply.
  */
 void RenderingView::VisitRenderNode(RenderNode* node) {
-    node->Apply(*arg);
+    node->Apply(*arg, *this);
 }
 
-void RenderingView::ApplyViewingVolume(Display::IViewingVolume& volume){
-    renderer->ApplyViewingVolume(volume);
-    modelViewMatrix[mvIndex] = volume.GetViewMatrix();
-}
+// void RenderingView::ApplyViewingVolume(Display::IViewingVolume& volume){
+//     renderer->ApplyViewingVolume(volume);
+//     modelViewMatrix[mvIndex] = volume.GetViewMatrix();
+// }
 
 void RenderingView::ApplyRenderState(RenderStateNode* node) {
     if (node->IsOptionEnabled(RenderStateNode::WIREFRAME)) {
@@ -327,7 +328,7 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
 
     }else{
 
-        bool bufferSupport = renderer->BufferSupport();
+        bool bufferSupport = arg->renderer.BufferSupport();
         
         IDataBlockPtr v = geom->GetVertices();
         if (v == NULL){
@@ -418,7 +419,7 @@ void RenderingView::ApplyMesh(Mesh* prim){
         // Apply the material.
         ApplyMaterial(prim->GetMaterial());
 
-        bool bufferSupport = renderer->BufferSupport();
+        bool bufferSupport = arg->renderer.BufferSupport();
         
         // Apply the index buffer and draw
         indexBuffer = prim->GetIndices();

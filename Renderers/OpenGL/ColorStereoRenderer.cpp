@@ -36,6 +36,8 @@ void ColorStereoRenderer::Handle(RedrawEventArg arg) {
     scene = arg.canvas.GetScene();
     depth = arg.canvas.GetDepth();
 
+    stereo->SignalRendering(arg.approx);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     vv = stereo->GetLeft();

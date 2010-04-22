@@ -11,8 +11,8 @@
 #define _OPENGL_RENDERING_VIEW_H_
 
 #include <Meta/OpenGL.h>
-#include <Core/IListener.h>
 #include <Renderers/IRenderer.h>
+#include <Renderers/IRenderingView.h>
 #include <Scene/RenderStateNode.h>
 #include <Scene/BlendingNode.h>
 #include <list>
@@ -46,8 +46,7 @@ using namespace std;
  * Concrete RenderingView using OpenGL.
  */
 class RenderingView 
-    : public ISceneNodeVisitor
-    , public IListener<RenderingEventArg> {    
+    : public IRenderingView {    
 private:
     void RenderLine(Vector<3,float> vert,
                     Vector<3,float> norm,
@@ -66,14 +65,11 @@ public:
     void VisitDisplayListNode(DisplayListNode* node);
     void VisitBlendingNode(BlendingNode* node);
     void Handle(RenderingEventArg arg);
-    IRenderer* GetRenderer();
     
 protected:
-    IRenderer* renderer;
-
     Matrix<4, 4, float> modelViewMatrix[16];
     unsigned int mvIndex;
-    void ApplyViewingVolume(Display::IViewingVolume& volume);
+    // void ApplyViewingVolume(Display::IViewingVolume& volume);
 
     bool renderBinormal, renderTangent, renderSoftNormal, renderHardNormal;
     bool renderTexture, renderShader;

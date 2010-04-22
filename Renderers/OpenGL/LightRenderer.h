@@ -51,9 +51,6 @@ private:
     float pos[4], dir[4];
     GLint count;
 public:
-    GLint lightCount;
-
- public:
 
     LightRenderer(); 
     ~LightRenderer();

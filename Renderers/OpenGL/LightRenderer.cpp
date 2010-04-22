@@ -130,12 +130,12 @@ void LightRenderer::Handle(RenderingEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
     // turn off lights
-    for (int i = 0; i < lightCount; i++) {
+    for (int i = 0; i < count; i++) {
         glDisable(GL_LIGHT0 + i);
     }
     CHECK_FOR_GL_ERROR();
 
-    lightCount = 0;
+    count = 0;
     glMatrixMode(GL_MODELVIEW);
     if (arg.canvas.GetScene())
         arg.canvas.GetScene()->Accept(*this);
