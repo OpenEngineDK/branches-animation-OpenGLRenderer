@@ -199,7 +199,12 @@ namespace OpenEngine {
                 }else if (type == "attr:" || type == "unif:") {
                     char name[255];
                     float attr[4];
-                    int n = sscanf(buf, "attr: %s = %f %f %f %f", name, &attr[0], &attr[1], &attr[2], &attr[3]) - 1;
+                    int n = 0;
+                    if (type == "attr:")
+                        n = sscanf(buf, "attr: %s = %f %f %f %f", name, &attr[0], &attr[1], &attr[2], &attr[3]) - 1;
+                    else if (type == "unif:")
+                        n = sscanf(buf, "unif: %s = %f %f %f %f", name, &attr[0], &attr[1], &attr[2], &attr[3]) - 1;
+                    
                     switch(n){
                     case 1:
                         SetUniform(string(name), attr[0]);
