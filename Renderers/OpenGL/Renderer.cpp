@@ -40,7 +40,7 @@ GLSLVersion Renderer::glslversion = GLSL_UNKNOWN;
 
  Renderer::Renderer()
 {
-    backgroundColor = Vector<4,float>(1.0);
+    //backgroundColor = Vector<4,float>(1.0);
 }
 
 /**
@@ -291,12 +291,12 @@ void Renderer::Handle(Display::InitializeEventArg arg) {
     bufferSupport = glewIsSupported("GL_VERSION_2_0");
     fboSupport = glewGetExtension("GL_EXT_framebuffer_object") == GL_TRUE;
         
-    Vector<4,float> bgc = backgroundColor;
-    glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
+    // Vector<4,float> bgc = backgroundColor;
+    // glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
     // Clear the OpenGL frame buffer.
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
-    CHECK_FOR_GL_ERROR();
+    // glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
+    // CHECK_FOR_GL_ERROR();
 
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);						   
@@ -331,8 +331,8 @@ void Renderer::Handle(RedrawEventArg arg) {
     //     ((IListener<RedrawEventArg>*)(*i))->Handle(arg);
     // }
 
-    Vector<4,float> bgc = backgroundColor;
-    glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
+    // Vector<4,float> bgc = backgroundColor;
+    // glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
     // Clear the screen and the depth buffer.
     // glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -340,12 +340,12 @@ void Renderer::Handle(RedrawEventArg arg) {
     IViewingVolume* volume = arg.canvas.GetViewingVolume();
     // If no viewing volume is set for the viewport ignore it.
     if (volume != NULL) {
-        volume->SignalRendering(arg.approx);
+        // volume->SignalRendering(arg.approx);
 
         // Set viewport size 
-        Vector<4,int> d(0, 0, arg.canvas.GetWidth(), arg.canvas.GetHeight());
+        // Vector<4,int> d(0, 0, arg.canvas.GetWidth(), arg.canvas.GetHeight());
         // glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
-        CHECK_FOR_GL_ERROR();
+        //CHECK_FOR_GL_ERROR();
 
         // apply the volume
         ApplyViewingVolume(*volume);
@@ -833,13 +833,13 @@ void Renderer::DrawPoint(Vector<3,float> point, Vector<3,float> color , float si
     CHECK_FOR_GL_ERROR();
 }
 
-void Renderer::SetBackgroundColor(Vector<4,float> color) {
-    backgroundColor = color;
-}
+// void Renderer::SetBackgroundColor(Vector<4,float> color) {
+//     backgroundColor = color;
+// }
 
-Vector<4,float> Renderer::GetBackgroundColor() {
-    return backgroundColor;
-}
+// Vector<4,float> Renderer::GetBackgroundColor() {
+//     return backgroundColor;
+// }
 
 /**
  * Helper function drawing a sphere.

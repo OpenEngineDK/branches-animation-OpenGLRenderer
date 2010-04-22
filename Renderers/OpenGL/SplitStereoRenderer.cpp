@@ -36,9 +36,9 @@ void SplitStereoRenderer::Handle(RedrawEventArg arg) {
     scene = arg.canvas.GetScene();
     depth = arg.canvas.GetDepth();
 
-    stereo->SignalRendering(arg.approx);
+    // stereo->SignalRendering(arg.approx);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     unsigned int halfw = arg.canvas.GetWidth() * 0.5;
     unsigned int height = arg.canvas.GetHeight();

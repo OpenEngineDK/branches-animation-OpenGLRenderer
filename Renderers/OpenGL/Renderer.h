@@ -72,7 +72,7 @@ private:
     bool bufferSupport;
     bool fboSupport;
     
-    Vector<4,float> backgroundColor;
+    //Vector<4,float> backgroundColor;
 
     // Event lists for the rendering phases.
     Event<RenderingEventArg> initialize;
@@ -126,8 +126,8 @@ public:
      */
     static GLSLVersion GetGLSLVersion();
 
-    virtual void SetBackgroundColor(Vector<4,float> color);
-    virtual Vector<4,float> GetBackgroundColor();
+    // virtual void SetBackgroundColor(Vector<4,float> color);
+    // virtual Vector<4,float> GetBackgroundColor();
 
     virtual void ApplyViewingVolume(Display::IViewingVolume& volume);
     virtual void LoadTexture(ITexture2DPtr texr);
