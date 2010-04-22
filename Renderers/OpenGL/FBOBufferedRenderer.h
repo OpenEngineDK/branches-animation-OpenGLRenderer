@@ -30,12 +30,12 @@ namespace OpenGL {
  */
 class FBOBufferedRenderer : public IBufferedRenderer {
 public:
-    FBOBufferedRenderer(Viewport* viewport);
+    FBOBufferedRenderer(/*Viewport* viewport*/);
     virtual ~FBOBufferedRenderer();
 
-    virtual void Handle(InitializeEventArg arg);
-    virtual void Handle(ProcessEventArg arg);
-    virtual void Handle(DeinitializeEventArg arg);
+    virtual void Handle(Display::InitializeEventArg arg);
+    // virtual void Handle(ProcessEventArg arg);
+    virtual void Handle(Display::DeinitializeEventArg arg);
 
     virtual ITexture2DPtr GetColorBuffer() const;
 
@@ -45,9 +45,9 @@ public:
     Core::IEvent<RenderingEventArg>& ProcessEvent()      { return peer.ProcessEvent(); }
     Core::IEvent<RenderingEventArg>& PostProcessEvent()  { return peer.PostProcessEvent(); }
     Core::IEvent<RenderingEventArg>& DeinitializeEvent() { return peer.DeinitializeEvent(); }
-    Display::Viewport& GetViewport() const               { return peer.GetViewport(); }
-    Scene::ISceneNode* GetSceneRoot() const              { return peer.GetSceneRoot(); }
-    void SetSceneRoot(Scene::ISceneNode* scene)          { peer.SetSceneRoot(scene); }
+    // Display::Viewport& GetViewport() const               { return peer.GetViewport(); }
+    // Scene::ISceneNode* GetSceneRoot() const              { return peer.GetSceneRoot(); }
+    // void SetSceneRoot(Scene::ISceneNode* scene)          { peer.SetSceneRoot(scene); }
     void ApplyViewingVolume(Display::IViewingVolume& v)  { peer.ApplyViewingVolume(v); }
     void LoadTexture(Resources::ITexture2DPtr t)   { peer.LoadTexture(t.get()); }
     void LoadTexture(Resources::ITexture2D* t)     { peer.LoadTexture(t); }

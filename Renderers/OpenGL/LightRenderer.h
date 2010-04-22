@@ -26,9 +26,6 @@ namespace OpenEngine {
         class SpotLightNode;
     }
 
-namespace Display {
-    class Viewport;
-}
 
 namespace Renderers {
 namespace OpenGL {
@@ -53,9 +50,12 @@ class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventAr
 private:
     float pos[4], dir[4];
     GLint count;
-    Display::Viewport& viewport;    
 public:
-    LightRenderer(Display::Viewport& vp); 
+    GLint lightCount;
+
+ public:
+
+    LightRenderer(); 
     ~LightRenderer();
         
     void Handle(RenderingEventArg arg);

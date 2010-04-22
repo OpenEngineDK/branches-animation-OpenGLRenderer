@@ -24,7 +24,6 @@
 #include <Resources/ITexture3D.h>
 #include <Resources/FrameBuffer.h>
 
-
 using namespace OpenEngine::Resources;
 
 namespace OpenEngine {
@@ -39,9 +38,7 @@ using OpenEngine::Display::IViewingVolume;
 
 GLSLVersion Renderer::glslversion = GLSL_UNKNOWN;
 
-Renderer::Renderer(Viewport* viewport)
-    : root(NULL) 
-    , viewport(viewport)
+ Renderer::Renderer()
 {
     backgroundColor = Vector<4,float>(1.0);
 }
@@ -51,19 +48,6 @@ Renderer::Renderer(Viewport* viewport)
  * Deletes the internal viewport.
  */
 Renderer::~Renderer() {
-    delete viewport;
-}
-
-Viewport& Renderer::GetViewport() const {
-    return *viewport;
-}
-
-void Renderer::SetSceneRoot(ISceneNode* root) {
-    this->root = root;
-}
-
-ISceneNode* Renderer::GetSceneRoot() const {
-    return root;
 }
 
 void Renderer::InitializeGLSLVersion() {
@@ -289,7 +273,8 @@ GLenum Renderer::GLAccessType(BlockType b, UpdateMode u){
     return GL_STATIC_DRAW;
 }
 
-void Renderer::Handle(InitializeEventArg arg) {
+void Renderer::Handle(Display::InitializeEventArg arg) {
+    logger.info << "INITIALIZE RENDERER" << logger.end;
     CHECK_FOR_GL_ERROR();
 
     InitializeGLSLVersion(); //@todo: HACK - to get Inseminator to work
@@ -313,10 +298,6 @@ void Renderer::Handle(InitializeEventArg arg) {
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
     CHECK_FOR_GL_ERROR();
 
-    // Enable lighting
-    //glEnable(GL_LIGHTING);
-    //glEnable(GL_LIGHT0);
-
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);						   
     CHECK_FOR_GL_ERROR();
@@ -326,24 +307,29 @@ void Renderer::Handle(InitializeEventArg arg) {
     glShadeModel(GL_SMOOTH);
     CHECK_FOR_GL_ERROR();
 
-    // Check that we have a scene.
-    if (root == NULL)
-        throw Exception("No scene root found while rendering.");
-
     this->stage = RENDERER_INITIALIZE;
-    this->initialize.Notify(RenderingEventArg(*this));
+    this->initialize.Notify(RenderingEventArg(arg.canvas, *this));
     this->stage = RENDERER_PREPROCESS;
     CHECK_FOR_GL_ERROR();
+
+    // list<ICanvasListener*>::iterator i = dependencies.begin();
+    // for (; i != dependencies.end(); ++i) {
+    //     ((IListener<Display::InitializeEventArg>*)(*i))->Handle(arg);
+    // }
 }
 
-/**
- * @note The processing function assumes that the scene has not been
- *       replaced by null since the initialization face. 
- */
-void Renderer::Handle(ProcessEventArg arg) {
+// void Renderer::Handle(ResizeEventArg arg) {
+
+// }
+
+void Renderer::Handle(RedrawEventArg arg) {
     // @todo: assert we are in preprocess stage
 
-    viewport->GetViewingVolume()->SignalRendering(arg.approx);
+    // ensure that dependent frames are rendered first
+    // list<ICanvasListener*>::iterator i = dependencies.begin();
+    // for (; i != dependencies.end(); ++i) {
+    //     ((IListener<RedrawEventArg>*)(*i))->Handle(arg);
+    // }
 
     Vector<4,float> bgc = backgroundColor;
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
@@ -351,8 +337,24 @@ void Renderer::Handle(ProcessEventArg arg) {
     // Clear the screen and the depth buffer.
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+    IViewingVolume* volume = arg.canvas.GetViewingVolume();
+    // If no viewing volume is set for the viewport ignore it.
+    if (volume != NULL) {
+        volume->SignalRendering(arg.approx);
+
+        // Set viewport size 
+        Vector<4,int> d(0, 0, arg.canvas.GetWidth(), arg.canvas.GetHeight());
+        glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
+        CHECK_FOR_GL_ERROR();
+
+        // apply the volume
+        ApplyViewingVolume(*volume);
+    }
+    CHECK_FOR_GL_ERROR();
+
     // run the processing phases
-    RenderingEventArg rarg(*this, arg.start, arg.approx);
+    RenderingEventArg rarg(arg.canvas, *this, arg.start, arg.approx);
+
     this->preProcess.Notify(rarg);
     this->stage = RENDERER_PROCESS;
     this->process.Notify(rarg);
@@ -361,9 +363,23 @@ void Renderer::Handle(ProcessEventArg arg) {
     this->stage = RENDERER_PREPROCESS;
 }
 
-void Renderer::Handle(DeinitializeEventArg arg) {
+
+/**
+ * @note The processing function assumes that the scene has not been
+ *       replaced by null since the initialization face. 
+ */
+// void Renderer::Handle(ProcessEventArg arg) {
+//     logger.warning << "rendering should be triggered using RedrawEvent" << logger.end;
+// }
+
+void Renderer::Handle(Display::DeinitializeEventArg arg) {
+    // list<ICanvasListener*>::iterator i = dependencies.begin();
+    // for (; i != dependencies.end(); ++i) {
+    //     ((IListener<Display::DeinitializeEventArg>*)(*i))->Handle(arg);
+    // }
+
     this->stage = RENDERER_DEINITIALIZE;
-    this->deinitialize.Notify(RenderingEventArg(*this));
+    this->deinitialize.Notify(RenderingEventArg(arg.canvas, *this));
 }
 
 IEvent<RenderingEventArg>& Renderer::InitializeEvent() {

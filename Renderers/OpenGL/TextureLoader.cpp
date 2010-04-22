@@ -33,7 +33,7 @@ TextureLoader::TextureLoader() {}
 TextureLoader::~TextureLoader() {}
 
 void TextureLoader::Handle(RenderingEventArg arg) {
-    arg.renderer.GetSceneRoot()->Accept(*this);
+    arg.canvas.GetScene()->Accept(*this);
 }
 
 /**

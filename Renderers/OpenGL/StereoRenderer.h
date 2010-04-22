@@ -16,6 +16,7 @@
 #include <Math/Matrix.h>
 #include <vector>
 #include <Display/StereoCamera.h>
+#include <Display/Viewport.h>
 
 namespace OpenEngine {
 
@@ -43,7 +44,7 @@ using OpenEngine::Core::Event;
  *
  * @class StereoRenderer Renderer.h Renderers/OpenGL/StereoRenderer.h
  */
-class StereoRenderer : public Renderer {
+class __attribute__ (deprecated) StereoRenderer : public Renderer {
 private:
     Display::StereoCamera* stereoCam;
 public:

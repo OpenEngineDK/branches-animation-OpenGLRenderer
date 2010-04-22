@@ -19,23 +19,29 @@
 #include <Renderers/OpenGL/Renderer.h>
 #include <Resources/Texture2D.h>
 
+#include <Display/IFrame.h>
+
 namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
+
+using Display::IFrame;
 
 /**
  * GLCopyBufferedRenderer using OpenGL
  *
  * @class GLCopyBufferedRenderer GLCopyBufferedRenderer.h Renderers/OpenGL/Renderer.h
  */
-class GLCopyBufferedRenderer : public IBufferedRenderer {
+class __attribute__ (deprecated) GLCopyBufferedRenderer : public IBufferedRenderer {
 public:
-    GLCopyBufferedRenderer(Viewport* viewport);
+    GLCopyBufferedRenderer(IFrame& frame/*Viewport* viewport*/);
     virtual ~GLCopyBufferedRenderer();
 
-    virtual void Handle(InitializeEventArg arg);
-    virtual void Handle(ProcessEventArg arg);
-    virtual void Handle(DeinitializeEventArg arg);
+    virtual void Handle(Display::InitializeEventArg arg);
+    // virtual void Handle(ProcessEventArg arg);
+    virtual void Handle(Display::DeinitializeEventArg arg);
+
+    virtual void Handle(RedrawEventArg arg);
 
     virtual ITexture2DPtr GetColorBuffer() const;
 
@@ -45,9 +51,9 @@ public:
     Core::IEvent<RenderingEventArg>& ProcessEvent()      { return peer.ProcessEvent(); }
     Core::IEvent<RenderingEventArg>& PostProcessEvent()  { return peer.PostProcessEvent(); }
     Core::IEvent<RenderingEventArg>& DeinitializeEvent() { return peer.DeinitializeEvent(); }
-    Display::Viewport& GetViewport() const               { return peer.GetViewport(); }
-    Scene::ISceneNode* GetSceneRoot() const              { return peer.GetSceneRoot(); }
-    void SetSceneRoot(Scene::ISceneNode* scene)          { peer.SetSceneRoot(scene); }
+    // Display::Viewport& GetViewport() const               { return peer.GetViewport(); }
+    // Scene::ISceneNode* GetSceneRoot() const              { return peer.GetSceneRoot(); }
+    // void SetSceneRoot(Scene::ISceneNode* scene)          { peer.SetSceneRoot(scene); }
     void ApplyViewingVolume(Display::IViewingVolume& v)  { peer.ApplyViewingVolume(v); }
     void LoadTexture(Resources::ITexture2DPtr t)   { peer.LoadTexture(t.get()); }
     void LoadTexture(Resources::ITexture2D* t)     { peer.LoadTexture(t); }

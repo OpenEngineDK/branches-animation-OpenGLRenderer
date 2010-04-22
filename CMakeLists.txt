@@ -10,12 +10,12 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Resources/OpenGLShaderAttributes.cpp
   Resources/OpenGLShaderUniforms.cpp
   Resources/OpenGLShaderTextures.cpp
-  Renderers/OpenGL/FBOBufferedRenderer.h
-  Renderers/OpenGL/FBOBufferedRenderer.cpp
-  Renderers/OpenGL/GLCopyBufferedRenderer.h
-  Renderers/OpenGL/GLCopyBufferedRenderer.cpp
-  Renderers/OpenGL/StereoRenderer.h
-  Renderers/OpenGL/StereoRenderer.cpp
+  # Renderers/OpenGL/FBOBufferedRenderer.h
+  # Renderers/OpenGL/FBOBufferedRenderer.cpp
+  # Renderers/OpenGL/GLCopyBufferedRenderer.h
+  # Renderers/OpenGL/GLCopyBufferedRenderer.cpp
+  Renderers/OpenGL/ColorStereoRenderer.h
+  Renderers/OpenGL/ColorStereoRenderer.cpp
   Renderers/OpenGL/Renderer.h
   Renderers/OpenGL/Renderer.cpp
   Renderers/OpenGL/RenderingView.h
@@ -28,6 +28,10 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Renderers/OpenGL/LightRenderer.cpp
   Scene/DisplayListNode.cpp
   Scene/DisplayListTransformer.cpp
+  Display/OpenGL/TextureCanvas.h
+  Display/OpenGL/TextureCanvas.cpp
+  Renderers/OpenGL/CompositeCanvas.h
+  Renderers/OpenGL/CompositeCanvas.cpp
 )
 
 TARGET_LINK_LIBRARIES( ${EXTENSION_NAME}

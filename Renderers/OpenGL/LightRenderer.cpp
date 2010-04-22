@@ -12,7 +12,6 @@
 #include <Scene/DirectionalLightNode.h>
 #include <Scene/PointLightNode.h>
 #include <Scene/SpotLightNode.h>
-#include <Display/Viewport.h>
 
 #include <Logging/Logger.h>
 
@@ -22,11 +21,10 @@ namespace OpenGL {
 
 using OpenEngine::Math::Vector;
 using OpenEngine::Math::Matrix;
-using OpenEngine::Display::Viewport;
 
-LightRenderer::LightRenderer(Viewport& vp)
+LightRenderer::LightRenderer()
     : count(0)
-    , viewport(vp) {
+{
     pos[0] = 0.0;
     pos[1] = 0.0;
     pos[2] = 0.0;
@@ -129,10 +127,18 @@ void LightRenderer::VisitSpotLightNode(SpotLightNode* node) {
 }
 
 void LightRenderer::Handle(RenderingEventArg arg) {
-    count = 0;
-    arg.renderer.ApplyViewingVolume(*viewport.GetViewingVolume());
+    CHECK_FOR_GL_ERROR();
+
+    // turn off lights
+    for (int i = 0; i < lightCount; i++) {
+        glDisable(GL_LIGHT0 + i);
+    }
+    CHECK_FOR_GL_ERROR();
+
+    lightCount = 0;
     glMatrixMode(GL_MODELVIEW);
-    arg.renderer.GetSceneRoot()->Accept(*this);
+    if (arg.canvas.GetScene())
+        arg.canvas.GetScene()->Accept(*this);
     GLint max;
     glGetIntegerv(GL_MAX_LIGHTS, &max);
     for (int i = count; i < max; ++i) {

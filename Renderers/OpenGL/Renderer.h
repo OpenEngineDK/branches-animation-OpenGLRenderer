@@ -11,7 +11,6 @@
 #define _RENDERER_H_
 
 #include <Renderers/IRenderer.h>
-#include <Renderers/IRenderingView.h>
 #include <Core/Event.h>
 #include <Scene/ISceneNode.h>
 #include <Math/Matrix.h>
@@ -43,17 +42,17 @@ namespace OpenGL {
 
 using OpenEngine::Math::Matrix;
 using OpenEngine::Geometry::FacePtr;
-using OpenEngine::Core::InitializeEventArg;
-using OpenEngine::Core::ProcessEventArg;
-using OpenEngine::Core::DeinitializeEventArg;
+using OpenEngine::Display::InitializeEventArg;
+using OpenEngine::Display::DeinitializeEventArg;
 using OpenEngine::Core::Event;
+using Display::RedrawEventArg;
+using Display::ResizeEventArg;
 using OpenEngine::Resources::Types::Type;
 using OpenEngine::Resources::ColorFormat;
 using OpenEngine::Resources::ITexture;
 using OpenEngine::Resources::BlockType;
 using OpenEngine::Resources::UpdateMode;
 using OpenEngine::Resources::IDataBlock;
-
 
 /**
  * OpenGL Shader Language versions
@@ -73,8 +72,6 @@ private:
     bool bufferSupport;
     bool fboSupport;
     
-    Scene::ISceneNode* root;
-    Viewport* viewport;
     Vector<4,float> backgroundColor;
 
     // Event lists for the rendering phases.
@@ -95,16 +92,13 @@ private:
     inline GLenum GLAccessType(BlockType b, UpdateMode u);
 
 public:
-    Renderer(Viewport* viewport);
+    Renderer(/*Viewport* viewport*/);
     virtual ~Renderer();
 
-    void Handle(InitializeEventArg arg);
-    void Handle(ProcessEventArg arg);
-    void Handle(DeinitializeEventArg arg);
-
-    virtual Viewport& GetViewport() const;
-    virtual void SetSceneRoot(Scene::ISceneNode* root);
-    virtual Scene::ISceneNode* GetSceneRoot() const;
+    void Handle(Display::InitializeEventArg arg);
+    void Handle(Display::DeinitializeEventArg arg);
+    void Handle(RedrawEventArg arg);
+    // void Handle(ResizeEventArg arg);
 
     /**
      * Event lists for the rendering phases.

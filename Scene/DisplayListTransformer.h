@@ -14,23 +14,25 @@
 #include <Scene/GeometryNode.h>
 #include <Scene/VertexArrayNode.h>
 #include <Scene/ISceneNodeVisitor.h>
-#include <Renderers/IRenderingView.h>
+#include <Renderers/IRenderer.h>
 #include <Core/IListener.h>
 #include <Renderers/IRenderer.h>
 
 namespace OpenEngine {
     namespace Scene {
         
-using namespace OpenEngine::Geometry;
-using namespace OpenEngine::Renderers;
+using namespace Geometry;
+using namespace Renderers;
+using namespace Core;
 
 class DisplayListTransformer : public ISceneNodeVisitor, public IListener<RenderingEventArg> {
  private:
-    IRenderingView* r;
-    IRenderer* renderer;
+    RenderingEventArg* arg;
+    ISceneNodeVisitor* r;
+    // IRenderer* renderer;
     
  public:
-    DisplayListTransformer(IRenderingView* r);
+    DisplayListTransformer(ISceneNodeVisitor* r);
     ~DisplayListTransformer();
     
     void Transform(ISceneNode& node);

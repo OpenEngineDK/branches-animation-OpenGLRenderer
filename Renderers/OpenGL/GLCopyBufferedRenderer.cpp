@@ -8,14 +8,14 @@ namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
-GLCopyBufferedRenderer::GLCopyBufferedRenderer(Viewport* viewport)
-    : peer(Renderer(viewport))
+GLCopyBufferedRenderer::GLCopyBufferedRenderer(IFrame& frame/*Viewport* viewport*/)
+    : peer(Renderer(/*viewport*/))
     , depthbuffer(0)
     , img(0)
 {
-    Vector<4,int> dim(viewport->GetDimension());
-    width  = dim[2];
-    height = dim[3];
+    // Vector<4,int> dim(viewport->GetDimension());
+    width  = frame.GetWidth();
+    height = frame.GetHeight();
     colorbuf = ITexture2DPtr(new ColorBuffer(*this));
 }
 
@@ -27,7 +27,7 @@ ITexture2DPtr GLCopyBufferedRenderer::GetColorBuffer() const {
     return colorbuf;
 }
 
-void GLCopyBufferedRenderer::Handle(InitializeEventArg arg) {
+void GLCopyBufferedRenderer::Handle(Display::InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
     peer.Handle(arg);
@@ -54,7 +54,11 @@ void GLCopyBufferedRenderer::Handle(InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
 }
 
-void GLCopyBufferedRenderer::Handle(ProcessEventArg arg) {
+// void GLCopyBufferedRenderer::Handle(ProcessEventArg arg) {
+//     logger.warning << "glcopybuffer should not handle processEvent" << logger.end;
+// }
+
+void GLCopyBufferedRenderer::Handle(RedrawEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -70,7 +74,7 @@ void GLCopyBufferedRenderer::Handle(ProcessEventArg arg) {
 
 }
 
-void GLCopyBufferedRenderer::Handle(DeinitializeEventArg arg) {
+void GLCopyBufferedRenderer::Handle(Display::DeinitializeEventArg arg) {
     peer.Handle(arg);
     CHECK_FOR_GL_ERROR();
 }

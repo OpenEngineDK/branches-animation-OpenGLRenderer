@@ -11,7 +11,8 @@
 #define _OPENGL_RENDERING_VIEW_H_
 
 #include <Meta/OpenGL.h>
-#include <Renderers/IRenderingView.h>
+#include <Core/IListener.h>
+#include <Renderers/IRenderer.h>
 #include <Scene/RenderStateNode.h>
 #include <Scene/BlendingNode.h>
 #include <list>
@@ -38,18 +39,23 @@ using namespace OpenEngine::Renderers;
 using namespace OpenEngine::Resources;
 using namespace OpenEngine::Scene;
 using namespace OpenEngine::Geometry;
+using namespace Core;  
 using namespace std;
 
 /**
  * Concrete RenderingView using OpenGL.
  */
-class RenderingView : virtual public IRenderingView {    
+class RenderingView 
+    : public ISceneNodeVisitor
+    , public IListener<RenderingEventArg> {    
+private:
     void RenderLine(Vector<3,float> vert,
                     Vector<3,float> norm,
                     Vector<3,float> color);
-
+    // save the event arg 
+    RenderingEventArg* arg;
 public:
-    RenderingView(Viewport& viewport);
+    RenderingView();
     virtual ~RenderingView();
     void VisitMeshNode(MeshNode* node);
     void VisitGeometryNode(GeometryNode* node);
@@ -59,7 +65,6 @@ public:
     void VisitRenderNode(RenderNode* node);
     void VisitDisplayListNode(DisplayListNode* node);
     void VisitBlendingNode(BlendingNode* node);
-    void Render(IRenderer* renderer, ISceneNode* root);
     void Handle(RenderingEventArg arg);
     IRenderer* GetRenderer();
     

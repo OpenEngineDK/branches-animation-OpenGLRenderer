@@ -51,9 +51,8 @@ using OpenEngine::Scene::RenderStateNode;
  *
  * @param viewport Viewport in which to render.
  */
-RenderingView::RenderingView(Viewport& viewport)
-    : IRenderingView(viewport),
-      renderer(NULL), mvIndex(0) {
+RenderingView::RenderingView() 
+    : renderer(NULL), mvIndex(0) {
     renderBinormal=renderTangent=renderSoftNormal=renderHardNormal = false;
     renderTexture = renderShader = true;
     currentRenderState = new RenderStateNode();
@@ -76,50 +75,17 @@ RenderingView::RenderingView(Viewport& viewport)
  */
 RenderingView::~RenderingView() {}
 
-/**
- * Get the renderer that the view is processing for.
- *
- * @return Current renderer, NULL if no renderer processing is active.
- */
-IRenderer* RenderingView::GetRenderer() {
-    return renderer;
-}
-
 void RenderingView::Handle(RenderingEventArg arg) {
-    IViewingVolume* volume = viewport.GetViewingVolume();
-    // If no viewing volume is set for the viewport ignore it.
-    if (volume != NULL) {
-        //volume->SignalRendering(arg.approx);
-
-        // Set viewport size
-        Vector<4,int> d = viewport.GetDimension();
-        glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
-        CHECK_FOR_GL_ERROR();
-
-        // apply the volume
-        arg.renderer.ApplyViewingVolume(*volume);
-        modelViewMatrix[mvIndex] = volume->GetViewMatrix();
-    }
-    CHECK_FOR_GL_ERROR();
+    #ifdef OE_DEBUG
+    if (root == NULL) 
+        throw Exception("No scene root found while rendering.");
+    #endif
+    this->arg = &arg;
 
     // setup default render state
     // RenderStateNode* renderStateNode = new RenderStateNode();
     ApplyRenderState(currentRenderState);
-    //delete renderStateNode;
-
-    Render(&arg.renderer, arg.renderer.GetSceneRoot());
-}
-
-/**
- * Renderer the scene.
- *
- * @param renderer a Renderer
- * @param root The scene to be rendered
- */
-void RenderingView::Render(IRenderer* renderer, ISceneNode* root) {
-    this->renderer = renderer;
-    root->Accept(*this);
-    this->renderer = NULL;
+    arg.canvas.GetScene()->Accept(*this);
 }
 
 /**
@@ -128,7 +94,7 @@ void RenderingView::Render(IRenderer* renderer, ISceneNode* root) {
  * @param node Rendering node to apply.
  */
 void RenderingView::VisitRenderNode(RenderNode* node) {
-    node->Apply(this);
+    node->Apply(*arg);
 }
 
 void RenderingView::ApplyViewingVolume(Display::IViewingVolume& volume){
@@ -719,7 +685,7 @@ void RenderingView::RenderTangents(FacePtr face) {
 }
 
 void RenderingView::RenderLine(Vector<3,float> vert, Vector<3,float> norm, Vector<3,float> color) {
-    renderer->DrawLine(Line(vert,vert+norm),color,1);
+    arg->renderer.DrawLine(Line(vert,vert+norm),color,1);
 }
 
 } // NS OpenGL

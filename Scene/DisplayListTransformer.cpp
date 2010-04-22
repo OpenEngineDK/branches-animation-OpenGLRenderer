@@ -24,8 +24,8 @@ namespace Scene {
      * Construct a GL transformor, that transforms geometry nodes to
      * GL nodes.
      */
-    DisplayListTransformer::DisplayListTransformer(IRenderingView* r): r(r) {
-        renderer = NULL;
+    DisplayListTransformer::DisplayListTransformer(ISceneNodeVisitor* r): r(r) {
+        // renderer = NULL;
     }
 
     /**
@@ -57,7 +57,9 @@ namespace Scene {
             return;
         } 
         glNewList(id, GL_COMPILE);
-        r->Render(renderer, node);
+        
+        node->Accept(*r);
+        // r->Render(renderer, node);
         glEndList();
 
         DisplayListNode* glnode = new DisplayListNode(id);
@@ -71,7 +73,8 @@ namespace Scene {
             return;
         } 
         glNewList(id, GL_COMPILE);        
-        r->Render(renderer, node);
+        node->Accept(*r);
+        //r->Render(renderer, node);
         glEndList();
 
         DisplayListNode* glnode = new DisplayListNode(id);
@@ -79,9 +82,10 @@ namespace Scene {
     }
 
     void DisplayListTransformer::Handle(RenderingEventArg arg) {
-        renderer = &arg.renderer;
-        Transform(*arg.renderer.GetSceneRoot());
-        renderer = NULL;
+        // renderer = &arg.renderer;
+        this->arg = &arg;
+        Transform(*arg.canvas.GetScene());
+        // renderer = NULL;
     }
 
 } // NS Scene

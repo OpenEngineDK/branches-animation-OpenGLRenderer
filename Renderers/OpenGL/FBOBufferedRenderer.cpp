@@ -8,15 +8,15 @@ namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
-FBOBufferedRenderer::FBOBufferedRenderer(Viewport* viewport)
-    : peer(Renderer(viewport))
+    FBOBufferedRenderer::FBOBufferedRenderer(/*Viewport* viewport*/)
+    : peer(Renderer(/*viewport*/))
     , fbo(0)
     , depthbuffer(0)
     , img(0)
 {
-    Vector<4,int> dim(viewport->GetDimension());
-    width  = dim[2];
-    height = dim[3];
+    // Vector<4,int> dim(viewport->GetDimension());
+    // width  = dim[2];
+    // height = dim[3];
     colorbuf = ITexture2DPtr(new ColorBuffer(*this));
 }
 
@@ -28,7 +28,7 @@ ITexture2DPtr FBOBufferedRenderer::GetColorBuffer() const {
     return colorbuf;
 }
 
-void FBOBufferedRenderer::Handle(InitializeEventArg arg) {
+void FBOBufferedRenderer::Handle(Display::InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
     peer.Handle(arg);
@@ -127,27 +127,27 @@ std::string FBOBufferedRenderer::EnumToString(GLenum status) {
 }
 
 
-void FBOBufferedRenderer::Handle(ProcessEventArg arg) {
-    CHECK_FOR_GL_ERROR();
+// void FBOBufferedRenderer::Handle(ProcessEventArg arg) {
+//     CHECK_FOR_GL_ERROR();
 
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo); //bind
-    CHECK_FOR_GL_ERROR();
+//     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo); //bind
+//     CHECK_FOR_GL_ERROR();
 
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    CHECK_FOR_GL_ERROR();
+//     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+//     CHECK_FOR_GL_ERROR();
 
-    peer.Handle(arg);
-    CHECK_FOR_GL_ERROR();
+//     peer.Handle(arg);
+//     CHECK_FOR_GL_ERROR();
 
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); //unbind
-    CHECK_FOR_GL_ERROR();
+//     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0); //unbind
+//     CHECK_FOR_GL_ERROR();
 
-    //RenderTextureInOrtho();
-    //CHECK_FOR_GL_ERROR();
+//     //RenderTextureInOrtho();
+//     //CHECK_FOR_GL_ERROR();
 
-    //colorbuf->ChangedEvent().
-    //    Notify(Resources::TextureChangedEventArg(colorbuf));
-}
+//     //colorbuf->ChangedEvent().
+//     //    Notify(Resources::TextureChangedEventArg(colorbuf));
+// }
 
 void FBOBufferedRenderer::RenderTextureInOrtho() {
     GLboolean l = glIsEnabled(GL_LIGHTING);
@@ -200,7 +200,7 @@ void FBOBufferedRenderer::RenderTextureInOrtho() {
     CHECK_FOR_GL_ERROR();
 }
 
-void FBOBufferedRenderer::Handle(DeinitializeEventArg arg) {
+void FBOBufferedRenderer::Handle(Display::DeinitializeEventArg arg) {
     glDeleteFramebuffersEXT(1, &fbo);
     CHECK_FOR_GL_ERROR();
     glDeleteRenderbuffersEXT(1, &depthbuffer);
