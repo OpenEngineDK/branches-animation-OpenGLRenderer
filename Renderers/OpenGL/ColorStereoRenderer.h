@@ -11,6 +11,7 @@
 #define _OPENGL_COLOR_STEREO_RENDERER_H_
 
 #include <Display/ICanvas.h>
+#include <Meta/OpenGL.h>
 
 namespace OpenEngine {
     namespace Display {
@@ -29,6 +30,7 @@ class ColorStereoRenderer : public ICanvas, public ICanvasListener {
 private:
     StereoCamera* stereo;
     unsigned int width, height, depth;
+    GLuint leftID, rightID;
 public:
     ColorStereoRenderer();
     virtual ~ColorStereoRenderer();
