@@ -74,8 +74,6 @@ protected:
     bool renderTexture, renderShader;
     unsigned int currentTexture;
     IShaderResourcePtr currentShader;
-    int binormalid;
-    int tangentid;
     IDataBlockPtr vertices;
     IDataBlockPtr normals;
     IDataBlockPtr colors;

@@ -275,10 +275,12 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
         if (renderShader &&
             mat->shad != NULL &&              // and the shader is not null
             currentShader != mat->shad) {     // and the shader is different from the current
-            // get the bi-normal and tangent ids
-            binormalid = mat->shad->GetAttributeID("binormal");
-            tangentid = mat->shad->GetAttributeID("tangent");
+
             mat->shad->ApplyShader();
+            // Bind the material textures that are useful to the
+            // shader.
+            
+
             // set the current shader
             currentShader = mat->shad;
         }
@@ -489,8 +491,6 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
     // reset last state for matrial applying
     currentTexture = 0;
     currentShader.reset();
-    binormalid = -1; 
-    tangentid = -1;
 
     // Reset geometry state
     ApplyGeometrySet(GeometrySetPtr());
@@ -516,13 +516,6 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
             glTexCoord2f(t[0],t[1]);
             glColor4f (c[0],c[1],c[2],c[3]);
             glNormal3f(n[0],n[1],n[2]);
-            // apply tangent and binormal per vertex for the shader to use
-            if (currentShader != NULL) {
-                if (binormalid != -1)
-                    currentShader->VertexAttribute(binormalid, f->bino[i]);
-                if (tangentid != -1)
-                    currentShader->VertexAttribute(tangentid, f->tang[i]);
-            }
 			glVertex3f(v[0],v[1],v[2]);
         }
         glEnd();
@@ -549,9 +542,7 @@ void RenderingView::VisitVertexArrayNode(VertexArrayNode* node){
     // reset last state for matrial applying
     currentTexture = 0;
     currentShader.reset();
-    binormalid = -1; 
-    tangentid = -1;
-    
+
     // Reset geometry state
     ApplyGeometrySet(GeometrySetPtr());
 
