@@ -70,6 +70,7 @@ private:
     static GLSLVersion glslversion;
     bool compressionSupport;
     bool bufferSupport;
+    bool fboSupport;
     
     Scene::ISceneNode* root;
     Viewport* viewport;
@@ -121,6 +122,7 @@ public:
     static bool IsGLSLSupported();
 
     virtual bool BufferSupport();
+    virtual bool FrameBufferSupport();
 
     /**
      * Get the supported version of OpenGL Shader Language.

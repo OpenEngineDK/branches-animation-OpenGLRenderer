@@ -67,6 +67,7 @@ public:
     void SetBackgroundColor(Vector<4,float> color) { peer.SetBackgroundColor(color); }
     Vector<4,float> GetBackgroundColor() { return peer.GetBackgroundColor(); }
     bool BufferSupport() { return peer.BufferSupport(); }
+    bool FrameBufferSupport() { return peer.FrameBufferSupport(); }
 
 private:
  

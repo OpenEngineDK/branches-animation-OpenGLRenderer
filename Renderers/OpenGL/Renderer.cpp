@@ -297,7 +297,8 @@ void Renderer::Handle(InitializeEventArg arg) {
         glewGetExtension("GL_EXT_texture_compression_s3tc") == GL_TRUE;
 
     bufferSupport = glewIsSupported("GL_VERSION_2_0");
-
+    fboSupport = glewGetExtension("GL_EXT_framebuffer_object") == GL_TRUE;
+        
     Vector<4,float> bgc = backgroundColor;
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
@@ -412,6 +413,10 @@ bool Renderer::IsGLSLSupported() {
 
 bool Renderer::BufferSupport(){
     return bufferSupport;
+}
+
+bool Renderer::FrameBufferSupport(){
+    return fboSupport;
 }
 
 GLSLVersion Renderer::GetGLSLVersion() {
