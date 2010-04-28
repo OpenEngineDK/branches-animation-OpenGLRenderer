@@ -146,17 +146,19 @@ void Renderer::SetupTexParameters(ITexture3D* tex){
 #endif
     }
 
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S,         wrapping);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T,         wrapping);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R,         wrapping);
+    GLenum target = tex->GetUseCase();
+
+    glTexParameteri(target, GL_TEXTURE_WRAP_S,         wrapping);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T,         wrapping);
+    glTexParameteri(target, GL_TEXTURE_WRAP_R,         wrapping);
     if (tex->UseMipmapping()){
-        glTexParameteri(GL_TEXTURE_3D, GL_GENERATE_MIPMAP,    GL_TRUE);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(target, GL_GENERATE_MIPMAP,    GL_TRUE);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }else{
-        glTexParameteri(GL_TEXTURE_3D, GL_GENERATE_MIPMAP,    GL_FALSE);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(target, GL_GENERATE_MIPMAP,    GL_FALSE);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     CHECK_FOR_GL_ERROR();
@@ -290,6 +292,9 @@ void Renderer::Handle(InitializeEventArg arg) {
 
     InitializeGLSLVersion(); //@todo: HACK - to get Inseminator to work
     CHECK_FOR_GL_ERROR();
+
+    // Check if texture2D arrays are supported
+    texture2DArraySupport = glewGetExtension("GL_EXT_texture_array") == GL_TRUE;
 
     // Check if texture compression with s3tc and dxt1 is supported.
     compressionSupport = 
@@ -489,13 +494,20 @@ void Renderer::LoadTexture(ITexture3D* texr) {
         texr->Load();
     }
 
+    if (!texture2DArraySupport){
+        // Use texture 3d instead
+        texr->SetUseCase(ITexture3D::TEXTURE3D);
+        // disable mipmapping to preserve the individual slices.
+        texr->SetMipmapping(false);
+    }
+
     // Generate and bind the texture id.
     GLuint texid;
     glGenTextures(1, &texid);
     CHECK_FOR_GL_ERROR();
 
     texr->SetID(texid);
-    glBindTexture(GL_TEXTURE_3D, texid);
+    glBindTexture(texr->GetUseCase(), texid);
     CHECK_FOR_GL_ERROR();
     
     SetupTexParameters(texr);
@@ -504,7 +516,7 @@ void Renderer::LoadTexture(ITexture3D* texr) {
     GLint internalFormat = GLInternalColorFormat(texr->GetColorFormat());
     GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
 
-    glTexImage3D(GL_TEXTURE_3D,
+    glTexImage3D(texr->GetUseCase(),
                  0, // mipmap level
                  internalFormat,
                  texr->GetWidth(),
@@ -570,7 +582,7 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
 
     // Bind the texture
     GLuint texid = texr->GetID();
-    glBindTexture(GL_TEXTURE_3D, texid);
+    glBindTexture(texr->GetUseCase(), texid);
     CHECK_FOR_GL_ERROR();
 
     // Setup texture parameters
@@ -578,7 +590,7 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
 
     GLenum colorFormat = GLColorFormat(texr->GetColorFormat());
 
-    glTexSubImage3D(GL_TEXTURE_3D,
+    glTexSubImage3D(texr->GetUseCase(),
                     0,
                     xOffset,
                     yOffset,

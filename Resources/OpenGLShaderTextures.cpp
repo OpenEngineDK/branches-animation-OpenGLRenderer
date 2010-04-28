@@ -163,7 +163,7 @@ namespace OpenEngine {
             map<string, sampler3D>::iterator itr3 = boundTex3Ds.begin();
             while(itr3 != boundTex3Ds.end()){
                 glActiveTexture(GL_TEXTURE0 + itr3->second.texUnit);
-                glBindTexture(GL_TEXTURE_3D, itr3->second.tex->GetID());
+                glBindTexture(itr3->second.tex->GetUseCase(), itr3->second.tex->GetID());
                 itr3++;
             }
 

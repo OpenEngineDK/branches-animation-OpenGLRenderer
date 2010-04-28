@@ -68,6 +68,7 @@ enum GLSLVersion { GLSL_UNKNOWN, GLSL_NONE, GLSL_14, GLSL_20 };
 class Renderer : public IRenderer {
 private:
     static GLSLVersion glslversion;
+    bool texture2DArraySupport;
     bool compressionSupport;
     bool bufferSupport;
     bool fboSupport;
