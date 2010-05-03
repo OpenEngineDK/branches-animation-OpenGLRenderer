@@ -38,7 +38,7 @@ using OpenEngine::Display::IViewingVolume;
 
 GLSLVersion Renderer::glslversion = GLSL_UNKNOWN;
 
- Renderer::Renderer()
+Renderer::Renderer(): init(false)
 {
     //backgroundColor = Vector<4,float>(1.0);
 }
@@ -274,6 +274,7 @@ GLenum Renderer::GLAccessType(BlockType b, UpdateMode u){
 }
 
 void Renderer::Handle(Renderers::InitializeEventArg arg) {
+    if (init) return;
     logger.info << "INITIALIZE RENDERER" << logger.end;
     CHECK_FOR_GL_ERROR();
 
@@ -312,24 +313,11 @@ void Renderer::Handle(Renderers::InitializeEventArg arg) {
     this->stage = RENDERER_PREPROCESS;
     CHECK_FOR_GL_ERROR();
 
-    // list<ICanvasListener*>::iterator i = dependencies.begin();
-    // for (; i != dependencies.end(); ++i) {
-    //     ((IListener<Display::InitializeEventArg>*)(*i))->Handle(arg);
-    // }
+    init = true;
 }
-
-// void Renderer::Handle(ResizeEventArg arg) {
-
-// }
 
 void Renderer::Handle(Renderers::ProcessEventArg arg) {
     // @todo: assert we are in preprocess stage
-
-    // ensure that dependent frames are rendered first
-    // list<ICanvasListener*>::iterator i = dependencies.begin();
-    // for (; i != dependencies.end(); ++i) {
-    //     ((IListener<RedrawEventArg>*)(*i))->Handle(arg);
-    // }
 
     Vector<4,float> bgc = backgroundColor;
     glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
@@ -373,13 +361,10 @@ void Renderer::Handle(Renderers::ProcessEventArg arg) {
 // }
 
 void Renderer::Handle(Renderers::DeinitializeEventArg arg) {
-    // list<ICanvasListener*>::iterator i = dependencies.begin();
-    // for (; i != dependencies.end(); ++i) {
-    //     ((IListener<Display::DeinitializeEventArg>*)(*i))->Handle(arg);
-    // }
-
+    if (!init) return;
     this->stage = RENDERER_DEINITIALIZE;
     this->deinitialize.Notify(RenderingEventArg(arg.canvas, *this));
+    init = false;
 }
 
 IEvent<RenderingEventArg>& Renderer::InitializeEvent() {

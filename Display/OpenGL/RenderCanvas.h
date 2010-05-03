@@ -23,6 +23,7 @@ namespace OpenGL {
 
 class RenderCanvas : public TextureCanvasBase, public IRenderCanvas {
 private:
+    bool init;
 public:
     RenderCanvas();
     virtual ~RenderCanvas();

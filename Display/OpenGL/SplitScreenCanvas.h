@@ -20,6 +20,7 @@ namespace OpenGL {
 class SplitScreenCanvas: public ICanvas, public TextureCanvasBase {
 private:
     ICanvas &first, &second;
+    bool init;
 public:
     SplitScreenCanvas(ICanvas& first, ICanvas& second);
     virtual ~SplitScreenCanvas();

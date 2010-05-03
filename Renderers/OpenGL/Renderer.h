@@ -66,7 +66,6 @@ private:
     bool texture2DArraySupport;
     bool compressionSupport;
     bool bufferSupport;
-    bool fboSupport;
     
     Vector<4,float> backgroundColor;
 

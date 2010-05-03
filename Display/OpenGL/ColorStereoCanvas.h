@@ -27,6 +27,7 @@ private:
     IViewingVolume* dummyCam;
     StereoCamera* stereoCam;
     RenderCanvas left, right;
+    bool init;
 public:
     ColorStereoCanvas();
     virtual ~ColorStereoCanvas();

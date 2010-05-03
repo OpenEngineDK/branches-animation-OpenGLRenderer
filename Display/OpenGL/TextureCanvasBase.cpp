@@ -126,12 +126,10 @@ namespace OpenGL {
     
     void TextureCanvasBase::SetTextureWidth(const unsigned int width) { 
         ctex->width = width; 
-        SetupTexture();
     }
 
     void TextureCanvasBase::SetTextureHeight(const unsigned int height) { 
         ctex->height = height; 
-        SetupTexture();
     }
     
     unsigned int TextureCanvasBase::GetTextureWidth() const { 

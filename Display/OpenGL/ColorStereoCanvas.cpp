@@ -21,6 +21,7 @@ ColorStereoCanvas::ColorStereoCanvas()
     : IRenderCanvas()
     , dummyCam(new ViewingVolume())
     , stereoCam(new StereoCamera(*dummyCam))
+    , init(false)
 {
     ITextureResourcePtr ltex = left.GetTexture();
     ITextureResourcePtr rtex = right.GetTexture();
@@ -34,6 +35,7 @@ ColorStereoCanvas::~ColorStereoCanvas() {
 }
 
 void ColorStereoCanvas::Handle(Display::InitializeEventArg arg) {
+    if (init) return;
     CreateTexture();
     SetTextureWidth(arg.canvas.GetWidth());
     SetTextureHeight(arg.canvas.GetHeight());
@@ -41,7 +43,7 @@ void ColorStereoCanvas::Handle(Display::InitializeEventArg arg) {
 
     ((IListener<Display::InitializeEventArg>&)left).Handle(arg);
     ((IListener<Display::InitializeEventArg>&)right).Handle(arg);
-    
+    init = true;
 }
 
 void ColorStereoCanvas::Handle(Display::ProcessEventArg arg) {
@@ -160,15 +162,20 @@ void ColorStereoCanvas::Handle(Display::ProcessEventArg arg) {
 }
 
 void ColorStereoCanvas::Handle(Display::ResizeEventArg arg) {
-    ((IListener<Display::ResizeEventArg>&)left).Handle(arg);
-    ((IListener<Display::ResizeEventArg>&)right).Handle(arg);
+    SetTextureWidth(arg.canvas.GetWidth());
+    SetTextureHeight(arg.canvas.GetHeight());
+    SetupTexture();
+    ((IListener<Display::ResizeEventArg>&)left).Handle(ResizeEventArg(*this));
+    ((IListener<Display::ResizeEventArg>&)right).Handle(ResizeEventArg(*this));
 }
 
 void ColorStereoCanvas::Handle(Display::DeinitializeEventArg arg) {
+    if (!init) return;
     ((IListener<Display::DeinitializeEventArg>&)left)
         .Handle(Display::DeinitializeEventArg(arg));
     ((IListener<Display::DeinitializeEventArg>&)right)
         .Handle(Display::DeinitializeEventArg(arg));
+    init = false;
 }
 
 unsigned int ColorStereoCanvas::GetWidth() const {

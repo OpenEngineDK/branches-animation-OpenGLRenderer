@@ -24,12 +24,14 @@ namespace OpenGL {
         : TextureCanvasBase()
         , first(first) 
         , second(second)
+        , init(false)
     {}
 
     SplitScreenCanvas::~SplitScreenCanvas() {}
 
 
     void SplitScreenCanvas::Handle(Display::InitializeEventArg arg) {
+        if (init) return;
         unsigned int width = arg.canvas.GetWidth();
         unsigned int height = arg.canvas.GetHeight();
         unsigned int halfwidth = 0.5 * width;
@@ -40,23 +42,32 @@ namespace OpenGL {
         ((IListener<Display::InitializeEventArg>&)second).Handle(Display::InitializeEventArg(*this));
         SetTextureWidth(width);
         SetupTexture();
+        init = true;
     }
     
     void SplitScreenCanvas::Handle(Display::DeinitializeEventArg arg) {
+        if (!init) return;
         ((IListener<Display::DeinitializeEventArg>&)first).Handle(arg);
         ((IListener<Display::DeinitializeEventArg>&)second).Handle(arg);
+        init = false;
     }
 
     void SplitScreenCanvas::Handle(Display::ResizeEventArg arg) {
         unsigned int width = arg.canvas.GetWidth();
         unsigned int height = arg.canvas.GetHeight();
         unsigned int halfwidth = 0.5 * width;
+
+        SetTextureWidth(halfwidth);
+        SetTextureHeight(height);
+        ((IListener<Display::ResizeEventArg>&)first).Handle(arg);
+
+        SetTextureWidth(width - halfwidth);
+
+        ((IListener<Display::ResizeEventArg>&)second).Handle(arg);
         SetTextureWidth(width);
         SetTextureHeight(height);
-        first.SetWidth(halfwidth);
-        first.SetHeight(height);
-        second.SetWidth(width - halfwidth);
-        first.SetHeight(height);
+
+        SetupTexture();
     }
 
     void SplitScreenCanvas::Handle(Display::ProcessEventArg arg) {
