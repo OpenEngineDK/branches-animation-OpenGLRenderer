@@ -42,11 +42,7 @@ namespace OpenGL {
 
 using OpenEngine::Math::Matrix;
 using OpenEngine::Geometry::FacePtr;
-using OpenEngine::Display::InitializeEventArg;
-using OpenEngine::Display::DeinitializeEventArg;
 using OpenEngine::Core::Event;
-using Display::RedrawEventArg;
-using Display::ResizeEventArg;
 using OpenEngine::Resources::Types::Type;
 using OpenEngine::Resources::ColorFormat;
 using OpenEngine::Resources::ITexture;
@@ -72,7 +68,7 @@ private:
     bool bufferSupport;
     bool fboSupport;
     
-    //Vector<4,float> backgroundColor;
+    Vector<4,float> backgroundColor;
 
     // Event lists for the rendering phases.
     Event<RenderingEventArg> initialize;
@@ -95,9 +91,9 @@ public:
     Renderer(/*Viewport* viewport*/);
     virtual ~Renderer();
 
-    void Handle(Display::InitializeEventArg arg);
-    void Handle(Display::DeinitializeEventArg arg);
-    void Handle(RedrawEventArg arg);
+    void Handle(Renderers::InitializeEventArg arg);
+    void Handle(Renderers::DeinitializeEventArg arg);
+    void Handle(Renderers::ProcessEventArg arg);
     // void Handle(ResizeEventArg arg);
 
     /**
@@ -126,8 +122,8 @@ public:
      */
     static GLSLVersion GetGLSLVersion();
 
-    // virtual void SetBackgroundColor(Vector<4,float> color);
-    // virtual Vector<4,float> GetBackgroundColor();
+    virtual void SetBackgroundColor(Vector<4,float> color);
+    virtual Vector<4,float> GetBackgroundColor();
 
     virtual void ApplyViewingVolume(Display::IViewingVolume& volume);
     virtual void LoadTexture(ITexture2DPtr texr);

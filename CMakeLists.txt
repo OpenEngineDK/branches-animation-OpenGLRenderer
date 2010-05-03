@@ -14,10 +14,6 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   # Renderers/OpenGL/FBOBufferedRenderer.cpp
   # Renderers/OpenGL/GLCopyBufferedRenderer.h
   # Renderers/OpenGL/GLCopyBufferedRenderer.cpp
-  Renderers/OpenGL/ColorStereoRenderer.h
-  Renderers/OpenGL/ColorStereoRenderer.cpp
-  Renderers/OpenGL/SplitStereoRenderer.h
-  Renderers/OpenGL/SplitStereoRenderer.cpp
   Renderers/OpenGL/Renderer.h
   Renderers/OpenGL/Renderer.cpp
   Renderers/OpenGL/RenderingView.h
@@ -30,10 +26,18 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Renderers/OpenGL/LightRenderer.cpp
   Scene/DisplayListNode.cpp
   Scene/DisplayListTransformer.cpp
-  Display/OpenGL/TextureCanvas.h
-  Display/OpenGL/TextureCanvas.cpp
-  Renderers/OpenGL/CompositeCanvas.h
-  Renderers/OpenGL/CompositeCanvas.cpp
+  Display/OpenGL/TextureCanvasBase.h
+  Display/OpenGL/TextureCanvasBase.cpp
+  Display/OpenGL/RenderCanvas.h
+  Display/OpenGL/RenderCanvas.cpp
+  Display/OpenGL/ColorStereoCanvas.h
+  Display/OpenGL/ColorStereoCanvas.cpp
+  Display/OpenGL/SplitStereoCanvas.h
+  Display/OpenGL/SplitStereoCanvas.cpp
+  Display/OpenGL/SplitScreenCanvas.h
+  Display/OpenGL/SplitScreenCanvas.cpp
+  # Display/OpenGL/CompositeCanvas.h
+  # Display/OpenGL/CompositeCanvas.cpp
 )
 
 TARGET_LINK_LIBRARIES( ${EXTENSION_NAME}

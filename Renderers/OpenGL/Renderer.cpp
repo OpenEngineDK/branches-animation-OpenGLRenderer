@@ -273,7 +273,7 @@ GLenum Renderer::GLAccessType(BlockType b, UpdateMode u){
     return GL_STATIC_DRAW;
 }
 
-void Renderer::Handle(Display::InitializeEventArg arg) {
+void Renderer::Handle(Renderers::InitializeEventArg arg) {
     logger.info << "INITIALIZE RENDERER" << logger.end;
     CHECK_FOR_GL_ERROR();
 
@@ -322,7 +322,7 @@ void Renderer::Handle(Display::InitializeEventArg arg) {
 
 // }
 
-void Renderer::Handle(RedrawEventArg arg) {
+void Renderer::Handle(Renderers::ProcessEventArg arg) {
     // @todo: assert we are in preprocess stage
 
     // ensure that dependent frames are rendered first
@@ -331,21 +331,21 @@ void Renderer::Handle(RedrawEventArg arg) {
     //     ((IListener<RedrawEventArg>*)(*i))->Handle(arg);
     // }
 
-    // Vector<4,float> bgc = backgroundColor;
-    // glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
+    Vector<4,float> bgc = backgroundColor;
+    glClearColor(bgc[0], bgc[1], bgc[2], bgc[3]);
 
     // Clear the screen and the depth buffer.
-    // glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     IViewingVolume* volume = arg.canvas.GetViewingVolume();
     // If no viewing volume is set for the viewport ignore it.
     if (volume != NULL) {
-        // volume->SignalRendering(arg.approx);
+        volume->SignalRendering(arg.approx);
 
         // Set viewport size 
-        // Vector<4,int> d(0, 0, arg.canvas.GetWidth(), arg.canvas.GetHeight());
-        // glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
-        //CHECK_FOR_GL_ERROR();
+        Vector<4,int> d(0, 0, arg.canvas.GetWidth(), arg.canvas.GetHeight());
+        glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
+        CHECK_FOR_GL_ERROR();
 
         // apply the volume
         ApplyViewingVolume(*volume);
@@ -372,7 +372,7 @@ void Renderer::Handle(RedrawEventArg arg) {
 //     logger.warning << "rendering should be triggered using RedrawEvent" << logger.end;
 // }
 
-void Renderer::Handle(Display::DeinitializeEventArg arg) {
+void Renderer::Handle(Renderers::DeinitializeEventArg arg) {
     // list<ICanvasListener*>::iterator i = dependencies.begin();
     // for (; i != dependencies.end(); ++i) {
     //     ((IListener<Display::DeinitializeEventArg>*)(*i))->Handle(arg);
@@ -833,13 +833,13 @@ void Renderer::DrawPoint(Vector<3,float> point, Vector<3,float> color , float si
     CHECK_FOR_GL_ERROR();
 }
 
-// void Renderer::SetBackgroundColor(Vector<4,float> color) {
-//     backgroundColor = color;
-// }
+void Renderer::SetBackgroundColor(Vector<4,float> color) {
+    backgroundColor = color;
+}
 
-// Vector<4,float> Renderer::GetBackgroundColor() {
-//     return backgroundColor;
-// }
+Vector<4,float> Renderer::GetBackgroundColor() {
+     return backgroundColor;
+}
 
 /**
  * Helper function drawing a sphere.
