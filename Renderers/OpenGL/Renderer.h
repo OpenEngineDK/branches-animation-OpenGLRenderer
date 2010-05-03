@@ -66,7 +66,8 @@ private:
     bool texture2DArraySupport;
     bool compressionSupport;
     bool bufferSupport;
-    
+    bool fboSupport;
+    bool init;
     Vector<4,float> backgroundColor;
 
     // Event lists for the rendering phases.

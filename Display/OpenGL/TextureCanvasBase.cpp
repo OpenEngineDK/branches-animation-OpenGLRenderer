@@ -115,10 +115,10 @@ namespace OpenGL {
     }
 
     void TextureCanvasBase::CopyToTexture() {
-        GLenum internalFormat = GLInternalColorFormat(ctex->GetColorFormat());
+        GLenum colorFormat = GLColorFormat(ctex->GetColorFormat());
         glBindTexture(GL_TEXTURE_2D, ctex->id);
         CHECK_FOR_GL_ERROR();
-        glCopyTexImage2D(GL_TEXTURE_2D, 0, internalFormat, 0, 0, ctex->width, ctex->height, 0);
+        glCopyTexImage2D(GL_TEXTURE_2D, 0, colorFormat, 0, 0, ctex->width, ctex->height, 0);
         CHECK_FOR_GL_ERROR();
         glBindTexture(GL_TEXTURE_2D, 0);
         CHECK_FOR_GL_ERROR();
