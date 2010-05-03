@@ -205,6 +205,7 @@ GLint Renderer::GLInternalColorFormat(ColorFormat f){
         return GL_RGBA;
     case ALPHA_COMPRESSED: return GL_COMPRESSED_ALPHA;
     case LUMINANCE_COMPRESSED: return GL_COMPRESSED_LUMINANCE;
+    case LUMINANCE32F: return GL_R32F;
     case LUMINANCE_ALPHA_COMPRESSED: return GL_COMPRESSED_LUMINANCE_ALPHA;
     case RGB_COMPRESSED: return GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
     case RGBA_COMPRESSED: return GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
@@ -225,6 +226,7 @@ GLenum Renderer::GLColorFormat(ColorFormat f){
         return GL_ALPHA;
     case LUMINANCE: 
     case LUMINANCE_COMPRESSED: 
+    case LUMINANCE32F:
         return GL_LUMINANCE;
     case LUMINANCE_ALPHA: 
     case LUMINANCE_ALPHA_COMPRESSED: 
