@@ -169,6 +169,7 @@ namespace OpenEngine {
                     if (sscanf(buf, "text: %s", fileandname) == 1 ||
                         sscanf(buf, "tex2D: %s", fileandname) == 1 ||
                         sscanf(buf, "tex3D: %s", fileandname) == 1) {
+
                         int seperator=0;
                         for(int i=0;i<maxlength;i++) {
                             if(fileandname[i]=='|')
@@ -185,7 +186,7 @@ namespace OpenEngine {
                         if (type == "text:" || type == "tex2D") {
                             ITexture2DPtr t = ResourceManager<ITexture2D>::Create(texfile);
                             SetTexture(texname, t);
-                        }else{
+                        }else if (type == "tex2D:"){
                             ITexture3DPtr t = ResourceManager<ITexture3D>::Create(texfile);
                             SetTexture(texname, t);
                         }
