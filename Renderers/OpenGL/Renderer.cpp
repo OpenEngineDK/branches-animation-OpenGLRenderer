@@ -238,17 +238,17 @@ GLenum Renderer::GLColorFormat(ColorFormat f){
 
 unsigned int Renderer::GLTypeSize(Type t){
     switch(t){
-    case UBYTE:
+    case Types::UBYTE:
         return sizeof(GLubyte);
-    case SBYTE:
+    case Types::SBYTE:
         return sizeof(GLbyte);
-    case UINT:
+    case Types::UINT:
         return sizeof(GLuint);
-    case INT:
+    case Types::INT:
         return sizeof(GLint);
-    case FLOAT:
+    case Types::FLOAT:
         return sizeof(GLfloat);
-    case NOTYPE:
+    case Types::NOTYPE:
         return 0;
     }
     return sizeof(GLshort);
