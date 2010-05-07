@@ -240,7 +240,7 @@ unsigned int Renderer::GLTypeSize(Type t){
     switch(t){
     case UBYTE:
         return sizeof(GLubyte);
-    case BYTE:
+    case SBYTE:
         return sizeof(GLbyte);
     case UINT:
         return sizeof(GLuint);

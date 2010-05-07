@@ -87,6 +87,18 @@ void RenderingView::Handle(RenderingEventArg arg) {
     ApplyRenderState(currentRenderState);
     arg.canvas.GetScene()->Accept(*this);
     this->arg = NULL;
+
+    // cleanup
+    if (currentShader != NULL) {
+        currentShader->ReleaseShader();
+        currentShader.reset();
+    }
+    if (currentTexture != 0) {
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_TEXTURE_2D);
+        CHECK_FOR_GL_ERROR();
+        currentTexture = 0;
+    }
 }
 
 /**
@@ -186,7 +198,7 @@ void RenderingView::ApplyRenderState(RenderStateNode* node) {
  *
  * @param node Render state node to apply.
  */
-void RenderingView::VisitRenderStateNode(RenderStateNode* node) {
+    void RenderingView::VisitRenderStateNode(Scene::RenderStateNode* node) {
     // apply differences between current state and node
     RenderStateNode* changes = node->GetDifference(*currentRenderState);
     ApplyRenderState(changes);

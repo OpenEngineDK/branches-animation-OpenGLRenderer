@@ -51,6 +51,7 @@ private:
     void RenderLine(Vector<3,float> vert,
                     Vector<3,float> norm,
                     Vector<3,float> color);
+protected:
     // save the event arg 
     RenderingEventArg* arg;
 public:
