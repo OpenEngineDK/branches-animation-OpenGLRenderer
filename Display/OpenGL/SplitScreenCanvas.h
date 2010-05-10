@@ -18,11 +18,16 @@ namespace Display {
 namespace OpenGL {
 
 class SplitScreenCanvas: public ICanvas, public TextureCanvasBase {
+public:
+    enum Split {
+        VERTICAL, HORIZONTAL
+    };
 private:
     ICanvas &first, &second;
     bool init;
+    Split split;
 public:
-    SplitScreenCanvas(ICanvas& first, ICanvas& second);
+    SplitScreenCanvas(ICanvas& first, ICanvas& second, Split split = HORIZONTAL);
     virtual ~SplitScreenCanvas();
 
     void Handle(Display::InitializeEventArg arg);

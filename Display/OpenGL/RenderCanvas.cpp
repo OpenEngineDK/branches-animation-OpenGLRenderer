@@ -42,9 +42,12 @@ void RenderCanvas::Handle(ResizeEventArg arg) {
 }
 
 void RenderCanvas::Handle(Display::ProcessEventArg arg) {
-        ((IListener<Renderers::ProcessEventArg>*)renderer)
-            ->Handle(Renderers::ProcessEventArg(*this, arg.start, arg.approx));
-        CopyToTexture();
+    #ifdef OE_SAFE
+    if (renderer == NULL) throw new Exception("NULL renderer in RenderCanvas.");
+    #endif
+    ((IListener<Renderers::ProcessEventArg>*)renderer)
+        ->Handle(Renderers::ProcessEventArg(*this, arg.start, arg.approx));
+    CopyToTexture();
 }
 
 void RenderCanvas::Handle(DeinitializeEventArg arg) { 

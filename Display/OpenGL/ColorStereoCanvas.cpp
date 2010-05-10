@@ -98,6 +98,9 @@ void ColorStereoCanvas::Handle(Display::ProcessEventArg arg) {
     glDisable(GL_LIGHTING);
     glDisable(GL_BLEND);
     glEnable(GL_TEXTURE_2D);
+    GLint texenv;
+    glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &texenv);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -153,6 +156,7 @@ void ColorStereoCanvas::Handle(Display::ProcessEventArg arg) {
     glPopMatrix();
     CHECK_FOR_GL_ERROR();
         
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, texenv);
     if (depth)    glEnable(GL_DEPTH_TEST);
     if (lighting) glEnable(GL_LIGHTING);
     if (blending) glEnable(GL_BLEND);

@@ -127,18 +127,13 @@ void LightRenderer::VisitSpotLightNode(SpotLightNode* node) {
 }
 
 void LightRenderer::Handle(RenderingEventArg arg) {
-    CHECK_FOR_GL_ERROR();
-
-    // turn off lights
-    for (int i = 0; i < count; i++) {
-        glDisable(GL_LIGHT0 + i);
-    }
-    CHECK_FOR_GL_ERROR();
-
     count = 0;
     glMatrixMode(GL_MODELVIEW);
-    if (arg.canvas.GetScene())
-        arg.canvas.GetScene()->Accept(*this);
+    #ifdef OE_SAFE
+    if (arg.canvas.GetScene() == NULL)
+        throw new Exception("Scene was NULL in LightRenderer.");
+    #endif
+    arg.canvas.GetScene()->Accept(*this);
     GLint max;
     glGetIntegerv(GL_MAX_LIGHTS, &max);
     for (int i = count; i < max; ++i) {

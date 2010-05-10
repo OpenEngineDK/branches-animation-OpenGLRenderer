@@ -20,27 +20,32 @@ namespace OpenGL {
     using Math::Matrix;
     using Math::Vector;
 
-    SplitScreenCanvas::SplitScreenCanvas(ICanvas& first, ICanvas& second)
+    SplitScreenCanvas::SplitScreenCanvas(ICanvas& first, ICanvas& second, Split split)
         : TextureCanvasBase()
         , first(first) 
         , second(second)
         , init(false)
-    {}
-
+        , split(split)
+    {
+    }
+    
     SplitScreenCanvas::~SplitScreenCanvas() {}
-
 
     void SplitScreenCanvas::Handle(Display::InitializeEventArg arg) {
         if (init) return;
         unsigned int width = arg.canvas.GetWidth();
         unsigned int height = arg.canvas.GetHeight();
-        unsigned int halfwidth = 0.5 * width;
+        unsigned int childwidth = width;
+        unsigned int childheight = height;
         CreateTexture();
-        SetTextureWidth(halfwidth);
-        SetTextureHeight(height);
+        if (split == HORIZONTAL) childwidth = 0.5 * width;
+        else childheight = 0.5 * height;
+        SetTextureWidth(childwidth);
+        SetTextureHeight(childheight);
         ((IListener<Display::InitializeEventArg>&)first).Handle(Display::InitializeEventArg(*this));
         ((IListener<Display::InitializeEventArg>&)second).Handle(Display::InitializeEventArg(*this));
         SetTextureWidth(width);
+        SetTextureHeight(height);
         SetupTexture();
         init = true;
     }
@@ -55,18 +60,16 @@ namespace OpenGL {
     void SplitScreenCanvas::Handle(Display::ResizeEventArg arg) {
         unsigned int width = arg.canvas.GetWidth();
         unsigned int height = arg.canvas.GetHeight();
-        unsigned int halfwidth = 0.5 * width;
-
-        SetTextureWidth(halfwidth);
-        SetTextureHeight(height);
+        unsigned int childwidth = width;
+        unsigned int childheight = height;
+        if (split == HORIZONTAL) childwidth = 0.5 * width;
+        else childheight = 0.5 * height;
+        SetTextureWidth(childwidth);
+        SetTextureHeight(childheight);
         ((IListener<Display::ResizeEventArg>&)first).Handle(arg);
-
-        SetTextureWidth(width - halfwidth);
-
         ((IListener<Display::ResizeEventArg>&)second).Handle(arg);
         SetTextureWidth(width);
         SetTextureHeight(height);
-
         SetupTexture();
     }
 
@@ -110,10 +113,14 @@ namespace OpenGL {
         glMultMatrixf(f);
         CHECK_FOR_GL_ERROR();
         
-        bool depth = glIsEnabled(GL_DEPTH_TEST);
+        GLboolean depth = glIsEnabled(GL_DEPTH_TEST);
         GLboolean lighting = glIsEnabled(GL_LIGHTING);
         GLboolean blending = glIsEnabled(GL_BLEND);
         GLboolean texture = glIsEnabled(GL_TEXTURE_2D);
+        GLint texenv;
+        glGetTexEnviv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, &texenv);
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_LIGHTING);
         glDisable(GL_BLEND);
@@ -121,16 +128,16 @@ namespace OpenGL {
 
         glBindTexture(GL_TEXTURE_2D, first.GetTexture()->GetID());
         CHECK_FOR_GL_ERROR();
-        const float z = 0.0;
+        const unsigned int z = 0.0;
         glBegin(GL_QUADS);
         glTexCoord2f(0.0, 0.0);
-        glVertex3f(0, first.GetHeight(), z);
+        glVertex3i(0, first.GetHeight(), z);
         glTexCoord2f(0.0, 1.0);
-        glVertex3f(0, 0, z);
+        glVertex3i(0, 0, z);
         glTexCoord2f(1.0, 1.0);
-        glVertex3f(first.GetWidth(), 0, z);
+        glVertex3i(first.GetWidth(), 0, z);
         glTexCoord2f(1.0, 0.0);
-        glVertex3f(first.GetWidth(), first.GetHeight(), z);
+        glVertex3i(first.GetWidth(), first.GetHeight(), z);
         glEnd();
 
         glBindTexture(GL_TEXTURE_2D, second.GetTexture()->GetID());
@@ -154,11 +161,12 @@ namespace OpenGL {
         glMatrixMode(GL_MODELVIEW);
         glPopMatrix();
         CHECK_FOR_GL_ERROR();
-        
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, texenv);
         if (depth)    glEnable(GL_DEPTH_TEST);
         if (lighting) glEnable(GL_LIGHTING);
         if (blending) glEnable(GL_BLEND);
         if (!texture) glDisable(GL_TEXTURE_2D);
+        CopyToTexture();
     }
     
 unsigned int SplitScreenCanvas::GetWidth() const {
@@ -180,8 +188,6 @@ void SplitScreenCanvas::SetHeight(const unsigned int height) {
 ITexture2DPtr SplitScreenCanvas::GetTexture() {
     return tex;
 }
-
-
 
 } // NS OpenGL
 } // NS Renderers

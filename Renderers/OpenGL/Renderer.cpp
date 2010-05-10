@@ -275,7 +275,7 @@ GLenum Renderer::GLAccessType(BlockType b, UpdateMode u){
 
 void Renderer::Handle(Renderers::InitializeEventArg arg) {
     if (init) return;
-    logger.info << "INITIALIZE RENDERER" << logger.end;
+    //logger.info << "INITIALIZE RENDERER" << logger.end;
     CHECK_FOR_GL_ERROR();
 
     InitializeGLSLVersion(); //@todo: HACK - to get Inseminator to work

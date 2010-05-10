@@ -95,23 +95,23 @@ namespace OpenGL {
     
     void TextureCanvasBase::CreateTexture() {
         glGenTextures(1, &ctex->id);
-        CHECK_FOR_GL_ERROR();
-        glBindTexture(GL_TEXTURE_2D, ctex->id);
-        CHECK_FOR_GL_ERROR();
     }
 
     void TextureCanvasBase::SetupTexture() {
+        CHECK_FOR_GL_ERROR();
+        glBindTexture(GL_TEXTURE_2D, ctex->id);
+        CHECK_FOR_GL_ERROR();
         GLenum colorFormat = GLColorFormat(ctex->GetColorFormat());
         GLenum internalFormat = GLInternalColorFormat(ctex->GetColorFormat());
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_CLAMP);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_CLAMP);
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat,
                      ctex->width, ctex->height, 0, colorFormat, 
                      ctex->GetType(), NULL);
         CHECK_FOR_GL_ERROR();
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     void TextureCanvasBase::CopyToTexture() {

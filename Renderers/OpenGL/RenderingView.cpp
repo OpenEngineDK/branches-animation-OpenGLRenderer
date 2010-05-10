@@ -76,9 +76,9 @@ RenderingView::RenderingView()
 RenderingView::~RenderingView() {}
 
 void RenderingView::Handle(RenderingEventArg arg) {
-    #ifdef OE_DEBUG
+    #ifdef OE_SAFE
     if (arg.canvas.GetScene() == NULL) 
-        throw Exception("No scene root found while rendering.");
+        throw Exception("Scene was NULL while rendering.");
     #endif
 
     this->arg = &arg;
@@ -109,11 +109,6 @@ void RenderingView::Handle(RenderingEventArg arg) {
 void RenderingView::VisitRenderNode(RenderNode* node) {
     node->Apply(*arg, *this);
 }
-
-// void RenderingView::ApplyViewingVolume(Display::IViewingVolume& volume){
-//     renderer->ApplyViewingVolume(volume);
-//     modelViewMatrix[mvIndex] = volume.GetViewMatrix();
-// }
 
 void RenderingView::ApplyRenderState(RenderStateNode* node) {
     if (node->IsOptionEnabled(RenderStateNode::WIREFRAME)) {
