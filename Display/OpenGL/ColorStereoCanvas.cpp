@@ -26,7 +26,7 @@ ColorStereoCanvas::ColorStereoCanvas()
     ITextureResourcePtr ltex = left.GetTexture();
     ITextureResourcePtr rtex = right.GetTexture();
     ltex->SetColorFormat(Resources::LUMINANCE);
-    rtex->SetColorFormat(Resources::LUMINANCE);
+    //rtex->SetColorFormat(Resources::LUMINANCE);
 }
 
 ColorStereoCanvas::~ColorStereoCanvas() {
