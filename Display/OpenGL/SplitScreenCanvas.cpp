@@ -37,11 +37,21 @@ namespace OpenGL {
         unsigned int height = arg.canvas.GetHeight();
         unsigned int childwidth = width;
         unsigned int childheight = height;
+        Vector<2,int> spos = pos;
         CreateTexture();
-        if (split == HORIZONTAL) childwidth = 0.5 * width;
-        else childheight = 0.5 * height;
+        if (split == VERTICAL) {
+            childwidth = 0.5 * width;
+            spos[0] += childwidth;
+        }
+        else {
+            childheight = 0.5 * height;
+            spos[1] += childheight;
+        }
         SetTextureWidth(childwidth);
         SetTextureHeight(childheight);
+
+        first.SetPosition(pos);
+        second.SetPosition(spos);
         ((IListener<Display::InitializeEventArg>&)first).Handle(Display::InitializeEventArg(*this));
         ((IListener<Display::InitializeEventArg>&)second).Handle(Display::InitializeEventArg(*this));
         SetTextureWidth(width);
@@ -62,10 +72,19 @@ namespace OpenGL {
         unsigned int height = arg.canvas.GetHeight();
         unsigned int childwidth = width;
         unsigned int childheight = height;
-        if (split == HORIZONTAL) childwidth = 0.5 * width;
-        else childheight = 0.5 * height;
+        Vector<2,int> spos = pos;
+        if (split == VERTICAL) {
+            childwidth = 0.5 * width;
+            spos[0] += childwidth;
+        }
+        else {
+            childheight = 0.5 * height;
+            spos[1] += childheight;
+        }
         SetTextureWidth(childwidth);
         SetTextureHeight(childheight);
+        first.SetPosition(pos);
+        second.SetPosition(spos);
         ((IListener<Display::ResizeEventArg>&)first).Handle(arg);
         ((IListener<Display::ResizeEventArg>&)second).Handle(arg);
         SetTextureWidth(width);
@@ -144,13 +163,13 @@ namespace OpenGL {
         CHECK_FOR_GL_ERROR();
         glBegin(GL_QUADS);
         glTexCoord2f(0.0, 0.0);
-        glVertex3f(first.GetWidth(), second.GetHeight(), z);
+        glVertex3i(first.GetWidth(), second.GetHeight(), z);
         glTexCoord2f(0.0, 1.0);
-        glVertex3f(first.GetWidth(), 0, z);
+        glVertex3i(first.GetWidth(), 0, z);
         glTexCoord2f(1.0, 1.0);
-        glVertex3f(GetWidth(), 0, z);
+        glVertex3i(GetWidth(), 0, z);
         glTexCoord2f(1.0, 0.0);
-        glVertex3f(GetWidth(), GetHeight(), z);
+        glVertex3i(GetWidth(), GetHeight(), z);
         glEnd();
 
         glBindTexture(GL_TEXTURE_2D, 0);

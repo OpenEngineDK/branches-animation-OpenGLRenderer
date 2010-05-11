@@ -27,7 +27,7 @@ private:
     bool init;
     Split split;
 public:
-    SplitScreenCanvas(ICanvas& first, ICanvas& second, Split split = HORIZONTAL);
+    SplitScreenCanvas(ICanvas& first, ICanvas& second, Split split = VERTICAL);
     virtual ~SplitScreenCanvas();
 
     void Handle(Display::InitializeEventArg arg);
