@@ -24,6 +24,7 @@ private:
     private:
     public:
         unsigned int GetChannelSize() { return 8; };
+        ITexture2D* Clone() { return NULL; }
         void Load() {}
         void Unload() {}
         void Reverse() {}
