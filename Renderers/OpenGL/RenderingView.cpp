@@ -73,31 +73,33 @@ RenderingView::RenderingView()
 RenderingView::~RenderingView() {}
 
 void RenderingView::Handle(RenderingEventArg arg) {
-    #ifdef OE_SAFE
-    if (arg.canvas.GetScene() == NULL) 
-        throw Exception("Scene was NULL while rendering.");
-    #endif
-
-    this->arg = &arg;
-    // setup default render state
-    // RenderStateNode* renderStateNode = new RenderStateNode();
-    ApplyRenderState(currentRenderState);
-    arg.canvas.GetScene()->Accept(*this);
-    this->arg = NULL;
-
-    // cleanup
-    if (currentShader != NULL) {
-        currentShader->ReleaseShader();
-        currentShader.reset();
-    }
-    if (currentTexture != 0) {
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glDisable(GL_TEXTURE_2D);
-        CHECK_FOR_GL_ERROR();
-        currentTexture = 0;
+    if (arg.renderer.GetCurrentStage() == IRenderer::RENDERER_PROCESS){
+#ifdef OE_SAFE
+        if (arg.canvas.GetScene() == NULL) 
+            throw Exception("Scene was NULL while rendering.");
+#endif
+        
+        this->arg = &arg;
+        // setup default render state
+        // RenderStateNode* renderStateNode = new RenderStateNode();
+        ApplyRenderState(currentRenderState);
+        arg.canvas.GetScene()->Accept(*this);
+        this->arg = NULL;
+        
+        // cleanup
+        if (currentShader != NULL) {
+            currentShader->ReleaseShader();
+            currentShader.reset();
+        }
+        if (currentTexture != 0) {
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glDisable(GL_TEXTURE_2D);
+            CHECK_FOR_GL_ERROR();
+            currentTexture = 0;
+        }
     }
 }
-
+    
 /**
  * Process a rendering node.
  *
