@@ -411,7 +411,8 @@ void RenderingView::ApplyMesh(Mesh* prim){
 
     } else {
         // Apply the mesh.
-        ApplyGeometrySet(prim->GetGeometrySet());
+        if (currentGeom != prim->GetGeometrySet())
+            ApplyGeometrySet(prim->GetGeometrySet());
         
         // Apply the material.
         ApplyMaterial(prim->GetMaterial());
