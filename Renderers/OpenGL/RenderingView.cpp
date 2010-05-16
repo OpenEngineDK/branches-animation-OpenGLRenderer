@@ -63,10 +63,7 @@ RenderingView::RenderingView()
     currentRenderState->DisableOption(RenderStateNode::LIGHTING); //@todo
     currentRenderState->DisableOption(RenderStateNode::WIREFRAME);
     
-    vertices = IDataBlockPtr();
-    normals = IDataBlockPtr();
-    colors = IDataBlockPtr();
-    texCoords = IDataBlockList();
+    currentGeom = GeometrySetPtr(new GeometrySet());
     indexBuffer = IndicesPtr();
 }
 
@@ -311,27 +308,21 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
 void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
     if (geom == NULL){
         // Disable client states enabled by previous geom.
-        if (vertices != NULL) {
+        if (currentGeom->GetVertices() != NULL) {
             glDisableClientState(GL_VERTEX_ARRAY);
-            //vertices.reset();
-            vertices = IDataBlockPtr();
         }
-        if (normals != NULL){ 
+        if (currentGeom->GetNormals() != NULL){ 
             glDisableClientState(GL_NORMAL_ARRAY);
-            //normals.reset();
-            normals = IDataBlockPtr();
         }
-        if (colors != NULL){ 
+        if (currentGeom->GetColors() != NULL){ 
             glDisableClientState(GL_COLOR_ARRAY);
-            //colors.reset();
-            colors = IDataBlockPtr();
         }
-
-        for (int count = texCoords.size()-1; count >= 0 ; --count){
+        for (int count = currentGeom->GetTexCoords().size()-1; count >= 0 ; --count){
             glClientActiveTexture(GL_TEXTURE0 + count);
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
         }
-        texCoords.clear();
+
+        currentGeom = GeometrySetPtr(new GeometrySet());
 
     }else{
 
@@ -353,7 +344,6 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
         }else{
             glEnableClientState(GL_VERTEX_ARRAY);
         }
-        //vertices = v;
         CHECK_FOR_GL_ERROR();
 
         IDataBlockPtr n = geom->GetNormals();
@@ -367,7 +357,6 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
             else
                 glNormalPointer(GL_FLOAT, 0, n->GetVoidDataPtr());
         }
-        //normals = n;
         CHECK_FOR_GL_ERROR();
 
         IDataBlockPtr c = geom->GetColors();
@@ -381,7 +370,6 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
             else
                 glColorPointer(c->GetDimension(), GL_FLOAT, 0, c->GetVoidDataPtr());
         }
-        //colors = c;
         CHECK_FOR_GL_ERROR();
 
         IDataBlockList tcs = geom->GetTexCoords();
@@ -408,13 +396,13 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
             if (newItr != tcs.end()) ++newItr;
             if (oldItr != texCoords.end()) ++oldItr;
         }
-        //texCoords = tcs;
         CHECK_FOR_GL_ERROR();
 
         if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, 0);
         CHECK_FOR_GL_ERROR();
+
+        currentGeom = geom;
     }
-    currentGeom = geom;
 }
 
 void RenderingView::ApplyMesh(Mesh* prim){

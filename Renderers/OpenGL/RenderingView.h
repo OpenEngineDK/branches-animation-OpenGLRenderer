@@ -76,10 +76,6 @@ protected:
     bool renderTexture, renderShader;
     unsigned int currentTexture;
     IShaderResourcePtr currentShader;
-    IDataBlockPtr vertices;
-    IDataBlockPtr normals;
-    IDataBlockPtr colors;
-    IDataBlockList texCoords;
     IndicesPtr indexBuffer;
     GeometrySetPtr currentGeom;
 
