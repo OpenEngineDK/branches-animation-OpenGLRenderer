@@ -81,6 +81,7 @@ protected:
     IDataBlockPtr colors;
     IDataBlockList texCoords;
     IndicesPtr indexBuffer;
+    GeometrySetPtr currentGeom;
 
     RenderStateNode* currentRenderState;
 

@@ -341,7 +341,7 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
         if (v == NULL){
             // No vertices, disable them.
             glDisableClientState(GL_VERTEX_ARRAY);
-        }else if (v != vertices){
+        }else if (v != currentGeom->GetVertices()){
             // new vertices, bind them
             glEnableClientState(GL_VERTEX_ARRAY);
             // Only bind the buffer if it is supported
@@ -353,13 +353,13 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
         }else{
             glEnableClientState(GL_VERTEX_ARRAY);
         }
-        vertices = v;
+        //vertices = v;
         CHECK_FOR_GL_ERROR();
 
         IDataBlockPtr n = geom->GetNormals();
         if (n == NULL){
             glDisableClientState(GL_NORMAL_ARRAY);
-        }else if (n != normals){
+        }else if (n != currentGeom->GetNormals()){
             glEnableClientState(GL_NORMAL_ARRAY);
             if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, n->GetID());
             if (n->GetID() != 0)
@@ -367,13 +367,13 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
             else
                 glNormalPointer(GL_FLOAT, 0, n->GetVoidDataPtr());
         }
-        normals = n;
+        //normals = n;
         CHECK_FOR_GL_ERROR();
 
         IDataBlockPtr c = geom->GetColors();
         if (c == NULL){
             glDisableClientState(GL_COLOR_ARRAY);
-        }else if (c != colors){
+        }else if (c != currentGeom->GetColors()){
             glEnableClientState(GL_COLOR_ARRAY);
             if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, c->GetID());
             if (c->GetID() != 0)
@@ -381,10 +381,11 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
             else
                 glColorPointer(c->GetDimension(), GL_FLOAT, 0, c->GetVoidDataPtr());
         }
-        colors = c;
+        //colors = c;
         CHECK_FOR_GL_ERROR();
 
         IDataBlockList tcs = geom->GetTexCoords();
+        IDataBlockList texCoords = currentGeom->GetTexCoords();
         IDataBlockList::iterator newItr = tcs.begin();
         IDataBlockList::iterator oldItr = texCoords.begin();
         unsigned int maxCount = max(texCoords.size(), tcs.size());
@@ -407,12 +408,13 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
             if (newItr != tcs.end()) ++newItr;
             if (oldItr != texCoords.end()) ++oldItr;
         }
-        texCoords = tcs;
+        //texCoords = tcs;
         CHECK_FOR_GL_ERROR();
 
         if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, 0);
         CHECK_FOR_GL_ERROR();
     }
+    currentGeom = geom;
 }
 
 void RenderingView::ApplyMesh(Mesh* prim){
