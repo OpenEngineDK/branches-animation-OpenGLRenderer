@@ -167,24 +167,23 @@ void Renderer::SetTextureCompression(ITexture* tex){
             tex->SetColorFormat(RGBA_COMPRESSED);
             break;
         default:
-            // default just here to squelch the compiler
-            ;
+            throw Core::Exception("unknown compression type");
         }
     }
 }
 
 GLint Renderer::GLInternalColorFormat(ColorFormat f){
     switch (f) {
-    case ALPHA: 
+    case ALPHA:
+        return GL_ALPHA;
     case LUMINANCE: 
-        return 1; 
+        return GL_LUMINANCE;
     case LUMINANCE_ALPHA: 
-        return 2;
+        return GL_LUMINANCE_ALPHA;
     case BGR:
     case RGB: 
-        return 3;
+        return GL_RGB;
     case BGRA: 
-        return 4;  
     case RGBA: 
         return GL_RGBA;
     case ALPHA_COMPRESSED: return GL_COMPRESSED_ALPHA;
@@ -445,7 +444,7 @@ void Renderer::LoadTexture(ITexture2D* texr) {
     bool loaded = true;
     if (texr->GetVoidDataPtr() == NULL){
         loaded = false;
-        texr->Load();
+        texr->Load(); //@todo: what the #@!%?
     }
 
     // Generate and bind the texture id.
@@ -488,13 +487,13 @@ void Renderer::LoadTexture(ITexture3D* texr) {
     if (texr == NULL) return;
 
     // check if textures has already been bound.
-    if (texr->GetID() != 0) return;
+    if (texr->GetID() != 0) return; // @todo: throw exception!
 
     // signal we need the texture data if not loaded.
     bool loaded = true;
     if (texr->GetVoidDataPtr() == NULL){
         loaded = false;
-        texr->Load();
+        texr->Load(); //@todo: what the #@!%?
     }
 
     if (!texture2DArraySupport){
