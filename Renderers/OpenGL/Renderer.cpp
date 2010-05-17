@@ -640,7 +640,7 @@ void Renderer::BindFrameBuffer(FrameBuffer* fb){
     }
 
     for (unsigned int i = 0; i < fb->GetNumberOfAttachments(); ++i){
-        ITexture2DPtr tex = fb->GetTexAttachement(i);
+        ITexture2DPtr tex = fb->GetTexAttachment(i);
         LoadTexture(tex.get());
         
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
