@@ -75,9 +75,8 @@ namespace OpenEngine {
         void OpenGLShader::ApplyShader(){
 #ifdef OE_SAFE
             if (shaderProgram == 0)
-                throw ResourceException("No shader to apply. Perhaps loading failed.");
+                throw ResourceException("No shader to apply. Perhaps it was not loaded.");
 #endif
-
             // Bind the shader program.
             glUseProgram(shaderProgram);
 

@@ -65,12 +65,14 @@ public:
     void VisitRenderNode(RenderNode* node);
     void VisitDisplayListNode(DisplayListNode* node);
     void VisitBlendingNode(BlendingNode* node);
+    void VisitPostProcessNode(PostProcessNode* node);
     void Handle(RenderingEventArg arg);
     
 protected:
     Matrix<4, 4, float> modelViewMatrix[16];
     unsigned int mvIndex;
-    // void ApplyViewingVolume(Display::IViewingVolume& volume);
+
+    GLuint copyShader; // used for drawing one random texture to any renderbuffer.
 
     bool renderBinormal, renderTangent, renderSoftNormal, renderHardNormal;
     bool renderTexture, renderShader;
