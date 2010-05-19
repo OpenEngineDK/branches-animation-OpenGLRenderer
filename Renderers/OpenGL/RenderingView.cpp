@@ -352,7 +352,7 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
 
         currentGeom = GeometrySetPtr(new GeometrySet());
 
-    }else{
+    }else if (currentGeom != geom){
 
         bool bufferSupport = arg->renderer.BufferSupport();
         
@@ -438,9 +438,8 @@ void RenderingView::ApplyMesh(Mesh* prim){
         ApplyGeometrySet(GeometrySetPtr());
 
     } else {
-        // Apply the mesh.
-        if (currentGeom != prim->GetGeometrySet())
-            ApplyGeometrySet(prim->GetGeometrySet());
+        // Apply the geometry set.
+        ApplyGeometrySet(prim->GetGeometrySet());
         
         // Apply the material.
         ApplyMaterial(prim->GetMaterial());
