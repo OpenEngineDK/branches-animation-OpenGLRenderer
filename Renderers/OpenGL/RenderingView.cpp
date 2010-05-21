@@ -52,8 +52,7 @@ using OpenEngine::Scene::RenderStateNode;
  *
  * @param viewport Viewport in which to render.
  */
-RenderingView::RenderingView() 
-    : mvIndex(0) {
+RenderingView::RenderingView() {
     renderBinormal=renderTangent=renderSoftNormal=renderHardNormal = false;
     renderTexture = renderShader = true;
     currentRenderState = new RenderStateNode();
@@ -81,6 +80,8 @@ void RenderingView::Handle(RenderingEventArg arg) {
 #endif
         
         this->arg = &arg;
+        currentModelViewMatrix = arg.canvas.GetViewingVolume()->GetViewMatrix();
+        
         // setup default render state
         // RenderStateNode* renderStateNode = new RenderStateNode();
         ApplyRenderState(currentRenderState);
@@ -246,17 +247,16 @@ void RenderingView::VisitTransformationNode(TransformationNode* node) {
     float f[16];
     m.ToArray(f);
     glPushMatrix();
-    ++mvIndex;
-    CHECK_FOR_GL_ERROR();
     glMultMatrixf(f);
-    modelViewMatrix[mvIndex] = m * modelViewMatrix[mvIndex-1];
     CHECK_FOR_GL_ERROR();
+    Matrix<4, 4, float> oldModelView = currentModelViewMatrix;
+    currentModelViewMatrix = m * currentModelViewMatrix;
     // traverse sub nodes
     node->VisitSubNodes(*this);
     CHECK_FOR_GL_ERROR();
     // pop transformation matrix
     glPopMatrix();
-    --mvIndex;
+    currentModelViewMatrix = oldModelView;
     CHECK_FOR_GL_ERROR();
 }
 
@@ -614,7 +614,7 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     
     node->VisitSubNodes(*this);
     
-    node->PreEffect(arg->renderer, modelViewMatrix[mvIndex]);
+    node->PreEffect(arg->renderer, currentModelViewMatrix);
     
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, node->GetEffectFrameBuffer()->GetID());
     glDisable(GL_DEPTH_TEST);

@@ -69,8 +69,7 @@ public:
     void Handle(RenderingEventArg arg);
     
 protected:
-    Matrix<4, 4, float> modelViewMatrix[16];
-    unsigned int mvIndex;
+    Matrix<4, 4, float> currentModelViewMatrix;
 
     GLuint copyShader; // used for drawing one random texture to any renderbuffer.
 
