@@ -113,17 +113,22 @@ void RenderingView::Handle(RenderingEventArg arg) {
         // Create and compile the copy fragment program
         GLuint fragID = glCreateShader(GL_FRAGMENT_SHADER);
         const GLchar** fragSource = new const GLchar*[1];
-        fragSource[0] = "uniform sampler2D src;varying vec2 texCoord;void main(void){gl_FragColor = texture2D(src, texCoord);}";
+        fragSource[0] = "uniform sampler2D image0;uniform sampler2DShadow depth;varying vec2 texCoord;void main(void){gl_FragColor = texture2D(image0, texCoord); gl_FragDepth = shadow2D(depth, vec3(texCoord, 0.0)).x;}";
         glShaderSource(fragID, 1, fragSource, NULL);
         glCompileShader(fragID);
         glAttachShader(copyShader, fragID);
+        CHECK_FOR_GL_ERROR();
         
         glLinkProgram(copyShader);
+        CHECK_FOR_GL_ERROR();
 
         glUseProgram(copyShader);
-        GLuint loc = glGetUniformLocation(copyShader, "src");
+        GLuint loc = glGetUniformLocation(copyShader, "image0");
         glUniform1i(loc, 0);
+        loc = glGetUniformLocation(copyShader, "depth");
+        glUniform1i(loc, 1);
         glUseProgram(0);
+        CHECK_FOR_GL_ERROR();
     }
 }
     
@@ -617,14 +622,12 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     node->PreEffect(arg->renderer, currentModelViewMatrix);
     
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, node->GetEffectFrameBuffer()->GetID());
-    glDisable(GL_DEPTH_TEST);
+    glDepthFunc(GL_ALWAYS);
     CHECK_FOR_GL_ERROR();
     
     node->GetEffect()->ApplyShader();
     glRecti(-1,-1,1,1);
     node->GetEffect()->ReleaseShader();
-    
-    glEnable(GL_DEPTH_TEST);
     
     // Copy the final image to the final textures
     if (node->GetFinalTexs().size() != 0){
@@ -659,11 +662,14 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     if (!(node->offscreenRendering)){
         glUseProgram(copyShader);
         glBindTexture(GL_TEXTURE_2D, node->GetEffectFrameBuffer()->GetTexAttachment(0)->GetID());
+        glActiveTexture(GL_TEXTURE1);        
+        glBindTexture(GL_TEXTURE_2D, node->GetEffectFrameBuffer()->GetDepthTexture()->GetID());
         glRecti(-1,-1,1,1);
         CHECK_FOR_GL_ERROR();
     }
-
     // Clean up
+    // @TODO reset to previous depth func, not just less
+    glDepthFunc(GL_LESS);
     if (currentShader)
         currentShader->ApplyShader();
     else
