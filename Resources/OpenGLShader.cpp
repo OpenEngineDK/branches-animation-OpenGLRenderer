@@ -265,7 +265,8 @@ namespace OpenEngine {
             GLint loc = glGetUniformLocation(shaderProgram, name);
 #ifdef OE_SAFE
             if (loc == -1)
-                throw Exception( string("No such uniform named \"") + name + "\"");
+                //throw Exception( string("No such uniform named \"") + name + "\"");
+                logger.warning << string("No such uniform named \"") + name + "\"" << logger.end;
 #endif
             return loc;
         }
