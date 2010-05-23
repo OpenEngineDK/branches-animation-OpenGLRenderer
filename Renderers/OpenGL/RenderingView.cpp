@@ -584,10 +584,12 @@ void RenderingView::VisitDisplayListNode(DisplayListNode* node) {
 }
 
 void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
+    node->PreEffect(arg, &currentModelViewMatrix);
+    
     // if the node isn't enabled or there is no fbo
     // support then just proceed as usual.
     if (arg->renderer.FrameBufferSupport() == false ||
-        node->enabled == false) {
+        node->GetEnabled() == false) {
         node->VisitSubNodes(*this);
         return;
     }
@@ -610,8 +612,6 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     CHECK_FOR_GL_ERROR();
     
     node->VisitSubNodes(*this);
-    
-    node->PreEffect(arg->renderer, currentModelViewMatrix);
     
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, node->GetEffectFrameBuffer()->GetID());
     glDepthFunc(GL_ALWAYS);
@@ -654,7 +654,7 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     if (!(node->offscreenRendering)){
         glUseProgram(copyShader);
         glBindTexture(GL_TEXTURE_2D, node->GetEffectFrameBuffer()->GetTexAttachment(0)->GetID());
-        glActiveTexture(GL_TEXTURE1);        
+        glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, node->GetEffectFrameBuffer()->GetDepthTexture()->GetID());
         glRecti(-1,-1,1,1);
         CHECK_FOR_GL_ERROR();
@@ -662,6 +662,7 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     // Clean up
     // @TODO reset to previous depth func, not just less
     glDepthFunc(GL_LESS);
+    glActiveTexture(GL_TEXTURE0);
     if (currentShader)
         currentShader->ApplyShader();
     else
