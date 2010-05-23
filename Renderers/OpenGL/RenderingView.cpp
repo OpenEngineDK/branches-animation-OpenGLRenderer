@@ -319,17 +319,9 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     // TODO: Decide whether we want both front and back
     //       materials (maybe a material property).
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat->diffuse.ToArray());
-    CHECK_FOR_GL_ERROR();
-    
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat->ambient.ToArray());
-    CHECK_FOR_GL_ERROR();
-    
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat->specular.ToArray());
-    CHECK_FOR_GL_ERROR();
-    
     glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, mat->emission.ToArray());
-    CHECK_FOR_GL_ERROR();
-    
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, mat->shininess);
     CHECK_FOR_GL_ERROR();
 }

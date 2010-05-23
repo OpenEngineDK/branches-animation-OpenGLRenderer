@@ -89,28 +89,22 @@ void Renderer::SetupTexParameters(ITexture2D* tex){
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     CHECK_FOR_GL_ERROR();
 
-    GLint wrapping;
-    switch(tex->GetWrapping()){
-    case CLAMP_TO_EDGE: wrapping = GL_CLAMP_TO_EDGE; break;
-    case CLAMP: wrapping = GL_CLAMP; break;
-    case REPEAT: wrapping = GL_REPEAT; break;
-#ifdef OE_SAFE
-    default:
-        throw Exception("Unknown texture wrapping");
-#endif
-    }
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,         wrapping);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,         wrapping);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,         tex->GetWrapping());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,         tex->GetWrapping());
     if (tex->UseMipmapping()){
         glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP,    GL_TRUE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, tex->GetFiltering());
     }else{
         glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP,    GL_FALSE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (tex->GetFiltering() == NONE)        
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        else
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
+    if (tex->GetFiltering() == NONE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    else
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     CHECK_FOR_GL_ERROR();
 }
@@ -119,31 +113,25 @@ void Renderer::SetupTexParameters(ITexture3D* tex){
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     CHECK_FOR_GL_ERROR();
 
-    GLint wrapping;
-    switch(tex->GetWrapping()){
-    case CLAMP_TO_EDGE: wrapping = GL_CLAMP_TO_EDGE; break;
-    case CLAMP: wrapping = GL_CLAMP; break;
-    case REPEAT: wrapping = GL_REPEAT; break;
-#ifdef OE_SAFE
-    default:
-        throw Exception("Unknown texture wrapping");
-#endif
-    }
-
     GLenum target = tex->GetUseCase();
 
-    glTexParameteri(target, GL_TEXTURE_WRAP_S,         wrapping);
-    glTexParameteri(target, GL_TEXTURE_WRAP_T,         wrapping);
-    glTexParameteri(target, GL_TEXTURE_WRAP_R,         wrapping);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S,         tex->GetWrapping());
+    glTexParameteri(target, GL_TEXTURE_WRAP_T,         tex->GetWrapping());
+    glTexParameteri(target, GL_TEXTURE_WRAP_R,         tex->GetWrapping());
     if (tex->UseMipmapping()){
         glTexParameteri(target, GL_GENERATE_MIPMAP,    GL_TRUE);
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, tex->GetFiltering());
     }else{
         glTexParameteri(target, GL_GENERATE_MIPMAP,    GL_FALSE);
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        if (tex->GetFiltering() == NONE)        
+            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        else
+            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
+    if (tex->GetFiltering() == NONE)
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    else
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     CHECK_FOR_GL_ERROR();
 }
