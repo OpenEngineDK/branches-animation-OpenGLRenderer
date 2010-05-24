@@ -12,9 +12,11 @@
 
 #include <Core/Exceptions.h>
 #include <Utils/Convert.h>
+#include <string>
 
 using OpenEngine::Core::Exception;
 using OpenEngine::Utils::Convert;
+using std::string;
 
 #ifdef _WIN32
 #ifndef GLEW_STATIC
@@ -58,6 +60,49 @@ inline void CHECK_FOR_GL_ERROR(const std::string file, const int line) {
 }
 
 /**
+ *  Should never be used in the code, use CHECK_FOR_GL_ERROR(); instead
+ */
+inline void CHECK_FRAMEBUFFER_STATUS(const std::string file, const int line) {
+    GLenum errorCode = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    if (errorCode != GL_FRAMEBUFFER_COMPLETE_EXT) { 
+        string s;
+        switch (errorCode) {
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+            s = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+            s = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT";
+            break;
+            // case GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT:
+            //     s = "GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT";
+            //     break; 
+        case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+            s = "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+            s = "GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+            s = "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT";
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+            s = "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT";
+            break;
+        case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+            s = "GL_FRAMEBUFFER_UNSUPPORTED_EXT";
+            break;
+        default:
+            s = "Unknown";
+        }
+        throw Exception("[file:" + file +
+                        " line:" + Convert::ToString(line) +
+                        "] OpenGL Framebuffer Error: " + s
+                        );
+    }
+}
+
+
+/**
  *  Checks for Open GL errors and throws an exception if
  *  an error was detected, is only available in debug mode.
  *  NOTE: This call must not be used between calls to glBegin and
@@ -65,8 +110,10 @@ inline void CHECK_FOR_GL_ERROR(const std::string file, const int line) {
  */
 #if OE_DEBUG_GL
 #define CHECK_FOR_GL_ERROR(); CHECK_FOR_GL_ERROR(__FILE__,__LINE__);
+#define CHECK_FRAMEBUFFER_STATUS(); CHECK_FRAMEBUFFER_STATUS(__FILE__,__LINE__);
 #else
 #define CHECK_FOR_GL_ERROR();
+#define CHECK_FRAMEBUFFER_STATUS();
 #endif
 
 #endif // _OPENENGINE_OPENGL_H_
