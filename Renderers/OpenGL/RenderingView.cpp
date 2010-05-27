@@ -601,27 +601,28 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     glGetIntegerv(GL_VIEWPORT, prevDims.ToArray());
     CHECK_FOR_GL_ERROR();
     
-    // Setup the new framebuffer
+    // Setup the new frame buffer
     Vector<2, int> dims = node->GetDimension();
     glViewport(0, 0, dims[0], dims[1]);
     CHECK_FOR_GL_ERROR();
-
-    // Use the new framebuffer
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, node->GetSceneFrameBuffer()->GetID());
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     CHECK_FOR_GL_ERROR();
     
+    // Render to the scene frame buffer
     node->VisitSubNodes(*this);
-    
+
+    // Bind the effect frame buffer and gently disable the depth func
+    // (while preserving depth writes)
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, node->GetEffectFrameBuffer()->GetID());
     glDepthFunc(GL_ALWAYS);
     CHECK_FOR_GL_ERROR();
-    
+
+    // Then render the effect
     node->GetEffect()->ApplyShader();
     glRecti(-1,-1,1,1);
     node->GetEffect()->ReleaseShader();
     
-    // Copy the final image to the final textures
     if (node->GetFinalTexs().size() != 0){
         if (node->GetFinalTexs()[0]->GetID() == 0){
             // Initialize the final texs and setup the
@@ -635,6 +636,7 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
                 CHECK_FOR_GL_ERROR();
             }
         }
+        // Copy the final image to the final textures
         for (unsigned int i = 0; i < node->GetFinalTexs().size(); ++i){
             glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
             glBindTexture(GL_TEXTURE_2D, node->GetFinalTexs()[i]->GetID());
@@ -646,7 +648,7 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
         CHECK_FOR_GL_ERROR();
     }
     
-    // copy the picture onto the original framebuffer.
+    // draw the picture onto the original framebuffer.
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
     glViewport(prevDims[0], prevDims[1], prevDims[2], prevDims[3]);
     CHECK_FOR_GL_ERROR();

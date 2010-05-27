@@ -96,7 +96,7 @@ void Renderer::SetupTexParameters(ITexture2D* tex){
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, tex->GetFiltering());
     }else{
         glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP,    GL_FALSE);
-        if (tex->GetFiltering() == NONE)        
+        if (tex->GetFiltering() == NONE)
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         else
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
