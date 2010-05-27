@@ -608,6 +608,21 @@ void Renderer::BindFrameBuffer(FrameBuffer* fb){
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fboID);
     CHECK_FOR_GL_ERROR();
 
+    /*
+     * On some Platforms (OS X) the color textures MUST be bound
+     * before the depth texture
+     */
+
+    for (unsigned int i = 0; i < fb->GetNumberOfAttachments(); ++i){
+        ITexture2DPtr tex = fb->GetTexAttachment(i);
+        LoadTexture(tex.get());
+        
+        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
+                                  GL_COLOR_ATTACHMENT0_EXT + i,
+                                  GL_TEXTURE_2D, tex->GetID(), 0);
+        CHECK_FOR_GL_ERROR();
+    }
+
     if (fb->GetDepthTexture() != NULL){
         LoadTexture(fb->GetDepthTexture());
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
@@ -626,16 +641,7 @@ void Renderer::BindFrameBuffer(FrameBuffer* fb){
                                      GL_RENDERBUFFER_EXT, depth);
         CHECK_FOR_GL_ERROR();
     }
-
-    for (unsigned int i = 0; i < fb->GetNumberOfAttachments(); ++i){
-        ITexture2DPtr tex = fb->GetTexAttachment(i);
-        LoadTexture(tex.get());
-        
-        glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
-                                  GL_COLOR_ATTACHMENT0_EXT + i,
-                                  GL_TEXTURE_2D, tex->GetID(), 0);
-        CHECK_FOR_GL_ERROR();
-    }
+    CHECK_FRAMEBUFFER_STATUS();
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
