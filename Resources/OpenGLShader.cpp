@@ -132,6 +132,10 @@ namespace OpenEngine {
         void OpenGLShader::LoadResource(string resource){
             ResetProperties();
 
+            vertexShaders.clear();
+            geometryShaders.clear();
+            fragmentShaders.clear();
+
             // Load the file.
             ifstream* in = File::Open(resource);
             
