@@ -77,6 +77,23 @@ namespace OpenEngine {
             if (shaderProgram == 0)
                 throw ResourceException("No shader to apply. Perhaps it was not loaded.");
 #endif
+            if (timer.GetElapsedTime() > Utils::Time(1,0)) {
+                timer.Reset();
+                map<string, Utils::DateTime>::iterator itr = timestamps.begin();
+                while (itr != timestamps.end()){
+                    Utils::DateTime oldstamp = itr->second;
+                    string file = itr->first;
+                    Utils::DateTime newstamp = File::
+                        GetLastModified(DirectoryManager::FindFileInPath(file));
+                    if (oldstamp != newstamp) {
+                        Unload();
+                        Load();
+                        break;
+                    }
+                    itr++;
+                }
+            }
+
             // Bind the shader program.
             glUseProgram(shaderProgram);
 
@@ -135,6 +152,8 @@ namespace OpenEngine {
             vertexShaders.clear();
             geometryShaders.clear();
             fragmentShaders.clear();
+            timestamps.clear();
+            timer.Start();
 
             // Load the file.
             ifstream* in = File::Open(resource);
@@ -228,6 +247,23 @@ namespace OpenEngine {
         
             in->close();
             delete in;
+
+            std::vector<std::string> files;
+            files.push_back(resource);
+
+            files.insert(files.end(),
+                         fragmentShaders.begin(), fragmentShaders.end());
+            files.insert(files.end(),
+                         vertexShaders.begin(), vertexShaders.end());
+            files.insert(files.end(),
+                         geometryShaders.begin(), geometryShaders.end());
+            std::vector<std::string>::iterator fileItr = files.begin();
+            while (fileItr != files.end()) {
+                std::string filename = *fileItr;
+                timestamps[filename] = File::
+                    GetLastModified(DirectoryManager::FindFileInPath(filename));
+                fileItr++;
+            }
         }     
 
         void OpenGLShader::PrintShaderInfoLog(GLuint shader){

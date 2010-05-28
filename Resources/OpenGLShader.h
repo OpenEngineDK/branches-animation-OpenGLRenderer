@@ -14,6 +14,8 @@
 #include <Resources/IShaderResource.h>
 #include <Resources/IResourcePlugin.h>
 #include <Meta/OpenGL.h>
+#include <Utils/DateTime.h>
+#include <Utils/Timer.h>
 
 using namespace std;
 
@@ -67,9 +69,12 @@ namespace OpenEngine {
             vector<string> vertexShaders;
             vector<string> geometryShaders;
             vector<string> fragmentShaders;
+            std::map<std::string, Utils::DateTime> timestamps;
 
             GLuint shaderProgram;
             GLint nextTexUnit;
+
+            Utils::Timer timer;
 
             map<string, uniform> boundUniforms;
             map<string, uniform> unboundUniforms;
