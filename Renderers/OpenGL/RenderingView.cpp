@@ -606,70 +606,58 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     glViewport(0, 0, dims[0], dims[1]);
     CHECK_FOR_GL_ERROR();
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, node->GetSceneFrameBuffer()->GetID());
+    // Blit the previous framebuffer depth for merging instead of sorting.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     CHECK_FOR_GL_ERROR();
     
     // Render to the scene frame buffer
     node->VisitSubNodes(*this);
 
-    // Bind the effect frame buffer and gently disable the depth func
+    // Bind the previous frame buffer and gently disable the depth func
     // (while preserving depth writes)
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, node->GetEffectFrameBuffer()->GetID());
-    glDepthFunc(GL_ALWAYS);
-    CHECK_FOR_GL_ERROR();
-
-    // Then render the effect
-    node->GetEffect()->ApplyShader();
-    glRecti(-1,-1,1,1);
-    node->GetEffect()->ReleaseShader();
-    
-    if (node->GetFinalTexs().size() != 0){
-        if (node->GetFinalTexs()[0]->GetID() == 0){
-            // Initialize the final texs and setup the
-            // effect shader to use them.
-            for (unsigned int i = 0; i < node->GetFinalTexs().size(); ++i){
-                ITexture2DPtr tex = node->GetFinalTexs()[i];
-                arg->renderer.LoadTexture(tex);
-                string colorid = "finalColor" + Utils::Convert::ToString<unsigned int>(i);
-                if (node->GetEffect()->GetUniformID(colorid) >= 0)
-                    node->GetEffect()->SetTexture(colorid, tex);
-                CHECK_FOR_GL_ERROR();
-            }
-        }
-        // Copy the final image to the final textures
-        for (unsigned int i = 0; i < node->GetFinalTexs().size(); ++i){
-            glReadBuffer(GL_COLOR_ATTACHMENT0 + i);
-            glBindTexture(GL_TEXTURE_2D, node->GetFinalTexs()[i]->GetID());
-            GLsizei width = node->GetFinalTexs()[i]->GetWidth();
-            GLsizei height = node->GetFinalTexs()[i]->GetHeight();
-            glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, width, height);
-        }
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        CHECK_FOR_GL_ERROR();
-    }
-    
-    // draw the picture onto the original framebuffer.
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
     glViewport(prevDims[0], prevDims[1], prevDims[2], prevDims[3]);
     CHECK_FOR_GL_ERROR();
-    
-    if (!(node->offscreenRendering)){
-        glUseProgram(copyShader);
-        glBindTexture(GL_TEXTURE_2D, node->GetEffectFrameBuffer()->GetTexAttachment(0)->GetID());
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, node->GetEffectFrameBuffer()->GetDepthTexture()->GetID());
-        glRecti(-1,-1,1,1);
-        CHECK_FOR_GL_ERROR();
-    }
-    // Clean up
+
+    // Then render the effect
+    glDepthFunc(GL_ALWAYS);
+    node->GetEffect()->ApplyShader();
+    glRecti(-1,-1,1,1);
+    node->GetEffect()->ReleaseShader();
     // @TODO reset to previous depth func, not just less
     glDepthFunc(GL_LESS);
-    glActiveTexture(GL_TEXTURE0);
+
+    FrameBuffer* finalFb = node->GetFinalFrameBuffer();
+    if (finalFb != NULL){
+        if (finalFb->GetID() == 0){
+            // Initialize the final frame buffer and assign the
+            // textures to the effect shader.
+            arg->renderer.BindFrameBuffer(finalFb);
+            for (unsigned int i = 0; i < finalFb->GetNumberOfAttachments(); ++i){
+                string colorid = "finalColor" + Utils::Convert::ToString<unsigned int>(i);
+                if (node->GetEffect()->GetUniformID(colorid) >= 0)
+                    node->GetEffect()->SetTexture(colorid, finalFb->GetTexAttachment(i));
+                CHECK_FOR_GL_ERROR();
+            }
+        }
+        // Blit the images from the previous framebuffer to the final framebuffer
+        glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, prevFbo);
+        glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, finalFb->GetID());
+        // @TODO Blit the depth buffer with nearest and color buffers
+        // with linear filtering?
+        glBlitFramebuffer(prevDims[0], prevDims[1], prevDims[2], prevDims[3], 
+                          0, 0, dims[0], dims[1], 
+                          GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        CHECK_FOR_GL_ERROR();
+        
+        // Reset to previous fbo
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
+    }
+
     if (currentShader)
         currentShader->ApplyShader();
     else
         glUseProgram(0);
-    glBindTexture(GL_TEXTURE_2D, currentTexture);
 }
     
 void RenderingView::VisitBlendingNode(BlendingNode* node) {
