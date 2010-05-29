@@ -605,7 +605,7 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     Vector<2, int> dims = node->GetDimension();
     glViewport(0, 0, dims[0], dims[1]);
     CHECK_FOR_GL_ERROR();
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, node->GetSceneFrameBuffer()->GetID());
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, node->GetSceneFrameBuffer()->GetID());
     // Blit the previous framebuffer depth for merging instead of sorting.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     CHECK_FOR_GL_ERROR();
@@ -615,7 +615,7 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
 
     // Bind the previous frame buffer and gently disable the depth func
     // (while preserving depth writes)
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, prevFbo);
     glViewport(prevDims[0], prevDims[1], prevDims[2], prevDims[3]);
     CHECK_FOR_GL_ERROR();
 
