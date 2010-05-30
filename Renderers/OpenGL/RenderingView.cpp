@@ -613,20 +613,22 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     // Render to the scene frame buffer
     node->VisitSubNodes(*this);
 
-    // Bind the previous frame buffer and gently disable the depth func
-    // (while preserving depth writes)
-    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, prevFbo);
+    // Bind the previous frame buffer as both draw and read buffer.
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
     glViewport(prevDims[0], prevDims[1], prevDims[2], prevDims[3]);
     CHECK_FOR_GL_ERROR();
 
-    // Then render the effect
+    // Gently disable the depth func (while preserving depth writes)
     glDepthFunc(GL_ALWAYS);
+
+    // Then render the effect
     node->GetEffect()->ApplyShader();
     glRecti(-1,-1,1,1);
     node->GetEffect()->ReleaseShader();
     // @TODO reset to previous depth func, not just less
     glDepthFunc(GL_LESS);
 
+    // Store the effect in the final frame buffer
     FrameBuffer* finalFb = node->GetFinalFrameBuffer();
     if (finalFb != NULL){
         if (finalFb->GetID() == 0){
@@ -641,7 +643,6 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
             }
         }
         // Blit the images from the previous framebuffer to the final framebuffer
-        glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, prevFbo);
         glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, finalFb->GetID());
         // @TODO Blit the depth buffer with nearest and color buffers
         // with linear filtering?
