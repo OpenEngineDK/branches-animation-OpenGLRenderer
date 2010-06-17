@@ -86,6 +86,7 @@ namespace OpenEngine {
                     Utils::DateTime newstamp = File::
                         GetLastModified(DirectoryManager::FindFileInPath(file));
                     if (oldstamp != newstamp) {
+                        ReleaseShader();
                         Unload();
                         Load();
                         break;

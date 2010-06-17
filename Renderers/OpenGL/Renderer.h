@@ -81,13 +81,14 @@ private:
     inline void SetupTexParameters(ITexture2D* tex);
     inline void SetupTexParameters(ITexture3D* tex);
     inline void SetTextureCompression(ITexture* tex);
-    inline GLint GLInternalColorFormat(ColorFormat f);
-    inline GLenum GLColorFormat(ColorFormat f);
 
     inline unsigned int GLTypeSize(Type t);
     inline GLenum GLAccessType(BlockType b, UpdateMode u);
 
 public:
+    static inline GLint GLInternalColorFormat(ColorFormat f);
+    static inline GLenum GLColorFormat(ColorFormat f);
+
     Renderer(/*Viewport* viewport*/);
     virtual ~Renderer();
 
