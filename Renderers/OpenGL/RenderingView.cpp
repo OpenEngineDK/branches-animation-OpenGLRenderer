@@ -430,7 +430,7 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
     }
 }
 
-void RenderingView::ApplyMesh(Mesh* prim){
+void RenderingView::ApplyMesh(Mesh* prim) {
     if (prim == NULL){
         ApplyGeometrySet(GeometrySetPtr());
 

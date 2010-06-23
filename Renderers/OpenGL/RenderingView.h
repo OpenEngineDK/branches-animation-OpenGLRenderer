@@ -96,7 +96,7 @@ protected:
     inline void RenderHardNormal(FacePtr face);
     inline void ApplyMaterial(Geometry::MaterialPtr mat);
     void ApplyGeometrySet(GeometrySetPtr geom);
-    inline void ApplyMesh(Mesh* prim);
+    void ApplyMesh(Mesh* prim);
     inline void ApplyModel(Model* model);
     inline void ApplyRenderState(RenderStateNode* node);
 };
