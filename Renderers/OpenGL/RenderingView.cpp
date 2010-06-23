@@ -646,9 +646,9 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
         glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, finalFb->GetID());
         // @TODO Blit the depth buffer with nearest and color buffers
         // with linear filtering?
-        glBlitFramebuffer(prevDims[0], prevDims[1], prevDims[2], prevDims[3], 
-                          0, 0, dims[0], dims[1], 
-                          GL_COLOR_BUFFER_BIT, GL_LINEAR);
+        glBlitFramebufferEXT(prevDims[0], prevDims[1], prevDims[2], prevDims[3], 
+			     0, 0, dims[0], dims[1], 
+			     GL_COLOR_BUFFER_BIT, GL_LINEAR);
         CHECK_FOR_GL_ERROR();
         
         // Reset to previous fbo

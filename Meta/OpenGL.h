@@ -43,6 +43,9 @@ using std::string;
 #ifndef GL_RGBA32F
 #define GL_RGBA32F 34838
 #endif
+#ifndef GL_R32F
+#define GL_R32F 0x822E
+#endif
 
 
 /**
@@ -63,7 +66,7 @@ inline void CHECK_FOR_GL_ERROR(const std::string file, const int line) {
  *  Should never be used in the code, use CHECK_FOR_GL_ERROR(); instead
  */
 inline void CHECK_FRAMEBUFFER_STATUS(const std::string file, const int line) {
-    GLenum errorCode = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+    GLenum errorCode = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
     if (errorCode != GL_FRAMEBUFFER_COMPLETE_EXT) { 
         string s;
         switch (errorCode) {
