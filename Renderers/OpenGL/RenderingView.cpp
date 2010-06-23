@@ -648,7 +648,7 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
         // with linear filtering?
         glBlitFramebuffer(prevDims[0], prevDims[1], prevDims[2], prevDims[3], 
                           0, 0, dims[0], dims[1], 
-                          GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+                          GL_COLOR_BUFFER_BIT, GL_LINEAR);
         CHECK_FOR_GL_ERROR();
         
         // Reset to previous fbo
