@@ -655,10 +655,7 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
         glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
     }
 
-    if (currentShader)
-        currentShader->ApplyShader();
-    else
-        glUseProgram(0);
+    currentShader.reset();
 }
     
 void RenderingView::VisitBlendingNode(BlendingNode* node) {
