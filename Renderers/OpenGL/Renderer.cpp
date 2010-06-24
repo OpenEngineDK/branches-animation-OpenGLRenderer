@@ -435,6 +435,7 @@ void Renderer::LoadTexture(ITexture2D* texr) {
         texr->Load(); //@todo: what the #@!%?
     }
 
+
     // Generate and bind the texture id.
     GLuint texid;
     glGenTextures(1, &texid);
@@ -462,6 +463,8 @@ void Renderer::LoadTexture(ITexture2D* texr) {
                  texr->GetVoidDataPtr());
     CHECK_FOR_GL_ERROR();
     
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     // Return the texture in the state we got it.
     if (!loaded)
         texr->Unload();
@@ -613,22 +616,27 @@ void Renderer::BindFrameBuffer(FrameBuffer* fb){
      * before the depth texture
      */
 
+    if (fb->GetNumberOfAttachments() == 0) {
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+    }
     for (unsigned int i = 0; i < fb->GetNumberOfAttachments(); ++i){
         ITexture2DPtr tex = fb->GetTexAttachment(i);
         LoadTexture(tex.get());
-        
+        glBindTexture(GL_TEXTURE_2D, tex->GetID());  // Why is this needed?
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
                                   GL_COLOR_ATTACHMENT0_EXT + i,
                                   GL_TEXTURE_2D, tex->GetID(), 0);
         CHECK_FOR_GL_ERROR();
     }
 
-    if (fb->GetDepthTexture() != NULL){
+    if (fb->GetDepthTexture() != NULL) {
         LoadTexture(fb->GetDepthTexture());
+        glBindTexture(GL_TEXTURE_2D, fb->GetDepthTexture()->GetID()); // Why is this needed?
         glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, 
                                   GL_DEPTH_ATTACHMENT_EXT,
                                   GL_TEXTURE_2D, fb->GetDepthTexture()->GetID(), 0);
-    }else{
+    } else {
         Vector<2, int> viewDim = fb->GetDimension();
         
         GLuint depth;
