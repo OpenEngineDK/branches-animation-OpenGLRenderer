@@ -397,19 +397,38 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
         }
         CHECK_FOR_GL_ERROR();
 
-        IDataBlockList tcs = geom->GetTexCoords();
-        IDataBlockList texCoords = currentGeom->GetTexCoords();
-        IDataBlockList::iterator newItr = tcs.begin();
-        IDataBlockList::iterator oldItr = texCoords.begin();
-        unsigned int maxCount = max(texCoords.size(), tcs.size());
-        for (unsigned int count = 0; count < maxCount; ++count){
+        IDataBlockList newTexCoords = geom->GetTexCoords();
+        IDataBlockList oldTexCoords = currentGeom->GetTexCoords();
+        IDataBlockList::iterator newItr = newTexCoords.begin();
+        IDataBlockList::iterator oldItr = oldTexCoords.begin();
+        unsigned int maxCount = max(newTexCoords.size(), oldTexCoords.size());
+        unsigned int minCount = min(newTexCoords.size(), oldTexCoords.size());
+
+        // Replace old texcoord with new ones.
+        for (unsigned int count = 0; count < minCount; ++count, ++newItr, ++oldItr){
             glClientActiveTexture(GL_TEXTURE0 + count);
             IDataBlockPtr newTc = (*newItr);
             IDataBlockPtr oldTc = (*oldItr);
+            if (newTc != oldTc){
+                if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
+                if (newTc->GetID() != 0){
+                    glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, 0);
+                }else
+                    glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, newTc->GetVoidDataPtr());
+            }
+        }
 
-            if (tcs.size() <= count){
+        if (newItr == newTexCoords.end()){
+            // Disable the remaining texture coords
+            for (unsigned int c = minCount; c < maxCount; ++c){
+                glClientActiveTexture(GL_TEXTURE0 + c);
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-            }else if (newTc != oldTc || texCoords.size() <= count+1){
+            }
+        }else{
+            // Enable the remaining texture coords
+            for (unsigned int c = minCount; c < maxCount; ++c, ++newItr){
+                IDataBlockPtr newTc = (*newItr);
+                glClientActiveTexture(GL_TEXTURE0 + c);
                 glEnableClientState(GL_TEXTURE_COORD_ARRAY);
                 if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, newTc->GetID());
                 if (newTc->GetID() != 0){
@@ -417,9 +436,7 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
                 }else
                     glTexCoordPointer(newTc->GetDimension(), GL_FLOAT, 0, newTc->GetVoidDataPtr());
             }
-
-            if (newItr != tcs.end()) ++newItr;
-            if (oldItr != texCoords.end()) ++oldItr;
+            
         }
         CHECK_FOR_GL_ERROR();
 
