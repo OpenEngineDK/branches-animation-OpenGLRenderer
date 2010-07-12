@@ -43,7 +43,7 @@ using OpenEngine::Geometry::MaterialPtr;
  *
  * @class TextureLoader TextureLoader.h Renderers/OpenGL/TextureLoader.h
  */
-class __attribute__ (deprecated) TextureLoader : public ISceneNodeVisitor, public IListener<RenderingEventArg> {
+class __attribute__ ((deprecated)) TextureLoader : public ISceneNodeVisitor, public IListener<RenderingEventArg> {
 public:
     TextureLoader();
     ~TextureLoader();
