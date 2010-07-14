@@ -99,7 +99,8 @@ void RenderingView::Handle(RenderingEventArg arg) {
             CHECK_FOR_GL_ERROR();
             currentTexture = 0;
         }
-    }else if (arg.renderer.GetCurrentStage() == IRenderer::RENDERER_INITIALIZE){
+    } else if (arg.renderer.GetCurrentStage() == IRenderer::RENDERER_INITIALIZE &&
+              Renderer::IsGLSLSupported()) {
         copyShader = glCreateProgram();
         
         // Create and compile the vertex program
