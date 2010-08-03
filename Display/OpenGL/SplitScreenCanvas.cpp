@@ -40,11 +40,11 @@ namespace OpenGL {
         Vector<2,int> spos = pos;
         CreateTexture();
         if (split == VERTICAL) {
-            childwidth = 0.5 * width;
+            childwidth = width/2;
             spos[0] += childwidth;
         }
         else {
-            childheight = 0.5 * height;
+            childheight = height/2;
             spos[1] += childheight;
         }
         SetTextureWidth(childwidth);
@@ -74,11 +74,11 @@ namespace OpenGL {
         unsigned int childheight = height;
         Vector<2,int> spos = pos;
         if (split == VERTICAL) {
-            childwidth = 0.5 * width;
+            childwidth = width/2;
             spos[0] += childwidth;
         }
         else {
-            childheight = 0.5 * height;
+            childheight = height/2;
             spos[1] += childheight;
         }
         SetTextureWidth(childwidth);
@@ -147,7 +147,7 @@ namespace OpenGL {
 
         glBindTexture(GL_TEXTURE_2D, first.GetTexture()->GetID());
         CHECK_FOR_GL_ERROR();
-        const unsigned int z = 0.0;
+        const unsigned int z = 0;
         glBegin(GL_QUADS);
         glTexCoord2f(0.0, 0.0);
         glVertex3i(0, first.GetHeight(), z);
