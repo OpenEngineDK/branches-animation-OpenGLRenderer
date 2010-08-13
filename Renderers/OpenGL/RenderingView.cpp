@@ -99,39 +99,7 @@ void RenderingView::Handle(RenderingEventArg arg) {
             CHECK_FOR_GL_ERROR();
             currentTexture = 0;
         }
-    } else if (arg.renderer.GetCurrentStage() == IRenderer::RENDERER_INITIALIZE &&
-              Renderer::IsGLSLSupported()) {
-        copyShader = glCreateProgram();
-        
-        // Create and compile the vertex program
-        GLuint vertexID = glCreateShader(GL_VERTEX_SHADER);
-        const GLchar** vertexSource = new const GLchar*[1];
-        vertexSource[0] = "varying vec2 texCoord;void main(void){texCoord = (gl_Vertex.xy + 1.0) * 0.5;gl_Position = gl_Vertex;}";
-        glShaderSource(vertexID, 1, vertexSource, NULL);
-        glCompileShader(vertexID);
-        glAttachShader(copyShader, vertexID);
-        
-        // Create and compile the copy fragment program
-        GLuint fragID = glCreateShader(GL_FRAGMENT_SHADER);
-        const GLchar** fragSource = new const GLchar*[1];
-        fragSource[0] = "uniform sampler2D image0;uniform sampler2DShadow depth;varying vec2 texCoord;void main(void){gl_FragColor = texture2D(image0, texCoord); gl_FragDepth = shadow2D(depth, vec3(texCoord, 0.0)).x;}";
-        glShaderSource(fragID, 1, fragSource, NULL);
-        glCompileShader(fragID);
-        glAttachShader(copyShader, fragID);
-        CHECK_FOR_GL_ERROR();
-        
-        glLinkProgram(copyShader);
-        CHECK_FOR_GL_ERROR();
-
-        glUseProgram(copyShader);
-        GLuint loc = glGetUniformLocation(copyShader, "image0");
-        glUniform1i(loc, 0);
-        loc = glGetUniformLocation(copyShader, "depth");
-        glUniform1i(loc, 1);
-        glUseProgram(0);
-        CHECK_FOR_GL_ERROR();
-    }
-}
+    }}
     
 /**
  * Process a rendering node.

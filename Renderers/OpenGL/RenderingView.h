@@ -71,8 +71,6 @@ public:
 protected:
     Matrix<4, 4, float> currentModelViewMatrix;
 
-    GLuint copyShader; // used for drawing one random texture to any renderbuffer.
-
     bool renderBinormal, renderTangent, renderSoftNormal, renderHardNormal;
     bool renderTexture, renderShader;
     unsigned int currentTexture;
