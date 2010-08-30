@@ -235,6 +235,8 @@ unsigned int Renderer::GLTypeSize(Type t){
         return sizeof(GLint);
     case Types::FLOAT:
         return sizeof(GLfloat);
+    case Types::DOUBLE:
+        return sizeof(GLdouble);
     case Types::NOTYPE:
         return 0;
     }
