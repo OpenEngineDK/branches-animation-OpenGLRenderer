@@ -84,7 +84,7 @@ void FBOBufferedRenderer::Handle(Display::InitializeEventArg arg) {
     CHECK_FOR_GL_ERROR();
 
     // check FBO state for errors
-#if OE_DEBUG_GL
+#ifdef OE_DEBUG_GL
     GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
     if (status != GL_FRAMEBUFFER_COMPLETE_EXT)
         throw Exception("Incomplete frame buffer object: " + EnumToString(status) );

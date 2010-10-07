@@ -535,7 +535,7 @@ void Renderer::RebindTexture(ITexture2D* texr, unsigned int xOffset, unsigned in
     // check for null pointers
     if (texr == NULL) return;
 
-#ifdef OE_SAFE
+#if OE_SAFE
     if (texr->GetID() == 0)
         throw Exception("Trying to rebind unbound texture.");
 #endif
@@ -570,7 +570,7 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
     // check for null pointers
     if (texr == NULL) return;
 
-#ifdef OE_SAFE
+#if OE_SAFE
     if (texr->GetID() == 0)
         throw Exception("Trying to rebind unbound texture.");
 #endif
@@ -601,7 +601,7 @@ void Renderer::RebindTexture(ITexture3D* texr, unsigned int xOffset, unsigned in
 }
 
 void Renderer::BindFrameBuffer(FrameBuffer* fb){
-#ifdef OE_SAFE
+#if OE_SAFE
     if (fb == NULL) throw Exception("Cannot bind NULL frame buffer");
     if (fb->GetID() != 0) throw Exception("Will not bind already bound frame buffer.");
 #endif
@@ -657,7 +657,7 @@ void Renderer::BindFrameBuffer(FrameBuffer* fb){
 }
 
 void Renderer::BindDataBlock(IDataBlock* bo){
-#ifdef OE_SAFE
+#if OE_SAFE
     if (bo == NULL) throw Exception("Cannot bind NULL data block.");
     if (bo->GetID() != 0) throw Exception("Cannot bind already bound data block.");
     if (bo->GetVoidDataPtr() == NULL) throw Exception("Cannot bind already data block with no data.");

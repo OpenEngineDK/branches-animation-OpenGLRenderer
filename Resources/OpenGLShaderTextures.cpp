@@ -66,7 +66,7 @@ namespace OpenEngine {
             map<string, sampler2D>::iterator itr = unboundTex2Ds.begin();
             if (itr == unboundTex2Ds.end()){
                 itr = boundTex2Ds.begin();
-#ifdef OE_SAFE
+#if OE_SAFE
                 if (itr == boundTex2Ds.end())
                     throw Exception("2D texture " + name + " not found");
 #endif
@@ -78,7 +78,7 @@ namespace OpenEngine {
             map<string, sampler3D>::iterator itr = unboundTex3Ds.begin();
             if (itr == unboundTex3Ds.end()){
                 itr = boundTex3Ds.begin();
-#ifdef OE_SAFE
+#if OE_SAFE
                 if (itr == boundTex3Ds.end())
                     throw Exception("3D texture " + name + " not found");
 #endif

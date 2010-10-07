@@ -74,7 +74,7 @@ RenderingView::~RenderingView() {}
 
 void RenderingView::Handle(RenderingEventArg arg) {
     if (arg.renderer.GetCurrentStage() == IRenderer::RENDERER_PROCESS){
-#ifdef OE_SAFE
+#if OE_SAFE
         if (arg.canvas.GetScene() == NULL) 
             throw Exception("Scene was NULL while rendering.");
 #endif

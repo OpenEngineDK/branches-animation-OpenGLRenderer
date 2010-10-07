@@ -56,7 +56,7 @@ namespace OpenEngine {
                 LoadResource(resource);
             }
 
-#ifdef OE_SAFE
+#if OE_SAFE
             if (vertexShaders.empty() && 
                 geometryShaders.empty() && 
                 fragmentShaders.empty())
@@ -73,7 +73,7 @@ namespace OpenEngine {
         }
 
         void OpenGLShader::ApplyShader(){
-#ifdef OE_SAFE
+#if OE_SAFE
             if (shaderProgram == 0)
                 throw ResourceException("No shader to apply. Perhaps it was not loaded.");
 #endif
@@ -200,7 +200,7 @@ namespace OpenEngine {
                             if(fileandname[i]=='\0')
                                 break;
                         }
-#ifdef OE_SAFE
+#if OE_SAFE
                         if(seperator==0)
                             throw Exception("no separetor(|) between texture name and file");
 #endif
@@ -214,7 +214,7 @@ namespace OpenEngine {
                             SetTexture(texname, t);
                         }
                     }
-#ifdef OE_SAFE
+#if OE_SAFE
                     else{
                         logger.error << "Line("<<line<<") Invalid texture resource: '" << file << "'" << logger.end;
                         throw Exception("Invalid texture resource");
@@ -304,7 +304,7 @@ namespace OpenEngine {
         
         GLint OpenGLShader::GetUniLoc(const GLchar *name){
             GLint loc = glGetUniformLocation(shaderProgram, name);
-#ifdef OE_SAFE
+#if OE_SAFE
             if (loc == -1)
                 logger.warning << string("No such uniform named \"") + name + "\" in \"" << resource << "\""<< logger.end;
 #endif
@@ -317,7 +317,7 @@ namespace OpenEngine {
             // attach vertex shader
             if (!vertexShaders.empty()){
                 GLuint shader = LoadShader(vertexShaders, GL_VERTEX_SHADER);
-#ifdef OE_SAFE
+#if OE_SAFE
                 if (shader == 0)
                     throw Exception("Failed loading vertexshader");
 #endif
@@ -328,7 +328,7 @@ namespace OpenEngine {
             // attach geometry shader
             if (!geometryShaders.empty()){
                 GLuint shader = LoadShader(geometryShaders, GEOMETRY_SHADER_ARB);
-#ifdef OE_SAFE
+#if OE_SAFE
                 if (shader == 0)
                     throw Exception("Failed loading geometryshader");
 #endif
@@ -339,7 +339,7 @@ namespace OpenEngine {
             // attach fragment shader
             if (!fragmentShaders.empty()){
                 GLuint shader = LoadShader(fragmentShaders, GL_FRAGMENT_SHADER);
-#ifdef OE_SAFE
+#if OE_SAFE
                 if (shader == 0)
                     throw Exception("Failed loading fragmentshader");
 #endif
@@ -353,7 +353,7 @@ namespace OpenEngine {
             
             CHECK_FOR_GL_ERROR();
             PrintProgramInfoLog(shaderProgram);
-#ifdef OE_SAFE            
+#if OE_SAFE            
             if(linked == 0)
                 throw Exception("Could not link shader program");
 #endif
@@ -383,7 +383,7 @@ namespace OpenEngine {
             glCompileShader(shader);
             GLint  compiled;
             glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-#ifdef OE_SAFE
+#if OE_SAFE
             if (compiled==0) {
                 logger.error << "Failed compiling shader program consisting of: " << logger.end;
                 for (unsigned int i = 0; i< size; ++i)

@@ -52,7 +52,7 @@ void LightRenderer::VisitTransformationNode(TransformationNode* node) {
 }
     
 void LightRenderer::VisitDirectionalLightNode(DirectionalLightNode* node) {
-#ifdef OE_SAFE
+#if OE_SAFE
     GLint max;
     glGetIntegerv(GL_MAX_LIGHTS, &max);
     if (count >= max) 
@@ -74,7 +74,7 @@ void LightRenderer::VisitDirectionalLightNode(DirectionalLightNode* node) {
 }
     
 void LightRenderer::VisitPointLightNode(PointLightNode* node) {
-#ifdef OE_SAFE
+#if OE_SAFE
     GLint max;
     glGetIntegerv(GL_MAX_LIGHTS, &max);
     if (count >= max) 
@@ -99,7 +99,7 @@ void LightRenderer::VisitPointLightNode(PointLightNode* node) {
 }
 
 void LightRenderer::VisitSpotLightNode(SpotLightNode* node) {
-#ifdef OE_SAFE
+#if OE_SAFE
     GLint max;
     glGetIntegerv(GL_MAX_LIGHTS, &max);
     if (count >= max) 
@@ -129,7 +129,7 @@ void LightRenderer::VisitSpotLightNode(SpotLightNode* node) {
 void LightRenderer::Handle(RenderingEventArg arg) {
     count = 0;
     glMatrixMode(GL_MODELVIEW);
-    #ifdef OE_SAFE
+    #if OE_SAFE
     if (arg.canvas.GetScene() == NULL)
         throw new Exception("Scene was NULL in LightRenderer.");
     #endif
