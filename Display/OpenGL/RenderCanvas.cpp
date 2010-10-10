@@ -26,6 +26,9 @@ RenderCanvas::~RenderCanvas() {
 }
 
 void RenderCanvas::Handle(Display::InitializeEventArg arg) {
+#if OE_SAFE
+    if (renderer == NULL) throw new Exception("NULL renderer in RenderCanvas.");
+#endif
     if (init) return;
     CreateTexture();
     SetTextureWidth(arg.canvas.GetWidth());

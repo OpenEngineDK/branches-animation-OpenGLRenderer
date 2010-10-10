@@ -66,7 +66,7 @@ public:
     void VisitDisplayListNode(DisplayListNode* node);
     void VisitBlendingNode(BlendingNode* node);
     void VisitPostProcessNode(PostProcessNode* node);
-    void Handle(RenderingEventArg arg);
+    virtual void Handle(RenderingEventArg arg);
     
 protected:
     Matrix<4, 4, float> currentModelViewMatrix;
