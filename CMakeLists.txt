@@ -18,8 +18,6 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Renderers/OpenGL/Renderer.cpp
   Renderers/OpenGL/RenderingView.h
   Renderers/OpenGL/RenderingView.cpp
-  Renderers/OpenGL/TextureLoader.h
-  Renderers/OpenGL/TextureLoader.cpp
   Renderers/OpenGL/ShaderLoader.h
   Renderers/OpenGL/ShaderLoader.cpp
   Renderers/OpenGL/LightRenderer.h
