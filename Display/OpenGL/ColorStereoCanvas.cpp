@@ -9,6 +9,7 @@
 #include <Display/OpenGL/ColorStereoCanvas.h>
 
 #include <Display/StereoCamera.h>
+#include <Display/ICanvasBackend.h>
 #include <Display/ViewingVolume.h>
 #include <Display/OrthogonalViewingVolume.h>
 #include <Meta/OpenGL.h>
@@ -17,14 +18,16 @@ namespace OpenEngine {
 namespace Display {
 namespace OpenGL {
 
-ColorStereoCanvas::ColorStereoCanvas()
-    : IRenderCanvas()
+ColorStereoCanvas::ColorStereoCanvas(ICanvasBackend* backend)
+    : IRenderCanvas(backend)
     , dummyCam(new ViewingVolume())
     , stereoCam(new StereoCamera(*dummyCam))
+    , left(new RenderCanvas(backend->Clone()))
+    , right(new RenderCanvas(backend->Clone()))
     , init(false)
 {
-    ITextureResourcePtr ltex = left.GetTexture();
-    ITextureResourcePtr rtex = right.GetTexture();
+    ITextureResourcePtr ltex = left->GetTexture();
+    ITextureResourcePtr rtex = right->GetTexture();
     ltex->SetColorFormat(Resources::LUMINANCE);
     //rtex->SetColorFormat(Resources::LUMINANCE);
 }
@@ -36,20 +39,17 @@ ColorStereoCanvas::~ColorStereoCanvas() {
 
 void ColorStereoCanvas::Handle(Display::InitializeEventArg arg) {
     if (init) return;
-    CreateTexture();
-    SetTextureWidth(arg.canvas.GetWidth());
-    SetTextureHeight(arg.canvas.GetHeight());
-    SetupTexture();
-
-    ((IListener<Display::InitializeEventArg>&)left).Handle(arg);
-    ((IListener<Display::InitializeEventArg>&)right).Handle(arg);
+    backend->Init(arg.canvas.GetWidth(), arg.canvas.GetHeight());
+    ((IListener<Display::InitializeEventArg>*)left)->Handle(arg);
+    ((IListener<Display::InitializeEventArg>*)right)->Handle(arg);
     init = true;
 }
 
 void ColorStereoCanvas::Handle(Display::ProcessEventArg arg) {
+    backend->Pre();
     stereoCam->SignalRendering(arg.approx);
-    ((IListener<Display::ProcessEventArg>&)left).Handle(arg);
-    ((IListener<Display::ProcessEventArg>&)right).Handle(arg);
+    ((IListener<Display::ProcessEventArg>*)left)->Handle(arg);
+    ((IListener<Display::ProcessEventArg>*)right)->Handle(arg);
 
     unsigned int width = GetWidth();
     unsigned int height = GetHeight();
@@ -112,7 +112,7 @@ void ColorStereoCanvas::Handle(Display::ProcessEventArg arg) {
     // glBlendColor(1.0,0.0,0.0,1.0);
     // glBlendFunc(GL_ZERO, GL_CONSTANT_COLOR);
 
-    glBindTexture(GL_TEXTURE_2D, left.GetTexture()->GetID());
+    glBindTexture(GL_TEXTURE_2D, left->GetTexture()->GetID());
     CHECK_FOR_GL_ERROR();
     glBegin(GL_QUADS);
     // glColor4f(1.0,.0,0.0,.5);
@@ -132,7 +132,7 @@ void ColorStereoCanvas::Handle(Display::ProcessEventArg arg) {
     // glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
     // glBlendEquation(GL_FUNC_ADD);
     glColorMask (GL_FALSE, GL_TRUE, GL_TRUE, GL_FALSE);
-    glBindTexture(GL_TEXTURE_2D, right.GetTexture()->GetID());
+    glBindTexture(GL_TEXTURE_2D, right->GetTexture()->GetID());
     CHECK_FOR_GL_ERROR();
     glBegin(GL_QUADS);
       //glColor4f(0.0,1.0,1.0,1.0);
@@ -162,54 +162,49 @@ void ColorStereoCanvas::Handle(Display::ProcessEventArg arg) {
     if (blending) glEnable(GL_BLEND);
     if (!texture) glDisable(GL_TEXTURE_2D);
 
-    CopyToTexture();
+    backend->Post();
 }
 
 void ColorStereoCanvas::Handle(Display::ResizeEventArg arg) {
-    SetTextureWidth(arg.canvas.GetWidth());
-    SetTextureHeight(arg.canvas.GetHeight());
-    SetupTexture();
-    ((IListener<Display::ResizeEventArg>&)left).Handle(ResizeEventArg(*this));
-    ((IListener<Display::ResizeEventArg>&)right).Handle(ResizeEventArg(*this));
+    backend->SetDimensions(arg.canvas.GetWidth(), arg.canvas.GetHeight());
+    ((IListener<Display::ResizeEventArg>*)left)->Handle(ResizeEventArg(*this));
+    ((IListener<Display::ResizeEventArg>*)right)->Handle(ResizeEventArg(*this));
 }
 
 void ColorStereoCanvas::Handle(Display::DeinitializeEventArg arg) {
     if (!init) return;
-    ((IListener<Display::DeinitializeEventArg>&)left)
-        .Handle(Display::DeinitializeEventArg(arg));
-    ((IListener<Display::DeinitializeEventArg>&)right)
-        .Handle(Display::DeinitializeEventArg(arg));
+    ((IListener<Display::DeinitializeEventArg>*)left)
+        ->Handle(Display::DeinitializeEventArg(arg));
+    ((IListener<Display::DeinitializeEventArg>*)right)
+        ->Handle(Display::DeinitializeEventArg(arg));
+    backend->Deinit();
     init = false;
 }
 
 unsigned int ColorStereoCanvas::GetWidth() const {
-    return GetTextureWidth();
+    return backend->GetTexture()->GetWidth();
 }
 
 unsigned int ColorStereoCanvas::GetHeight() const {
-    return GetTextureHeight();
+    return backend->GetTexture()->GetHeight();
 }
     
 void ColorStereoCanvas::SetWidth(const unsigned int width) {
-    SetTextureWidth(width);
-    left.SetWidth(width);
-    right.SetWidth(width);
+    backend->SetDimensions(width, backend->GetTexture()->GetHeight());
 }
 
-void ColorStereoCanvas::SetHeight(const unsigned int height) {
-    SetTextureHeight(height);
-    left.SetHeight(height);
-    right.SetHeight(height);
+void ColorStereoCanvas::SetHeight(const unsigned int height) { 
+    backend->SetDimensions(backend->GetTexture()->GetWidth(), height);
 }
     
 ITexture2DPtr ColorStereoCanvas::GetTexture() {
-    return tex;
+    return backend->GetTexture();
 }
 
 void ColorStereoCanvas::SetRenderer(IRenderer* renderer) {
     this->renderer = renderer;
-    left.SetRenderer(renderer);
-    right.SetRenderer(renderer);
+    left->SetRenderer(renderer);
+    right->SetRenderer(renderer);
 }
 
 void ColorStereoCanvas::SetViewingVolume(IViewingVolume* vv) {
@@ -217,14 +212,14 @@ void ColorStereoCanvas::SetViewingVolume(IViewingVolume* vv) {
     delete stereoCam;
     //stereoCam->SetViewingVolume(*vv);
     stereoCam = new StereoCamera(*vv);
-    left.SetViewingVolume(stereoCam->GetLeft());
-    right.SetViewingVolume(stereoCam->GetRight());
+    left->SetViewingVolume(stereoCam->GetLeft());
+    right->SetViewingVolume(stereoCam->GetRight());
 }
 
 void ColorStereoCanvas::SetScene(ISceneNode* scene) {
     this->scene = scene;
-    left.SetScene(scene);
-    right.SetScene(scene);
+    left->SetScene(scene);
+    right->SetScene(scene);
 }
 
 } // NS OpenGL

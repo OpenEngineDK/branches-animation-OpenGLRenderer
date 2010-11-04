@@ -24,10 +24,8 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Renderers/OpenGL/LightRenderer.cpp
   Scene/DisplayListNode.cpp
   Scene/DisplayListTransformer.cpp
-  Display/OpenGL/TextureCanvasBase.h
-  Display/OpenGL/TextureCanvasBase.cpp
-  Display/OpenGL/RenderCanvas.h
-  Display/OpenGL/RenderCanvas.cpp
+  Display/OpenGL/TextureCopy.h
+  Display/OpenGL/TextureCopy.cpp
   Display/OpenGL/ColorStereoCanvas.h
   Display/OpenGL/ColorStereoCanvas.cpp
   Display/OpenGL/SplitStereoCanvas.h

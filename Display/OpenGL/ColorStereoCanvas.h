@@ -11,8 +11,7 @@
 #define _OPENGL_COLOR_STEREO_CANVAS_H_
 
 #include <Display/ICanvas.h>
-#include <Display/OpenGL/TextureCanvasBase.h>
-#include <Display/OpenGL/RenderCanvas.h>
+#include <Display/RenderCanvas.h>
 
 namespace OpenEngine {
     namespace Display {
@@ -20,16 +19,20 @@ namespace OpenEngine {
         class IViewingVolume;
     }
 namespace Display {
+
+class ICanvasBackend;
+
     namespace OpenGL {
 
-class ColorStereoCanvas : public IRenderCanvas, public TextureCanvasBase {
+
+class ColorStereoCanvas : public IRenderCanvas {
 private:
     IViewingVolume* dummyCam;
     StereoCamera* stereoCam;
-    RenderCanvas left, right;
+    RenderCanvas *left, *right;
     bool init;
 public:
-    ColorStereoCanvas();
+    ColorStereoCanvas(ICanvasBackend* backend);
     virtual ~ColorStereoCanvas();
 
     void Handle(Display::InitializeEventArg arg);

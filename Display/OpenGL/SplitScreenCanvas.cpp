@@ -9,6 +9,7 @@
 #include <Display/OpenGL/SplitScreenCanvas.h>
 
 #include <Display/OrthogonalViewingVolume.h>
+#include <Display/ICanvasBackend.h>
 #include <Math/Matrix.h>
 #include <Math/Vector.h>
 #include <Meta/OpenGL.h>
@@ -20,43 +21,50 @@ namespace OpenGL {
     using Math::Matrix;
     using Math::Vector;
 
-    SplitScreenCanvas::SplitScreenCanvas(ICanvas& first, ICanvas& second, Split split)
-        : TextureCanvasBase()
+    SplitScreenCanvas::SplitScreenCanvas(ICanvasBackend* backend, ICanvas& first, ICanvas& second, Split split, float firstPercentage)
+        : ICanvas(backend)
         , first(first) 
         , second(second)
         , init(false)
         , split(split)
+        , firstPercentage(firstPercentage)
     {
     }
     
     SplitScreenCanvas::~SplitScreenCanvas() {}
 
-    void SplitScreenCanvas::Handle(Display::InitializeEventArg arg) {
-        if (init) return;
-        unsigned int width = arg.canvas.GetWidth();
-        unsigned int height = arg.canvas.GetHeight();
-        unsigned int childwidth = width;
-        unsigned int childheight = height;
-        Vector<2,int> spos = pos;
-        CreateTexture();
+
+    void SplitScreenCanvas::UpdateChildCanvases() {
+        const unsigned int width = backend->GetTexture()->GetWidth();
+        const unsigned int height = backend->GetTexture()->GetHeight();
         if (split == VERTICAL) {
-            childwidth = width/2;
-            spos[0] += childwidth;
+            int fw = width * firstPercentage;
+            first.SetPosition(pos);
+            first.SetWidth(fw);
+            first.SetHeight(height);
+            second.SetPosition(pos + Vector<2,int>(fw,0));
+            second.SetWidth(width - fw);
+            second.SetHeight(height);
         }
         else {
-            childheight = height/2;
-            spos[1] += childheight;
+            int fh = height * firstPercentage;
+            first.SetPosition(pos);
+            first.SetWidth(width);
+            first.SetHeight(fh);
+            second.SetPosition(pos + Vector<2,int>(0,fh));
+            second.SetWidth(width);
+            second.SetHeight(height - fh);
         }
-        SetTextureWidth(childwidth);
-        SetTextureHeight(childheight);
+    }
 
-        first.SetPosition(pos);
-        second.SetPosition(spos);
+    void SplitScreenCanvas::Handle(Display::InitializeEventArg arg) {
+        if (init) return;
+        const unsigned int width = arg.canvas.GetWidth();
+        const unsigned int height = arg.canvas.GetHeight();
+        backend->Init(width, height);
         ((IListener<Display::InitializeEventArg>&)first).Handle(Display::InitializeEventArg(*this));
         ((IListener<Display::InitializeEventArg>&)second).Handle(Display::InitializeEventArg(*this));
-        SetTextureWidth(width);
-        SetTextureHeight(height);
-        SetupTexture();
+        UpdateChildCanvases();
         init = true;
     }
     
@@ -64,38 +72,22 @@ namespace OpenGL {
         if (!init) return;
         ((IListener<Display::DeinitializeEventArg>&)first).Handle(arg);
         ((IListener<Display::DeinitializeEventArg>&)second).Handle(arg);
+        backend->Deinit();
         init = false;
     }
 
     void SplitScreenCanvas::Handle(Display::ResizeEventArg arg) {
         unsigned int width = arg.canvas.GetWidth();
         unsigned int height = arg.canvas.GetHeight();
-        unsigned int childwidth = width;
-        unsigned int childheight = height;
-        Vector<2,int> spos = pos;
-        if (split == VERTICAL) {
-            childwidth = width/2;
-            spos[0] += childwidth;
-        }
-        else {
-            childheight = height/2;
-            spos[1] += childheight;
-        }
-        SetTextureWidth(childwidth);
-        SetTextureHeight(childheight);
-        first.SetPosition(pos);
-        second.SetPosition(spos);
-        ((IListener<Display::ResizeEventArg>&)first).Handle(arg);
-        ((IListener<Display::ResizeEventArg>&)second).Handle(arg);
-        SetTextureWidth(width);
-        SetTextureHeight(height);
-        SetupTexture();
+        backend->SetDimensions(width, height);
+        UpdateChildCanvases();
     }
 
     void SplitScreenCanvas::Handle(Display::ProcessEventArg arg) {
         ((IListener<Display::ProcessEventArg>&)first).Handle(arg);
         ((IListener<Display::ProcessEventArg>&)second).Handle(arg);
-        
+
+        backend->Pre();
         Vector<4,int> d(0, 0, arg.canvas.GetWidth(), arg.canvas.GetHeight());
         glViewport((GLsizei)d[0], (GLsizei)d[1], (GLsizei)d[2], (GLsizei)d[3]);
         OrthogonalViewingVolume volume(-1, 1, 0, arg.canvas.GetWidth(), 0, arg.canvas.GetHeight());
@@ -185,27 +177,28 @@ namespace OpenGL {
         if (lighting) glEnable(GL_LIGHTING);
         if (blending) glEnable(GL_BLEND);
         if (!texture) glDisable(GL_TEXTURE_2D);
-        CopyToTexture();
+
+        backend->Post();
     }
     
 unsigned int SplitScreenCanvas::GetWidth() const {
-    return GetTextureWidth();
+    return backend->GetTexture()->GetWidth();
 }
 
 unsigned int SplitScreenCanvas::GetHeight() const {
-    return GetTextureHeight();
+    return backend->GetTexture()->GetHeight();
 }
     
 void SplitScreenCanvas::SetWidth(const unsigned int width) {
-    SetTextureWidth(width);
+    backend->SetDimensions(width, backend->GetTexture()->GetHeight());
 }
 
 void SplitScreenCanvas::SetHeight(const unsigned int height) {
-    SetTextureHeight(height);
+    backend->SetDimensions(backend->GetTexture()->GetWidth(), height);
 }
     
 ITexture2DPtr SplitScreenCanvas::GetTexture() {
-    return tex;
+    return backend->GetTexture();
 }
 
 } // NS OpenGL

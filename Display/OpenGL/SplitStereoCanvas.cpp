@@ -8,6 +8,7 @@
 //--------------------------------------------------------------------
 #include <Display/OpenGL/SplitStereoCanvas.h>
 
+#include <Display/ICanvasBackend.h>
 #include <Display/StereoCamera.h>
 #include <Display/ViewingVolume.h>
 #include <Meta/OpenGL.h>
@@ -16,11 +17,13 @@ namespace OpenEngine {
 namespace Display {
 namespace OpenGL {
 
-SplitStereoCanvas::SplitStereoCanvas()
-    : IRenderCanvas()
+SplitStereoCanvas::SplitStereoCanvas(ICanvasBackend* backend)
+    : IRenderCanvas(backend)
     , dummyCam(new ViewingVolume())
     , stereoCam(new StereoCamera(*dummyCam))
-    , split(SplitScreenCanvas(left, right))
+    , left(new RenderCanvas(backend->Clone()))
+    , right(new RenderCanvas(backend->Clone()))
+    , split(SplitScreenCanvas(backend->Clone(), *left, *right))
 {
 }
 
@@ -69,8 +72,8 @@ ITexture2DPtr SplitStereoCanvas::GetTexture() {
 
 void SplitStereoCanvas::SetRenderer(IRenderer* renderer) {
     this->renderer = renderer;
-    left.SetRenderer(renderer);
-    right.SetRenderer(renderer);
+    left->SetRenderer(renderer);
+    right->SetRenderer(renderer);
 }
 
 void SplitStereoCanvas::SetViewingVolume(IViewingVolume* vv) {
@@ -78,14 +81,14 @@ void SplitStereoCanvas::SetViewingVolume(IViewingVolume* vv) {
     delete stereoCam;
     //stereoCam->SetViewingVolume(*vv);
     stereoCam = new StereoCamera(*vv);
-    left.SetViewingVolume(stereoCam->GetLeft());
-    right.SetViewingVolume(stereoCam->GetRight());
+    left->SetViewingVolume(stereoCam->GetLeft());
+    right->SetViewingVolume(stereoCam->GetRight());
 }
 
 void SplitStereoCanvas::SetScene(ISceneNode* scene) {
     this->scene = scene;
-    left.SetScene(scene);
-    right.SetScene(scene);
+    left->SetScene(scene);
+    right->SetScene(scene);
 }
 
 } // NS OpenGL

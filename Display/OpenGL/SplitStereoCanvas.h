@@ -12,25 +12,23 @@
 
 #include <Display/ICanvas.h>
 #include <Display/OpenGL/SplitScreenCanvas.h>
-#include <Display/OpenGL/TextureCanvasBase.h>
-#include <Display/OpenGL/RenderCanvas.h>
+#include <Display/RenderCanvas.h>
 
 namespace OpenEngine {
-    namespace Display {
-        class StereoCamera;
-        class IViewingVolume;
-    }
 namespace Display {
+    class ICanvasBackend;
+    class StereoCamera;
+    class IViewingVolume;
     namespace OpenGL {
 
 class SplitStereoCanvas : public IRenderCanvas {
 private:
     IViewingVolume* dummyCam;
     StereoCamera* stereoCam;
-    RenderCanvas left, right;
+    RenderCanvas *left, *right;
     SplitScreenCanvas split;
 public:
-    SplitStereoCanvas();
+    SplitStereoCanvas(ICanvasBackend* backend);
     virtual ~SplitStereoCanvas();
 
     void Handle(Display::InitializeEventArg arg);

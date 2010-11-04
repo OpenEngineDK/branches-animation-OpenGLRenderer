@@ -11,13 +11,13 @@
 #define _OPENGL_SPLIT_SCREEN_CANVAS_H_
 
 #include <Display/ICanvas.h>
-#include <Display/OpenGL/TextureCanvasBase.h>
 
 namespace OpenEngine {
 namespace Display {
+    class ICanvasBackend;
 namespace OpenGL {
 
-class SplitScreenCanvas: public ICanvas, public TextureCanvasBase {
+class SplitScreenCanvas: public ICanvas {
 public:
     enum Split {
         VERTICAL, HORIZONTAL
@@ -26,8 +26,14 @@ private:
     ICanvas &first, &second;
     bool init;
     Split split;
+    float firstPercentage;
+    void UpdateChildCanvases();
 public:
-    SplitScreenCanvas(ICanvas& first, ICanvas& second, Split split = VERTICAL);
+    SplitScreenCanvas(ICanvasBackend* backend, 
+                      ICanvas& first, 
+                      ICanvas& second, 
+                      Split split = VERTICAL, 
+                      float firstPercentage = 0.5);
     virtual ~SplitScreenCanvas();
 
     void Handle(Display::InitializeEventArg arg);
