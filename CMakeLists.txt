@@ -26,6 +26,8 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Scene/DisplayListTransformer.cpp
   Display/OpenGL/TextureCopy.h
   Display/OpenGL/TextureCopy.cpp
+  Display/OpenGL/FrameBufferBackend.h
+  Display/OpenGL/FrameBufferBackend.cpp
   Display/OpenGL/ColorStereoCanvas.h
   Display/OpenGL/ColorStereoCanvas.cpp
   Display/OpenGL/SplitStereoCanvas.h

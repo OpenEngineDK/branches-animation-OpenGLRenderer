@@ -1,4 +1,4 @@
-// OpenGL texture copy backend for canvases
+// OpenGL framebuffer backend for canvases
 // -------------------------------------------------------------------
 // Copyright (C) 2010 OpenEngine.dk (See AUTHORS) 
 // 
@@ -7,35 +7,35 @@
 // See the GNU General Public License for more details (see LICENSE). 
 //--------------------------------------------------------------------
 
-#ifndef _OPENGL_TEXTURE_COPY_BACKEND_H_
-#define _OPENGL_TEXTURE_COPY_BACKEND_H_
+#ifndef _OPENGL_FRAME_BUFFER_BACKEND_H_
+#define _OPENGL_FRAME_BUFFER_BACKEND_H_
 
 #include <Display/ICanvasBackend.h>
+#include <Meta/OpenGL.h>
+#include <Math/Vector.h>
 
 namespace OpenEngine {
+    namespace Renderers{
+        class IRenderer;
+    }
+    namespace Resources {
+        class FrameBuffer;
+    }
 namespace Display {
 namespace OpenGL {
 
-class TextureCopy: public ICanvasBackend {
+class FrameBufferBackend : public ICanvasBackend {
 private:
-    class CustomTexture : public Resources::ITexture2D {
-        friend class TextureCopy;
-    private:
-    public:
-        unsigned int GetChannelSize() { return 8; };
-        ITexture2D* Clone() { return NULL; }
-        void Load() {}
-        void Unload() {}
-        void Reverse() {}
-        void ReverseVertecally() {}
-        void ReverseHorizontally() {}
-    private:
-    };
-    CustomTexture* ctex;
-    Resources::ITexture2DPtr tex;
+    Renderers::IRenderer* renderer; // ugly stuff to avoid writing explicit FBO loading code. A ya ya.
+
+    GLint prevFb;
+    Math::Vector<4, GLint> prevDims;
+    
+    Resources::FrameBuffer* fb;
+
 public:
-    TextureCopy();
-    virtual ~TextureCopy();
+    FrameBufferBackend(Renderers::IRenderer* renderer, Resources::FrameBuffer* fbo = NULL);
+    virtual ~FrameBufferBackend();
     void Init(unsigned int width, unsigned int height);
     void Deinit();
     void Pre();
@@ -45,8 +45,8 @@ public:
     Resources::ITexture2DPtr GetTexture();
 };
 
-} // NS OpenGL
-} // NS Display
-} // NS OpenEngine
+}
+}
+}
 
-#endif // _OPENGL_TEXTURE_COPY_BACKEND_H_
+#endif
