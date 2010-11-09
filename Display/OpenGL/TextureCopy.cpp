@@ -92,6 +92,11 @@ TextureCopy::TextureCopy()
 TextureCopy::~TextureCopy() {        
 }
     
+void TextureCopy::Create(const unsigned int width, const unsigned int height) {
+    ctex->width = width;
+    ctex->height = height;    
+}
+
 void TextureCopy::Init(const unsigned int width, const unsigned int height) {
     ctex->width = width;
     ctex->height = height;

@@ -36,6 +36,7 @@ private:
 public:
     TextureCopy();
     virtual ~TextureCopy();
+    void Create(unsigned int width, unsigned int height);
     void Init(unsigned int width, unsigned int height);
     void Deinit();
     void Pre();

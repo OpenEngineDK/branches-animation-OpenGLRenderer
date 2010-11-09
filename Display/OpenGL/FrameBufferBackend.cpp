@@ -26,6 +26,9 @@ namespace OpenGL {
         delete fb;
     }
 
+    void FrameBufferBackend::Create(unsigned int width, unsigned int height){
+    }
+
     void FrameBufferBackend::Init(unsigned int width, unsigned int height){
         if (fb == NULL)
             fb = new FrameBuffer(Vector<2, int>(width, height), 1, true);

@@ -36,6 +36,7 @@ private:
 public:
     FrameBufferBackend(Renderers::IRenderer* renderer, Resources::FrameBuffer* fbo = NULL);
     virtual ~FrameBufferBackend();
+    void Create(unsigned int width, unsigned int height);
     void Init(unsigned int width, unsigned int height);
     void Deinit();
     void Pre();
