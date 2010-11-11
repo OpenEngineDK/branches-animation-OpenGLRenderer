@@ -575,7 +575,8 @@ void RenderingView::VisitPostProcessNode(PostProcessNode* node) {
     // if the node isn't enabled or there is no fbo
     // support then just proceed as usual.
     if (arg->renderer.FrameBufferSupport() == false ||
-        node->GetEnabled() == false) {
+        node->GetEnabled() == false ||
+        !renderShader) {
         node->VisitSubNodes(*this);
         return;
     }

@@ -138,7 +138,7 @@ void TextureCopy::Post() {
 void TextureCopy::SetDimensions(const unsigned int width, const unsigned int height) { 
     ctex->width = width;
     ctex->height = height;
-    if (ctex->id == -1) return;
+    if (ctex->id == (unsigned int)-1) return;
     //todo: update the texture
     glBindTexture(GL_TEXTURE_2D, ctex->id);
     CHECK_FOR_GL_ERROR();
