@@ -1,0 +1,7 @@
+# source
+darcs /extensions/OpenGLRenderer         http://openengine.dk/code/extensions/OpenGLRenderer
+darcs-dev /extensions/OpenGLRenderer         fh.daimi.au.dk:/users/cgd/code/extensions/OpenGLRenderer
+
+# win lib
+win32 /libraries http://openengine.dk/data/libraries/glew-win32.zip
+
