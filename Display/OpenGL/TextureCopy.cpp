@@ -118,7 +118,7 @@ void TextureCopy::Init(const unsigned int width, const unsigned int height) {
 }
 
 void TextureCopy::Deinit() {
-    //todo: unbind the texture
+    //! @todo: unbind the texture
 }
 
 void TextureCopy::Pre() {
@@ -139,7 +139,7 @@ void TextureCopy::SetDimensions(const unsigned int width, const unsigned int hei
     ctex->width = width;
     ctex->height = height;
     if (ctex->id == (unsigned int)-1) return;
-    //todo: update the texture
+    //! @todo: update the texture
     glBindTexture(GL_TEXTURE_2D, ctex->id);
     CHECK_FOR_GL_ERROR();
     GLenum colorFormat = GLColorFormat(ctex->GetColorFormat());

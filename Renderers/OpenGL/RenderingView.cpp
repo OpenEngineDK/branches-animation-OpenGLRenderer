@@ -285,7 +285,7 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     }
         
     // Apply materials
-    // TODO: Decide whether we want both front and back
+    //! @TODO: Decide whether we want both front and back
     //       materials (maybe a material property).
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, mat->diffuse.ToArray());
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, mat->ambient.ToArray());
