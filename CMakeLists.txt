@@ -34,6 +34,8 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Display/OpenGL/SplitStereoCanvas.cpp
   Display/OpenGL/SplitScreenCanvas.h
   Display/OpenGL/SplitScreenCanvas.cpp
+  Display/OpenGL/BlendCanvas.h
+  Display/OpenGL/BlendCanvas.cpp
   # Display/OpenGL/CompositeCanvas.h
   # Display/OpenGL/CompositeCanvas.cpp
 )
