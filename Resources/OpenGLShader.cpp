@@ -20,6 +20,8 @@
 #include <Resources/ITexture2D.h>
 #include <Resources/ITexture3D.h>
 
+#include <cstring>
+
 namespace OpenEngine {
     namespace Resources {
 
@@ -63,15 +65,10 @@ namespace OpenEngine {
             else
                 shaderModel = 0;
 
-            logger.info << string((const char*)shaderVersion) << logger.end;
-            logger.info << "shaderModel: " << shaderModel << logger.end;
-                
-            vertexSupport = GLEW_ARB_vertex_shader;
+            if(!glewIsSupported("GL_VERSION_2_0")) shaderModel = 0;
+
+            vertexSupport = fragmentSupport = true; // is true when GL 2.0 is supported
             geometrySupport = GLEW_ARB_geometry_shader4;
-            fragmentSupport = GLEW_ARB_fragment_shader;
-            if (vertexSupport) logger.info << "vertex program support" << logger.end;
-            if (geometrySupport) logger.info << "geometry program support" << logger.end;
-            if (fragmentSupport) logger.info << "fragment program support" << logger.end;
         }
 
         void OpenGLShader::Load() {
