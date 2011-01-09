@@ -49,7 +49,35 @@ namespace OpenEngine {
             }
         }
         
+        void OpenGLShader::ShaderSupport(){
+            const GLubyte* shaderVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
+            //if(shaderVersion == "1.1")
+            if(!strcmp((const char*)shaderVersion, "1.10"))
+                shaderModel = 1;
+            else if(!strcmp((const char*)shaderVersion, "1.20"))
+                shaderModel = 2;
+            else if(!strcmp((const char*)shaderVersion, "1.40"))
+                shaderModel = 4;
+            else if(!strcmp((const char*)shaderVersion, "3.30"))
+                shaderModel = 5;
+            else
+                shaderModel = 0;
+
+            logger.info << string((const char*)shaderVersion) << logger.end;
+            logger.info << "shaderModel: " << shaderModel << logger.end;
+                
+            vertexSupport = GLEW_ARB_vertex_shader;
+            geometrySupport = GLEW_ARB_geometry_shader4;
+            fragmentSupport = GLEW_ARB_fragment_shader;
+            if (vertexSupport) logger.info << "vertex program support" << logger.end;
+            if (geometrySupport) logger.info << "geometry program support" << logger.end;
+            if (fragmentSupport) logger.info << "fragment program support" << logger.end;
+        }
+
         void OpenGLShader::Load() {
+            // Test if shaders are supported
+            ShaderSupport();
+
             // Load the resource and its attributes from a file, if a
             // file is available.
             if (!resource.empty()){
@@ -315,7 +343,7 @@ namespace OpenEngine {
             shaderProgram = glCreateProgram();
 
             // attach vertex shader
-            if (!vertexShaders.empty()){
+            if (!vertexShaders.empty() && vertexSupport){
                 GLuint shader = LoadShader(vertexShaders, GL_VERTEX_SHADER);
 #if OE_SAFE
                 if (shader == 0)
@@ -326,7 +354,7 @@ namespace OpenEngine {
 
             /*        
             // attach geometry shader
-            if (!geometryShaders.empty()){
+            if (!geometryShaders.empty() && geometrySupport){
                 GLuint shader = LoadShader(geometryShaders, GEOMETRY_SHADER_ARB);
 #if OE_SAFE
                 if (shader == 0)
@@ -337,7 +365,7 @@ namespace OpenEngine {
             */
 
             // attach fragment shader
-            if (!fragmentShaders.empty()){
+            if (!fragmentShaders.empty() && fragmentSupport){
                 GLuint shader = LoadShader(fragmentShaders, GL_FRAGMENT_SHADER);
 #if OE_SAFE
                 if (shader == 0)

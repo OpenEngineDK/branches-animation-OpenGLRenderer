@@ -68,6 +68,11 @@ namespace OpenEngine {
 
         class OpenGLShader : public IShaderResource{
         protected:
+            // @TODO make static and have renderer initialize it
+            int shaderModel;
+            bool vertexSupport, geometrySupport, fragmentSupport;
+            
+        protected:
             string resource;
             vector<string> vertexShaders;
             vector<string> geometryShaders;
@@ -90,6 +95,8 @@ namespace OpenEngine {
 
             map<string, sampler3D> boundTex3Ds;
             map<string, sampler3D> unboundTex3Ds;
+
+            void ShaderSupport();
 
             void LoadResource(string resource);
             void ResetProperties();
@@ -144,6 +151,12 @@ namespace OpenEngine {
             void BindAttribute(int id, string name);
             void VertexAttribute(int id, Vector<3,float> vec);
             int GetAttributeID(const string name);
+
+            inline int GetShaderModel() { return shaderModel; }
+            inline bool HasVertexSupport() { return vertexSupport; }
+            inline bool HasGeometrySupport() { return geometrySupport; }
+            inline bool HasFragmentSupport() { return fragmentSupport; }
+
         };
 
         /**
