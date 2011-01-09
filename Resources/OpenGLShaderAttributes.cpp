@@ -9,11 +9,16 @@
 //--------------------------------------------------------------------
 
 #include <Resources/OpenGLShader.h>
+#include <Resources/IDataBlock.h>
 
 namespace OpenEngine {
     namespace Resources {
 
         void OpenGLShader::SetAttribute(string name, Vector<3,float> value){
+            throw Exception("Not implemented!");
+        }
+
+        void OpenGLShader::SetAttribute(string name, IDataBlockPtr values){
             throw Exception("Not implemented!");
         }
 

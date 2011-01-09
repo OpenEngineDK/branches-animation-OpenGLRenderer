@@ -27,6 +27,9 @@ namespace OpenEngine {
         class ITexture3D;
         typedef boost::shared_ptr<ITexture3D> ITexture3DPtr;
 
+        class IDataBlock;
+        typedef boost::shared_ptr<IDataBlock> IDataBlockPtr;
+
         namespace OpenGLShaderStructs {
             // Define the UniformKind enum
 #undef UNIFORM1
@@ -137,6 +140,7 @@ namespace OpenEngine {
             // Attribute functions
             //@ todo add buffer object functions (uhmmmm vbo's.....)
             void SetAttribute(string name, Vector<3,float> value);
+            void SetAttribute(string name, IDataBlockPtr values);
             void BindAttribute(int id, string name);
             void VertexAttribute(int id, Vector<3,float> vec);
             int GetAttributeID(const string name);
