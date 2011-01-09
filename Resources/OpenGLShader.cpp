@@ -75,6 +75,8 @@ namespace OpenEngine {
             // Test if shaders are supported
             ShaderSupport();
 
+            if (shaderModel == 0) return;
+
             // Load the resource and its attributes from a file, if a
             // file is available.
             if (!resource.empty()){
@@ -90,6 +92,7 @@ namespace OpenEngine {
       
             // Load the shader onto the gpu.
             BindShaderPrograms();
+            CHECK_FOR_GL_ERROR();
         }
         
         void OpenGLShader::Unload() {
