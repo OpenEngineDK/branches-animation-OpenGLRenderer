@@ -47,7 +47,7 @@ public:
     void SetHeight(const unsigned int height);
     ITexture2DPtr GetTexture();
 
-    void AddTexture(ITexture2DPtr tex, int x, int y, Vector<4,float> color = Vector<4,float>(1.0));
+    void AddTexture(ITexture2DPtr tex, int x, int y, Vector<4,float> color = (Vector<4,float>(1.0f)));
     void SetBackground(Vector<4,float> bg); 
     void Clear();
 };
