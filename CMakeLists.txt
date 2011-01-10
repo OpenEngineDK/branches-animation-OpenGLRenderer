@@ -36,6 +36,8 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Display/OpenGL/SplitScreenCanvas.cpp
   Display/OpenGL/BlendCanvas.h
   Display/OpenGL/BlendCanvas.cpp
+  Display/OpenGL/FadeCanvas.h
+  Display/OpenGL/FadeCanvas.cpp
   # Display/OpenGL/CompositeCanvas.h
   # Display/OpenGL/CompositeCanvas.cpp
 )
