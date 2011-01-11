@@ -53,14 +53,17 @@ namespace OpenEngine {
         
         void OpenGLShader::ShaderSupport(){
             const GLubyte* shaderVersion = glGetString(GL_SHADING_LANGUAGE_VERSION);
-            //if(shaderVersion == "1.1")
-            if(!strcmp((const char*)shaderVersion, "1.10"))
+            
+            string versionStr((const char*)shaderVersion);
+            string versionNumberStr = versionStr.substr(0,versionStr.find(' '));
+
+            if (versionNumberStr.compare("1.10") == 0)
                 shaderModel = 1;
-            else if(!strcmp((const char*)shaderVersion, "1.20"))
+            else if (versionNumberStr.compare("1.20") == 0)
                 shaderModel = 2;
-            else if(!strcmp((const char*)shaderVersion, "1.40"))
+            else if (versionNumberStr.compare("1.40") == 0)
                 shaderModel = 4;
-            else if(!strcmp((const char*)shaderVersion, "3.30"))
+            else if (versionNumberStr.compare("3.30") == 0)
                 shaderModel = 5;
             else
                 shaderModel = 0;
