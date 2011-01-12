@@ -693,7 +693,7 @@ void Renderer::DrawFace(FacePtr f) {
         glDisable(GL_TEXTURE_2D);
     } else {
         glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, f->mat->Get2DTextures().front().second->GetID());
+        glBindTexture(GL_TEXTURE_2D, (*f->mat->Get2DTextures().begin()).second->GetID());
     }
     float col[4];
     f->mat->diffuse.ToArray(col);

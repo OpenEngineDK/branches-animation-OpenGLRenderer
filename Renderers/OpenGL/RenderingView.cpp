@@ -273,8 +273,8 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     
     // check if texture shall be applied
     else if (renderTexture &&
-             currentTexture != mat->Get2DTextures().front().second->GetID()) {  // and face texture is different then the current one
-        currentTexture = mat->Get2DTextures().front().second->GetID();
+             currentTexture != (*mat->Get2DTextures().begin()).second->GetID()) {  // and face texture is different then the current one
+        currentTexture = (*mat->Get2DTextures().begin()).second->GetID();
         glEnable(GL_TEXTURE_2D);
 #ifdef DEBUG
         if (!glIsTexture(currentTexture)) //@todo: ifdef to debug
