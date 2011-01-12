@@ -43,6 +43,7 @@ using namespace std;
 ShaderLoader::~ShaderLoader() {}
 
 void ShaderLoader::Handle(Core::InitializeEventArg event) {
+    shaders.clear();
     scene.Accept(*this);
 }
 
@@ -101,12 +102,18 @@ void ShaderLoader::VisitMeshNode(MeshNode* node) {
     //@todo optimize by reusing the shader.
     MaterialPtr m = node->GetMesh()->GetMaterial();
     if (m->shading == Material::PHONG || m->shading == Material::BLINN) {
-        logger.info << "loading phong shader" << logger.end;
-        m->shad = IShaderResourcePtr(new PhongShader(m));
-        m->shad->Load();
-        TextureList texs = m->shad->GetTextures();
-        for (unsigned int i = 0; i < texs.size(); ++i)
+        IShaderResourcePtr shad = shaders[m];
+        if (shad) logger.info << "reusing phong shader" << logger.end;
+        else {
+            logger.info << "loading phong shader" << logger.end;
+            shad = IShaderResourcePtr(new PhongShader(m));
+            shad->Load();
+            TextureList texs = shad->GetTextures();
+            for (unsigned int i = 0; i < texs.size(); ++i)
             textureLoader.Load(texs[i]);
+            shaders[m] = shad;
+        }
+        m->shad = shad;
     }
 }
 

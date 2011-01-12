@@ -15,6 +15,10 @@
 #include <Renderers/TextureLoader.h>
 #include <Scene/ISceneNode.h>
 #include <Scene/ISceneNodeVisitor.h>
+#include <Geometry/Material.h>
+#include <Resources/IShaderResource.h>
+
+#include <map>
 
 namespace OpenEngine {
 namespace Renderers {
@@ -24,16 +28,19 @@ using OpenEngine::Scene::GeometryNode;
 using OpenEngine::Scene::MeshNode;
 using OpenEngine::Scene::VertexArrayNode;
 using OpenEngine::Scene::ISceneNodeVisitor;
+using Geometry::MaterialPtr;
+using Resources::IShaderResourcePtr;
 
 /**
  * OpenGL specific shader loader.
  *
  * @class ShaderLoader ShaderLoader.h Renderers/OpenGL/ShaderLoader.h
  */
- class ShaderLoader : public ISceneNodeVisitor, public Core::IListener<Core::InitializeEventArg> {
+class ShaderLoader : public ISceneNodeVisitor, public Core::IListener<Core::InitializeEventArg> {
 private:
     TextureLoader& textureLoader;
     Scene::ISceneNode& scene;
+    std::map<MaterialPtr,IShaderResourcePtr> shaders;
 public:
     ShaderLoader(TextureLoader& textureLoader, Scene::ISceneNode& scene);
     ~ShaderLoader();
