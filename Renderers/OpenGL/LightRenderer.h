@@ -13,6 +13,7 @@
 #include <Renderers/IRenderer.h>
 #include <Scene/ISceneNodeVisitor.h>
 #include <Core/IListener.h>
+#include <Core/Event.h>
 
 #include <Meta/OpenGL.h>
 
@@ -37,9 +38,14 @@ using OpenEngine::Scene::SpotLightNode;
 using OpenEngine::Scene::ISceneNodeVisitor;
 
 using OpenEngine::Core::IListener;
+using OpenEngine::Core::Event;
 using OpenEngine::Renderers::IRenderer;
 using OpenEngine::Renderers::RenderingEventArg;
 
+
+struct LightCountChangedEventArg {
+    int count;
+};
 
 /**
  * Setup OpenGL lighting
@@ -50,6 +56,8 @@ class LightRenderer: public ISceneNodeVisitor, public IListener<RenderingEventAr
 private:
     float pos[4], dir[4];
     GLint count;
+    Event<LightCountChangedEventArg> lightCountChanged;
+    LightCountChangedEventArg event;
 public:
 
     LightRenderer(); 
@@ -60,6 +68,9 @@ public:
     void VisitDirectionalLightNode(DirectionalLightNode* node);
     void VisitPointLightNode(PointLightNode* node);
     void VisitSpotLightNode(SpotLightNode* node);
+
+    Event<LightCountChangedEventArg>& LightCountChangedEvent() { return lightCountChanged; }
+
 };
 
 } // NS OpenGL

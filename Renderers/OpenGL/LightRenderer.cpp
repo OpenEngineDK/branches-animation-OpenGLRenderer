@@ -127,6 +127,7 @@ void LightRenderer::VisitSpotLightNode(SpotLightNode* node) {
 }
 
 void LightRenderer::Handle(RenderingEventArg arg) {
+    int oldCount = count;
     count = 0;
     glMatrixMode(GL_MODELVIEW);
     #if OE_SAFE
@@ -139,6 +140,10 @@ void LightRenderer::Handle(RenderingEventArg arg) {
     for (int i = count; i < max; ++i) {
         glDisable(GL_LIGHT0 + i);
         CHECK_FOR_GL_ERROR();
+    }
+    if (count != oldCount) {
+        event.count = count;
+        lightCountChanged.Notify(event);
     }
 }
 

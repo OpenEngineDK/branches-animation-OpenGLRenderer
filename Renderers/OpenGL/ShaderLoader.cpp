@@ -37,8 +37,8 @@ using namespace std;
 // using OpenEngine::Resources::ShaderTextureMap;
 // using OpenEngine::Resources::TextureList;
 
-    ShaderLoader::ShaderLoader(TextureLoader& textureLoader, Scene::ISceneNode& scene)
-    : textureLoader(textureLoader), scene(scene) {}
+ShaderLoader::ShaderLoader(TextureLoader& textureLoader, Scene::ISceneNode& scene)
+    : textureLoader(textureLoader), scene(scene), lr(NULL) {}
 
 ShaderLoader::~ShaderLoader() {}
 
@@ -99,14 +99,13 @@ void ShaderLoader::VisitVertexArrayNode(VertexArrayNode* node) {
 }
 
 void ShaderLoader::VisitMeshNode(MeshNode* node) { 
-    //@todo optimize by reusing the shader.
+    if (!lr) return;
     MaterialPtr m = node->GetMesh()->GetMaterial();
     if (m->shading == Material::PHONG || m->shading == Material::BLINN) {
         IShaderResourcePtr shad = shaders[m];
-        if (shad) logger.info << "reusing phong shader" << logger.end;
-        else {
+        if (!shad) {
             logger.info << "loading phong shader" << logger.end;
-            shad = IShaderResourcePtr(new PhongShader(m));
+            shad = IShaderResourcePtr(new PhongShader(m, *lr));
             shad->Load();
             TextureList texs = shad->GetTextures();
             for (unsigned int i = 0; i < texs.size(); ++i)
@@ -117,6 +116,9 @@ void ShaderLoader::VisitMeshNode(MeshNode* node) {
     }
 }
 
+void ShaderLoader::SetLightRenderer(LightRenderer* lr) {
+    this->lr = lr;
+}
 
 } // NS OpenGL
 } // NS Renderers

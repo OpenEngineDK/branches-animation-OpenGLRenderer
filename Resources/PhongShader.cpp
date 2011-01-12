@@ -19,10 +19,12 @@ namespace Resources {
         
 using namespace Geometry;
 
-PhongShader::PhongShader(MaterialPtr mat)
+    PhongShader::PhongShader(MaterialPtr mat, LightRenderer& lr)
     : OpenGLShader(DirectoryManager::FindFileInPath("extensions/OpenGLRenderer/shaders/PhongShader.glsl"))
     , mat(mat)
+    , lr(lr)
 {
+    lr.LightCountChangedEvent().Attach(*this);
     logger.info << "ambient: " << mat->ambient << logger.end;
     logger.info << "diffuse: " << mat->diffuse << logger.end;
     logger.info << "specular: " << mat->specular << logger.end;
@@ -52,16 +54,25 @@ PhongShader::PhongShader(MaterialPtr mat)
     if (!specular) specular = whitetex;
     mat->specular = white;
     SetTexture("specularMap", specular);
+
+    SetUniform("lights", 0);
 }
 
 PhongShader::~PhongShader() {
 
 }
 
-// void PhongShader::ApplyShader() {
-//     // logger.info << "PHONG SHADER" << logger.end;
-//     // OpenGLShader::ApplyShader();
-// }
+void PhongShader::Handle(LightCountChangedEventArg arg) {
+    
+    if (arg.count > 2) {
+        SetUniform("lights", 2);
+        logger.warning << "Phong shader is given " << arg.count << " lights but only 2 is supported." << logger.end;
+    }
+    else {
+        SetUniform("lights", arg.count);
+        logger.info << "Phong shader is given " << arg.count << " lights." << logger.end;
+    }
+}
 
 }
 }

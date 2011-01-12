@@ -13,6 +13,7 @@
 #include <Core/EngineEvents.h>
 #include <Core/IListener.h>
 #include <Renderers/TextureLoader.h>
+#include <Renderers/OpenGL/LightRenderer.h>
 #include <Scene/ISceneNode.h>
 #include <Scene/ISceneNodeVisitor.h>
 #include <Geometry/Material.h>
@@ -30,6 +31,7 @@ using OpenEngine::Scene::VertexArrayNode;
 using OpenEngine::Scene::ISceneNodeVisitor;
 using Geometry::MaterialPtr;
 using Resources::IShaderResourcePtr;
+using Renderers::OpenGL::LightRenderer;
 
 /**
  * OpenGL specific shader loader.
@@ -40,6 +42,7 @@ class ShaderLoader : public ISceneNodeVisitor, public Core::IListener<Core::Init
 private:
     TextureLoader& textureLoader;
     Scene::ISceneNode& scene;
+    LightRenderer* lr;
     std::map<MaterialPtr,IShaderResourcePtr> shaders;
 public:
     ShaderLoader(TextureLoader& textureLoader, Scene::ISceneNode& scene);
@@ -49,6 +52,7 @@ public:
     void VisitGeometryNode(GeometryNode* node);
     void VisitVertexArrayNode(VertexArrayNode* node);
     void VisitMeshNode(MeshNode* node);
+    void SetLightRenderer(LightRenderer* lr);
 };
 
 } // NS OpenGL

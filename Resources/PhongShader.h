@@ -15,22 +15,28 @@
 #include <Resources/OpenGLShader.h>
 #include <Resources/ITexture2D.h>
 #include <Geometry/Material.h>
+#include <Core/IListener.h>
+#include <Renderers/OpenGL/LightRenderer.h>
 
 namespace OpenEngine {
 namespace Resources {
         
 using Geometry::MaterialPtr;
+using Core::IListener;
+using Renderers::OpenGL::LightCountChangedEventArg;
+using Renderers::OpenGL::LightRenderer;
 
-class PhongShader: public OpenGLShader {
+class PhongShader: public OpenGLShader, public IListener<LightCountChangedEventArg> {
 private:
-    IShaderResourcePtr shader;
+    // IShaderResourcePtr shader;
     MaterialPtr mat;
+    LightRenderer& lr;
     ITexture2DPtr ambient, diffuse, specular, whitetex;
 public:
-    PhongShader(MaterialPtr mat);
+    PhongShader(MaterialPtr mat, LightRenderer& lr);
     virtual ~PhongShader();
     //void ApplyShader();
-
+    void Handle(LightCountChangedEventArg arg);
 };
 
 }
