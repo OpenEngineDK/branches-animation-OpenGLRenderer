@@ -9,6 +9,8 @@
 
 #include <Renderers/OpenGL/ShaderLoader.h>
 #include <Scene/GeometryNode.h>
+#include <Scene/MeshNode.h>
+#include <Geometry/Mesh.h>
 #include <Scene/VertexArrayNode.h>
 #include <Geometry/FaceSet.h>
 #include <Geometry/Face.h>
@@ -17,16 +19,23 @@
 #include <Resources/IShaderResource.h>
 #include <list>
 
+#include <Resources/PhongShader.h>
+#include <Logging/Logger.h>
+
 namespace OpenEngine {
 namespace Renderers {
 namespace OpenGL {
 
+using namespace Geometry;
+using namespace Resources;
+using namespace Scene;
 using namespace std;
-using OpenEngine::Geometry::FaceSet;
-using OpenEngine::Geometry::FaceList;
-using OpenEngine::Resources::IShaderResourcePtr;
-using OpenEngine::Resources::ShaderTextureMap;
-using OpenEngine::Resources::TextureList;
+
+// using OpenEngine::Geometry::FaceSet;
+// using OpenEngine::Geometry::FaceList;
+// using OpenEngine::Resources::IShaderResourcePtr;
+// using OpenEngine::Resources::ShaderTextureMap;
+// using OpenEngine::Resources::TextureList;
 
     ShaderLoader::ShaderLoader(TextureLoader& textureLoader, Scene::ISceneNode& scene)
     : textureLoader(textureLoader), scene(scene) {}
@@ -87,6 +96,20 @@ void ShaderLoader::VisitVertexArrayNode(VertexArrayNode* node) {
         }
     }
 }
+
+void ShaderLoader::VisitMeshNode(MeshNode* node) { 
+    //@todo optimize by reusing the shader.
+    MaterialPtr m = node->GetMesh()->GetMaterial();
+    if (m->shading == Material::PHONG || m->shading == Material::BLINN) {
+        logger.info << "loading phong shader" << logger.end;
+        m->shad = IShaderResourcePtr(new PhongShader(m));
+        m->shad->Load();
+        TextureList texs = m->shad->GetTextures();
+        for (unsigned int i = 0; i < texs.size(); ++i)
+            textureLoader.Load(texs[i]);
+    }
+}
+
 
 } // NS OpenGL
 } // NS Renderers

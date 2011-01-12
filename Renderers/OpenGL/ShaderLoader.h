@@ -21,6 +21,7 @@ namespace Renderers {
 namespace OpenGL {
 
 using OpenEngine::Scene::GeometryNode;
+using OpenEngine::Scene::MeshNode;
 using OpenEngine::Scene::VertexArrayNode;
 using OpenEngine::Scene::ISceneNodeVisitor;
 
@@ -40,6 +41,7 @@ public:
     void Handle(Core::InitializeEventArg event);
     void VisitGeometryNode(GeometryNode* node);
     void VisitVertexArrayNode(VertexArrayNode* node);
+    void VisitMeshNode(MeshNode* node);
 };
 
 } // NS OpenGL

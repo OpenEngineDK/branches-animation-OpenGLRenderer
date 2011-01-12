@@ -10,6 +10,8 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Resources/OpenGLShaderAttributes.cpp
   Resources/OpenGLShaderUniforms.cpp
   Resources/OpenGLShaderTextures.cpp
+  Resources/PhongShader.h
+  Resources/PhongShader.cpp
   # Renderers/OpenGL/FBOBufferedRenderer.h
   # Renderers/OpenGL/FBOBufferedRenderer.cpp
   # Renderers/OpenGL/GLCopyBufferedRenderer.h
