@@ -34,6 +34,10 @@ BlendCanvas::~BlendCanvas() {
 
 void BlendCanvas::Handle(Display::InitializeEventArg arg) {
     if (init) return;
+    list<ICanvas*>::iterator i = inits.begin();
+    for (; i != inits.end(); ++i) {
+        ((IListener<Display::InitializeEventArg>*)*i)->Handle(arg);
+    }
     const unsigned int width = arg.canvas.GetWidth();
     const unsigned int height = arg.canvas.GetHeight();
     backend->Init(width, height);
@@ -190,6 +194,11 @@ void BlendCanvas::SetBackground(Vector<4,float> bg) {
 void BlendCanvas::Clear() {
     elements.clear();
 }
+
+void BlendCanvas::InitCanvas(ICanvas* canvas) {
+    inits.push_back(canvas);
+}
+
 
 } // NS OpenGL
 } // NS Renderers

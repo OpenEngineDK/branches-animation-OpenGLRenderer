@@ -32,6 +32,7 @@ private:
     bool init;
     list<Element> elements;
     Vector<4,float> bg;
+    list<ICanvas*> inits;
 public:
     BlendCanvas(ICanvasBackend* backend);
     virtual ~BlendCanvas();
@@ -50,6 +51,9 @@ public:
     void AddTexture(ITexture2DPtr tex, int x, int y, Vector<4,float> color = (Vector<4,float>(1.0f)));
     void SetBackground(Vector<4,float> bg); 
     void Clear();
+
+    void InitCanvas(ICanvas* canvas);
+
 };
 
 } // NS OpenGL
