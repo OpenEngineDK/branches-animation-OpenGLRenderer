@@ -71,7 +71,7 @@ void ShadowLightPostProcessNode::DepthRenderer::Render(Renderers::RenderingEvent
     CHECK_FOR_GL_ERROR();
 
     // Setup the new frame buffer
-    Vector<2, int> dims = shadowNode->GetDimension();
+    Vector<2, int> dims = shadowNode->shadowDims;
     glViewport(0, 0, dims[0], dims[1]);
     CHECK_FOR_GL_ERROR();
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, shadowNode->depthFB->GetID());
@@ -106,7 +106,6 @@ void ShadowLightPostProcessNode::DepthRenderer::Render(Renderers::RenderingEvent
 
     glDisable(GL_POLYGON_OFFSET_FILL);
     glCullFace(GL_BACK);
-    glDisable(GL_CULL_FACE);
 
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
@@ -181,7 +180,7 @@ void ShadowLightPostProcessNode::DepthRenderer::VisitMeshNode(MeshNode* node) {
 ShadowLightPostProcessNode::ShadowLightPostProcessNode(IShaderResourcePtr s,
                                                        Vector<2,int> dims,
                                                        Vector<2,int> shadowDims)
-: PostProcessNode(s, dims, 1, true),viewingVolume(NULL) {
+: PostProcessNode(s, dims, 1, true),viewingVolume(NULL),shadowDims(shadowDims) {
     depthFB = new FrameBuffer(shadowDims,0,true);
     depthRenderer = new DepthRenderer(this);
 

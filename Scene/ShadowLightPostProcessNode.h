@@ -40,10 +40,11 @@ private:
     DepthRenderer* depthRenderer;
     Display::IViewingVolume* viewingVolume;
     Resources::FrameBuffer* depthFB;
+    Vector<2, int> shadowDims;
 public:
     ShadowLightPostProcessNode(Resources::IShaderResourcePtr shader,
                                Math::Vector<2, int> dims,
-                               Math::Vector<2, int> shadowDim);
+                               Math::Vector<2, int> shadowDims);
     void Handle(Renderers::RenderingEventArg arg);
     void Initialize(Renderers::RenderingEventArg arg);
 
