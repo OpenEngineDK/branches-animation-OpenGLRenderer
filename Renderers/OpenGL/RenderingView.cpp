@@ -241,6 +241,7 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
         // if the shader changes release the old shader
         if (currentShader != NULL && currentShader != mat->shad) {
             currentShader->ReleaseShader();
+            // logger.info << "release shader" << logger.end;
             currentShader.reset();
         }
             
@@ -412,6 +413,7 @@ void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
         if (bufferSupport) glBindBuffer(GL_ARRAY_BUFFER, 0);
         CHECK_FOR_GL_ERROR();
 
+
         currentGeom = geom;
     }
 }
@@ -443,6 +445,13 @@ void RenderingView::ApplyMesh(Mesh* prim) {
 
         if (bufferSupport) glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
+        // last we release the final shader
+    if (currentShader != NULL) {
+        currentShader->ReleaseShader();
+        currentShader.reset();
+    }
+
+
     CHECK_FOR_GL_ERROR();
 }
 
@@ -500,7 +509,7 @@ void RenderingView::VisitGeometryNode(GeometryNode* node) {
     }
 
     // last we release the final shader
-    if (currentShader != NULL)
+    if (currentShader != NULL) 
         currentShader->ReleaseShader();
 
     // disable textures if it has been enabled

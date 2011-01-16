@@ -41,19 +41,27 @@ using namespace Geometry;
 
     Vector<4,float> white(1.0);
     ambient = mat->Get2DTextures()["ambient"];
-    if (!ambient) ambient = whitetex;
-    else mat->ambient = white;
-    SetTexture("ambientMap", ambient);
+    if (!ambient) {
+        ambient = whitetex;
+        logger.info << "no ambient" << logger.end;
+    }
+    // SetTexture("ambientMap", ambient);
     
     diffuse = mat->Get2DTextures()["diffuse"];
-    if (!diffuse) diffuse = whitetex;
+    if (!diffuse) {
+        diffuse = whitetex;
+        logger.info << "no diffuse" << logger.end;
+    }
     else mat->diffuse = white;
+
     SetTexture("diffuseMap", diffuse);
 
     specular = mat->Get2DTextures()["specular"];
-    if (!specular) specular = whitetex;
-    mat->specular = white;
-    SetTexture("specularMap", specular);
+    if (!specular) {
+        specular = whitetex;
+        logger.info << "no specular" << logger.end;
+    }
+    // SetTexture("specularMap", specular);
 
     SetUniform("lights", 0);
 }
