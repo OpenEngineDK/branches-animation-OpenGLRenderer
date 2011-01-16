@@ -19,7 +19,19 @@ namespace OpenEngine {
         }
 
         void OpenGLShader::SetAttribute(string name, IDataBlockPtr values){
-            throw Exception("Not implemented!");
+            // @TODO Store in map instead! Does the shader remember
+            // which attribs was bound to it? Then we also need to
+            // bail early if values are already bound.
+            GLint loc = glGetAttribLocation(shaderProgram, name.c_str());
+            glEnableClientState(GL_VERTEX_ARRAY);
+            if (values->GetID() == 0){
+                // Use vertex arrays
+                glVertexAttribPointer(loc, values->GetDimension(), values->GetType(), 0, 0, values->GetVoidData());
+            }else{
+                glBindBuffer(GL_ARRAY_BUFFER, values->GetID());
+                glVertexAttribPointer(loc, values->GetDimension(), values->GetType(), 0, 0, 0);
+            }
+            CHECK_FOR_GL_ERROR();
         }
 
         void OpenGLShader::BindAttribute(int id, string name) {
