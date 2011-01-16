@@ -296,9 +296,21 @@ void RenderingView::ApplyMaterial(MaterialPtr mat) {
     CHECK_FOR_GL_ERROR();
 }
 
+void RenderingView::ApplyGeometrySet(GeometrySetPtr geom,
+                                     IShaderResourcePtr shader){
+    AttributeBlocks blocks = geom->GetAttributeLists();
+    AttributeBlocks::const_iterator itr = blocks.begin();
+    while(itr != blocks.end()){
+        logger.info << itr->first << logger.end;
+        if (!shader->HasAttribute(itr->first))
+            logger.info << "shader has no such uniform" << logger.end;
+        itr++;
+    }
+}
+
 /**
- * Applies the given mesh. Applying the empty or NULL mesh will
- * disable enabled client states.
+ * Applies the geometry set. Applying the empty or NULL geometry set
+ * will disable enabled client states.
  */
 void RenderingView::ApplyGeometrySet(GeometrySetPtr geom){
     if (geom == NULL){
@@ -424,10 +436,17 @@ void RenderingView::ApplyMesh(Mesh* prim) {
 
     } else {
         // Apply the geometry set.
+        /*
+        if (prim->GetMaterial()->shad)
+            ApplyGeometrySet(prim->GetGeometrySet(), 
+                             prim->GetMaterial()->shad);
+        */
         ApplyGeometrySet(prim->GetGeometrySet());
         
         // Apply the material.
         ApplyMaterial(prim->GetMaterial());
+
+            
 
         bool bufferSupport = arg->renderer.BufferSupport();
         

@@ -93,6 +93,7 @@ protected:
     inline void RenderNormals(FacePtr face);
     inline void RenderHardNormal(FacePtr face);
     inline void ApplyMaterial(Geometry::MaterialPtr mat);
+    void ApplyGeometrySet(GeometrySetPtr geom, IShaderResourcePtr shader);
     void ApplyGeometrySet(GeometrySetPtr geom);
     void ApplyMesh(Mesh* prim);
     inline void ApplyModel(Model* model);

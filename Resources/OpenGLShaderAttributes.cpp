@@ -13,6 +13,8 @@
 #include <Resources/Exceptions.h>
 #include <Resources/IDataBlock.h>
 
+#include <Logging/Logger.h>
+
 namespace OpenEngine {
     namespace Resources {
 
@@ -21,8 +23,12 @@ namespace OpenEngine {
             // which attribs was bound to it? Then we also need to
             // bail early if values are already bound.
 
+            logger.info << "Trying to set attribute " << name << logger.end;
+
             if (!HasAttribute(name))
                 return;
+
+            logger.info << "Setting attribute " << name << logger.end;
 
             GLint loc = glGetAttribLocation(shaderProgram, name.c_str());
             glEnableClientState(GL_VERTEX_ARRAY);
@@ -42,6 +48,7 @@ namespace OpenEngine {
                 throw ResourceException("No shader to apply. Perhaps it was not loaded.");
 #endif
             GLint loc = glGetAttribLocation(shaderProgram, name.c_str());
+            CHECK_FOR_GL_ERROR();
             return loc != -1;
         }
 

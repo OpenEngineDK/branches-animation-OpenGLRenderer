@@ -84,10 +84,27 @@ namespace OpenEngine {
             logger.info << "Fragment shader support: " << fragmentSupport << logger.end;
         }
 
-        void OpenGLShader::Load() {
-            // Test if shaders are supported
-            //ShaderSupport();
+        void OpenGLShader::AddShaderSource(ShaderType type, string source){
+#if OE_SAFE
+            if (shaderProgram != 0){
+                logger.warning << "Shader was already compiled. Adding source has no effect." << logger.end;
+                logger.warning << "Source was: \n" << source << logger.end;
+            }
+#endif
+            switch(type){
+            case VERTEX:
+                vertexShaders.push_back(source);
+                break;
+            case GEOMETRY:
+                geometryShaders.push_back(source);
+                break;
+            case FRAGMENT:
+                fragmentShaders.push_back(source);
+                break;
+            }
+        }
 
+        void OpenGLShader::Load() {
             if (shaderModel == 0) return;
 
             // Load the resource and its attributes from a file, if a
@@ -357,7 +374,7 @@ namespace OpenEngine {
             /*        
             // attach geometry shader
             if (!geometryShaders.empty() && geometrySupport){
-                GLuint shader = LoadShader(geometryShaders, GEOMETRY_SHADER_ARB);
+                GLuint shader = LoadShader(geometryShaders, GL_GEOMETRY_SHADER_ARB);
 #if OE_SAFE
                 if (shader == 0)
                     throw Exception("Failed loading geometryshader");

@@ -68,8 +68,10 @@ namespace OpenEngine {
         using namespace OpenGLShaderStructs;
 
         class OpenGLShader : public IShaderResource{
+        public:
+            enum ShaderType {VERTEX, FRAGMENT, GEOMETRY};
+
         protected:
-            // @TODO make static and have renderer initialize it
             static int shaderModel;
             static bool vertexSupport, geometrySupport, fragmentSupport;
             
@@ -114,6 +116,8 @@ namespace OpenEngine {
             OpenGLShader();
             OpenGLShader(string resource);
             ~OpenGLShader();
+
+            void AddShaderSource(ShaderType type, string source);
 
             void Load();
             void Unload();
