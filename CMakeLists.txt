@@ -26,6 +26,8 @@ ADD_LIBRARY( ${EXTENSION_NAME}
   Renderers/OpenGL/LightRenderer.cpp
   Scene/DisplayListNode.cpp
   Scene/DisplayListTransformer.cpp
+  Scene/ShadowLightPostProcessNode.h
+  Scene/ShadowLightPostProcessNode.cpp  
   Display/OpenGL/TextureCopy.h
   Display/OpenGL/TextureCopy.cpp
   Display/OpenGL/FrameBufferBackend.h
