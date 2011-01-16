@@ -57,6 +57,10 @@ void BlendCanvas::Handle(Display::ResizeEventArg arg) {
 }
 
 void BlendCanvas::Handle(Display::ProcessEventArg arg) {
+    list<ICanvas*>::iterator i = inits.begin();
+    for (; i != inits.end(); ++i) {
+        ((IListener<Display::ProcessEventArg>*)*i)->Handle(arg);
+    }
     backend->Pre();
     
     glClearColor(bg[0], bg[1], bg[2], bg[3]);
