@@ -46,6 +46,7 @@ namespace OpenEngine {
             struct uniform{
                 GLuint loc;
                 UniformKind kind;
+                bool bound;
                 void* data;
             };
             struct matrix {
@@ -143,12 +144,8 @@ namespace OpenEngine {
             void GetUniform(string name, Matrix<4, 4, float>& value);
 
             // Attribute functions
-            //@ todo add buffer object functions (uhmmmm vbo's.....)
-            void SetAttribute(string name, Vector<3,float> value);
             void SetAttribute(string name, IDataBlockPtr values);
-            void BindAttribute(int id, string name);
-            void VertexAttribute(int id, Vector<3,float> vec);
-            int GetAttributeID(const string name);
+            bool HasAttribute(string name);
 
             static void ShaderSupport();
 

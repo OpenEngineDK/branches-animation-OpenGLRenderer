@@ -254,14 +254,24 @@ namespace OpenEngine {
             CHECK_FOR_GL_ERROR();
             logger.info << "Uniforms: " << uniforms << logger.end;
 
+            GLint bufSize;
+            glGetProgramiv(shaderProgram, GL_ACTIVE_UNIFORM_MAX_LENGTH, &bufSize);
+            GLchar name[bufSize];
+
             GLsizei length; GLint size; GLenum type;
             for (int i = 0; i < uniforms; ++i){
-                int bufSize = 20;
-                GLchar name[bufSize];
                 glGetActiveUniform(shaderProgram, i, bufSize, 
                                    &length, &size, &type, name);
 
                 logger.info << name << logger.end;
+                switch(type){
+                case GL_FLOAT_MAT3:
+                    logger.info << "Oh it's a mat3 \0/" << logger.end;
+                    break;
+                case GL_FLOAT_MAT4:
+                    logger.info << "Oh it's a mat4 \0/" << logger.end;
+                    break;
+                }
             }
         }
 

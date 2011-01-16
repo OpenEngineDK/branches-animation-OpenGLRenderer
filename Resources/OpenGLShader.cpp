@@ -107,7 +107,7 @@ namespace OpenEngine {
             BindShaderPrograms();
             CHECK_FOR_GL_ERROR();
 
-            PrintUniforms();
+            //PrintUniforms();
         }
         
         void OpenGLShader::Unload() {
