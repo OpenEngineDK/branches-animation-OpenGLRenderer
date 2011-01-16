@@ -20,5 +20,5 @@ GL_SHADER_VECTOR(2, float, f)
 GL_SHADER_VECTOR(3, float, f)
 GL_SHADER_VECTOR(4, float, f)
 
-GL_SHADER_MATRIX(3, float, f)
-GL_SHADER_MATRIX(4, float, f)
+//GL_SHADER_MATRIX(3, float, f)
+//GL_SHADER_MATRIX(4, float, f)
