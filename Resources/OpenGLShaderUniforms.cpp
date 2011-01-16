@@ -217,12 +217,14 @@ namespace OpenEngine {
             default:
                 throw Exception("Unsupported uniform type. How did you manage that?");
             }
+	    CHECK_FOR_GL_ERROR();
         }
         
         void OpenGLShader::BindUniform(matrix mat){
             float data[16];
             mat.mat.ToArray(data);
             glUniformMatrix4fv(mat.loc, 1, false, data);
+	    CHECK_FOR_GL_ERROR();
         }
 
         /**

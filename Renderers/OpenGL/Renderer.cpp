@@ -613,6 +613,7 @@ void Renderer::BindFrameBuffer(FrameBuffer* fb){
 #endif
 
     GLuint fboID;
+    CHECK_FOR_GL_ERROR();
     glGenFramebuffersEXT(1, &fboID);
     CHECK_FOR_GL_ERROR();
     fb->SetID(fboID);
