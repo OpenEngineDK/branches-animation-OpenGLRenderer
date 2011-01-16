@@ -1,4 +1,4 @@
-// 
+//
 // -------------------------------------------------------------------
 // Copyright (C) 2007 OpenEngine.dk (See AUTHORS)
 //
@@ -68,7 +68,7 @@ void ShadowLightPostProcessNode::DepthRenderer::Render(Renderers::RenderingEvent
     glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &prevFbo);
     Vector<4, GLint> prevDims;
     glGetIntegerv(GL_VIEWPORT, prevDims.ToArray());
-    CHECK_FOR_GL_ERROR();    
+    CHECK_FOR_GL_ERROR();
 
     // Setup the new frame buffer
     Vector<2, int> dims = shadowNode->GetDimension();
@@ -89,7 +89,7 @@ void ShadowLightPostProcessNode::DepthRenderer::Render(Renderers::RenderingEvent
     ApplyViewingVolume(*(shadowNode->viewingVolume));
 
     // Turn of unneeded stuff!
-    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE); 
+    glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
@@ -99,7 +99,7 @@ void ShadowLightPostProcessNode::DepthRenderer::Render(Renderers::RenderingEvent
     glPolygonOffset(1.1, 4.0);
 
 
-    shadowNode->Accept(*this);    
+    shadowNode->Accept(*this);
 
     // glBindTexture(GL_TEXTURE_2D,shadowNode->depthFB->GetDepthTexture()->GetID());
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_ARB, GL_NONE);
@@ -108,15 +108,15 @@ void ShadowLightPostProcessNode::DepthRenderer::Render(Renderers::RenderingEvent
     glCullFace(GL_BACK);
     glDisable(GL_CULL_FACE);
 
-    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE); 
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
-    
+
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, prevFbo);
     glViewport(prevDims[0], prevDims[1], prevDims[2], prevDims[3]);
     CHECK_FOR_GL_ERROR();
 
     // Reset viewing volume
-    //ApplyViewingVolume(*(arg->canvas.GetViewingVolume()));
+    //ApplyViewingVolume(*(arg.canvas.GetViewingVolume()));
 
 }
 
@@ -178,7 +178,7 @@ void ShadowLightPostProcessNode::DepthRenderer::VisitMeshNode(MeshNode* node) {
 
 
 
-ShadowLightPostProcessNode::ShadowLightPostProcessNode(IShaderResourcePtr s, 
+ShadowLightPostProcessNode::ShadowLightPostProcessNode(IShaderResourcePtr s,
                                                        Vector<2,int> dims,
                                                        Vector<2,int> shadowDims)
 : PostProcessNode(s, dims, 1, true),viewingVolume(NULL) {
@@ -192,43 +192,40 @@ void ShadowLightPostProcessNode::SetViewingVolume(IViewingVolume* v) {
     viewingVolume = v;
 }
 
-void ShadowLightPostProcessNode::Initialize(Renderers::RenderingEventArg arg) {        
-    arg.renderer.BindFrameBuffer(depthFB);    
-    
+void ShadowLightPostProcessNode::Initialize(Renderers::RenderingEventArg arg) {
+    arg.renderer.BindFrameBuffer(depthFB);
+
     glBindTexture(GL_TEXTURE_2D,depthFB->GetDepthTexture()->GetID());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_ARB, GL_COMPARE_R_TO_TEXTURE_ARB);
-	  // GL_LINEAR does not make sense for depth texture. However, next tutorial shows usage of GL_LINEAR and PCF
-	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // GL_LINEAR does not make sense for depth texture. However, next tutorial shows usage of GL_LINEAR and PCF
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	  // Remove artifact on the edges of the shadowmap
-	  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-	  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+    // Remove artifact on the edges of the shadowmap
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
 
 }
 
 void ShadowLightPostProcessNode::Handle(Renderers::RenderingEventArg arg) {
-    depthRenderer->Render(arg);
+    if (arg.renderer.GetCurrentStage() == Renderers::IRenderer::RENDERER_PREPROCESS) {
+        depthRenderer->Render(arg);
 
-    Matrix<4,4,float> bias(.5, .0, .0,  .0,
-                           .0, .5, .0,  .0,
-                           .0, .0, .5,  .0,
-                           .5, .5, .5, 1.0);
+        Matrix<4,4,float> bias(.5, .0, .0,  .0,
+                               .0, .5, .0,  .0,
+                               .0, .0, .5,  .0,
+                               .5, .5, .5, 1.0);
 
-    
-    GetEffect()->SetUniform("lightMat",
-                            viewingVolume->GetViewMatrix() * 
-                            viewingVolume->GetProjectionMatrix() * 
-                            bias);
 
+        GetEffect()->SetUniform("lightMat",
+                                viewingVolume->GetViewMatrix() *
+                                viewingVolume->GetProjectionMatrix() *
+                                bias);
+    }
     PostProcessNode::Handle(arg);
 }
 
 
-void ShadowLightPostProcessNode::PreEffect(Renderers::RenderingEventArg* arg, Math::Matrix<4,4,float>* modelview) {
-    // Let's render the depth from the camera!
-    
-}
 
 } // NS Scene
 } // NS OpenEngine

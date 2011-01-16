@@ -318,6 +318,12 @@ void Renderer::Handle(Renderers::ProcessEventArg arg) {
     // Clear the screen and the depth buffer.
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+
+    // run the processing phases
+    RenderingEventArg rarg(arg.canvas, *this, arg.start, arg.approx);
+    this->preProcess.Notify(rarg);
+
+
     IViewingVolume* volume = arg.canvas.GetViewingVolume();
     // If no viewing volume is set for the viewport ignore it.
     if (volume != NULL) {
@@ -333,10 +339,6 @@ void Renderer::Handle(Renderers::ProcessEventArg arg) {
     }
     CHECK_FOR_GL_ERROR();
 
-    // run the processing phases
-    RenderingEventArg rarg(arg.canvas, *this, arg.start, arg.approx);
-
-    this->preProcess.Notify(rarg);
     this->stage = RENDERER_PROCESS;
     this->process.Notify(rarg);
     this->stage = RENDERER_POSTPROCESS;

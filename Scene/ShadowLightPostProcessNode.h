@@ -46,7 +46,7 @@ public:
                                Math::Vector<2, int> shadowDim);
     void Handle(Renderers::RenderingEventArg arg);
     void Initialize(Renderers::RenderingEventArg arg);
-    void PreEffect(Renderers::RenderingEventArg* arg, Math::Matrix<4,4,float>* modelview);
+
     void SetViewingVolume(Display::IViewingVolume* v);
 };
 } // NS Scene
