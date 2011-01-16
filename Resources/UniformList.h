@@ -10,11 +10,15 @@
  * A list of uniform types
  */
 
-UNIFORM1(int, i)
-UNIFORM1(float, f)
-UNIFORMn(2, int, i)
-UNIFORMn(3, int, i)
-UNIFORMn(4, int, i)
-UNIFORMn(2, float, f)
-UNIFORMn(3, float, f)
-UNIFORMn(4, float, f)
+GL_SHADER_SCALAR(int, i)
+GL_SHADER_SCALAR(float, f)
+
+GL_SHADER_VECTOR(2, int, i)
+GL_SHADER_VECTOR(3, int, i)
+GL_SHADER_VECTOR(4, int, i)
+GL_SHADER_VECTOR(2, float, f)
+GL_SHADER_VECTOR(3, float, f)
+GL_SHADER_VECTOR(4, float, f)
+
+GL_SHADER_MATRIX(3, float, f)
+GL_SHADER_MATRIX(4, float, f)

@@ -10,11 +10,13 @@
 
 #include <Resources/OpenGLShader.h>
 
+#include <Logging/Logger.h>
+
 namespace OpenEngine {
     namespace Resources {
 
-#undef UNIFORM1
-#define UNIFORM1(type, extension)                                       \
+#undef GL_SHADER_SCALAR
+#define GL_SHADER_SCALAR(type, extension)                               \
         void OpenGLShader::SetUniform(string name, type value, bool force){ \
             type *data = new type[1];                                   \
             data[0] = value;                                            \
@@ -40,8 +42,8 @@ namespace OpenEngine {
             }                                                           \
         }                                                       
         
-#undef UNIFORMn
-#define UNIFORMn(params, type, extension)                               \
+#undef GL_SHADER_VECTOR
+#define GL_SHADER_VECTOR(params, type, extension)                       \
         void OpenGLShader::SetUniform(string name, Vector<params, type> value, bool force){ \
             type *data = new type[params];                              \
             value.ToArray(data);                                        \
@@ -90,9 +92,9 @@ namespace OpenEngine {
             }
         }
         
-#undef UNIFORM1
-#define UNIFORM1(type, extension)                                       \
-        void OpenGLShader::GetUniform(string name, type& value){                      \
+#undef GL_SHADER_SCALAR
+#define GL_SHADER_SCALAR(type, extension)                               \
+        void OpenGLShader::GetUniform(string name, type& value){        \
             map<string, uniform>::iterator itr = unboundUniforms.begin(); \
             if (itr == unboundUniforms.end()){                          \
                 itr = boundUniforms.begin();                            \
@@ -103,9 +105,9 @@ namespace OpenEngine {
             value = *v;                                                 \
         }
         
-#undef UNIFORMn
-#define UNIFORMn(params, type, extension)                               \
-        void OpenGLShader::GetUniform(string name, Vector<params, type>& value){      \
+#undef GL_SHADER_VECTOR
+#define GL_SHADER_VECTOR(params, type, extension)                       \
+        void OpenGLShader::GetUniform(string name, Vector<params, type>& value){ \
             map<string, uniform>::iterator itr = unboundUniforms.begin(); \
             if (itr == unboundUniforms.end()){                          \
                 itr = boundUniforms.begin();                            \
@@ -128,8 +130,20 @@ namespace OpenEngine {
             value = itr->second.mat;
         }
 
-        
-        //  *** Private helper methods ***
+        int OpenGLShader::GetUniformID(string name){            
+            return glGetUniformLocation(shaderProgram, name.c_str());
+        }
+
+        //  *** Protected helper methods ***
+
+        GLint OpenGLShader::GetUniLoc(const GLchar *name){
+            GLint loc = glGetUniformLocation(shaderProgram, name);
+#if OE_SAFE
+            if (loc == -1)
+                logger.warning << string("No such uniform named \"") + name + "\" in \"" << resource << "\""<< logger.end;
+#endif
+            return loc;
+        }
 
         /**
          * Binds the unbound uniforms to the shader.
@@ -188,23 +202,23 @@ namespace OpenEngine {
         void OpenGLShader::BindUniform(uniform uni){
             switch(uni.kind){
                 
-#undef UNIFORM1
-#define UNIFORM1(type, extension)                                       \
+#undef GL_SHADER_SCALAR
+#define GL_SHADER_SCALAR(type, extension)                               \
                 case UNIFORM##extension :                               \
                     glUniform1##extension##v (uni.loc, 1, (const GL##type*) uni.data); \
                     break;
-#undef UNIFORMn
-#define UNIFORMn(params, type, extension)                               \
+#undef GL_SHADER_VECTOR
+#define GL_SHADER_VECTOR(params, type, extension)                       \
                 case UNIFORM##params##extension :                       \
                     glUniform##params##extension##v (uni.loc, 1, (const GL##type*) uni.data); \
                     break;
 #include "UniformList.h"
-
+                
             default:
                 throw Exception("Unsupported uniform type. How did you manage that?");
             }
         }
-
+        
         void OpenGLShader::BindUniform(matrix mat){
             float data[16];
             mat.mat.ToArray(data);
@@ -217,13 +231,13 @@ namespace OpenEngine {
         void OpenGLShader::DeleteData(uniform uni){
             switch(uni.kind){
 
-#undef UNIFORM1
-#define UNIFORM1(type, extension)                                    \
+#undef GL_SHADER_SCALAR
+#define GL_SHADER_SCALAR(type, extension)                            \
                 case UNIFORM##extension :                            \
                     delete [] ( type* ) uni.data;                    \
                     break;
-#undef UNIFORMn
-#define UNIFORMn(params, type, extension)                               \
+#undef GL_SHADER_VECTOR
+#define GL_SHADER_VECTOR(params, type, extension)                       \
                 case UNIFORM##params##extension :                       \
                     delete [] ( type* ) uni.data;                       \
                     break;
@@ -231,6 +245,23 @@ namespace OpenEngine {
 
             default:
                 throw Exception("Unsupported uniform type. How did you manage that?");
+            }
+        }
+
+        void OpenGLShader::PrintUniforms(){
+            GLint uniforms;
+            glGetProgramiv(shaderProgram, GL_ACTIVE_UNIFORMS, &uniforms);
+            CHECK_FOR_GL_ERROR();
+            logger.info << "Uniforms: " << uniforms << logger.end;
+
+            GLsizei length; GLint size; GLenum type;
+            for (int i = 0; i < uniforms; ++i){
+                int bufSize = 20;
+                GLchar name[bufSize];
+                glGetActiveUniform(shaderProgram, i, bufSize, 
+                                   &length, &size, &type, name);
+
+                logger.info << name << logger.end;
             }
         }
 

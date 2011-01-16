@@ -106,6 +106,8 @@ namespace OpenEngine {
             // Load the shader onto the gpu.
             BindShaderPrograms();
             CHECK_FOR_GL_ERROR();
+
+            PrintUniforms();
         }
         
         void OpenGLShader::Unload() {
@@ -145,10 +147,6 @@ namespace OpenEngine {
 
         void OpenGLShader::ReleaseShader(){
             glUseProgram(0);
-        }
-
-        int OpenGLShader::GetUniformID(string name){            
-            return glGetUniformLocation(shaderProgram, name.c_str());
         }
 
         //  *** Private helper methods ***
@@ -341,15 +339,6 @@ namespace OpenEngine {
                 free(infoLog);
             }
 #endif
-        }
-        
-        GLint OpenGLShader::GetUniLoc(const GLchar *name){
-            GLint loc = glGetUniformLocation(shaderProgram, name);
-#if OE_SAFE
-            if (loc == -1)
-                logger.warning << string("No such uniform named \"") + name + "\" in \"" << resource << "\""<< logger.end;
-#endif
-            return loc;
         }
         
         void OpenGLShader::BindShaderPrograms(){

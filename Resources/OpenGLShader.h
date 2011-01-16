@@ -32,11 +32,11 @@ namespace OpenEngine {
 
         namespace OpenGLShaderStructs {
             // Define the UniformKind enum
-#undef UNIFORM1
-#define UNIFORM1(type, extension)               \
+#undef GL_SHADER_SCALAR
+#define GL_SHADER_SCALAR(type, extension)       \
             UNIFORM##extension, 
-#undef UNIFORMn
-#define UNIFORMn(params, type, extension)       \
+#undef GL_SHADER_VECTOR
+#define GL_SHADER_VECTOR(params, type, extension)   \
             UNIFORM##params##extension, 
             
             enum UniformKind {
@@ -129,12 +129,12 @@ namespace OpenEngine {
             TextureList GetTextures();
 
             // Uniform functions
-#undef UNIFORM1
-#define UNIFORM1(type, extension)                                   \
+#undef GL_SHADER_SCALAR
+#define GL_SHADER_SCALAR(type, extension)                               \
             void SetUniform(string name, type value, bool force = false); \
             void GetUniform(string name, type& value);
-#undef UNIFORMn
-#define UNIFORMn(params, type, extension)                               \
+#undef GL_SHADER_VECTOR
+#define GL_SHADER_VECTOR(params, type, extension)                       \
             void SetUniform(string name, Vector<params, type> value, bool force = false); \
             void GetUniform(string name, Vector<params, type>& value);
             
@@ -157,6 +157,9 @@ namespace OpenEngine {
             inline bool HasGeometrySupport() { return geometrySupport; }
             inline bool HasFragmentSupport() { return fragmentSupport; }
 
+            
+            // DEBUG
+            void PrintUniforms();
         };
 
         /**
