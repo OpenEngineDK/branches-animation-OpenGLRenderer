@@ -24,6 +24,8 @@
 #include <Resources/ITexture3D.h>
 #include <Resources/FrameBuffer.h>
 
+#include <Resources/OpenGLShader.h>
+
 using namespace OpenEngine::Resources;
 
 namespace OpenEngine {
@@ -83,6 +85,8 @@ void Renderer::InitializeGLSLVersion() {
                         << logger.end;
 		}
     }
+
+    OpenGLShader::ShaderSupport();
 }
 
 void Renderer::SetupTexParameters(ITexture2D* tex){

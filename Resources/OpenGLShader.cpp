@@ -25,6 +25,11 @@
 namespace OpenEngine {
     namespace Resources {
 
+        int OpenGLShader::shaderModel = 0;
+        bool OpenGLShader::vertexSupport = false;
+        bool OpenGLShader::geometrySupport = false;
+        bool OpenGLShader::fragmentSupport = false;
+
         OpenGLShader::OpenGLShader() {
             resource.clear();
             nextTexUnit = 0;
@@ -72,11 +77,16 @@ namespace OpenEngine {
 
             vertexSupport = fragmentSupport = true; // is true when GL 2.0 is supported
             geometrySupport = GLEW_ARB_geometry_shader4;
+
+            logger.info << "Running shader model " << shaderModel << logger.end;
+            logger.info << "Vertex shader support: " << vertexSupport << logger.end;
+            logger.info << "Geometry shader support: " << geometrySupport << logger.end;
+            logger.info << "Fragment shader support: " << fragmentSupport << logger.end;
         }
 
         void OpenGLShader::Load() {
             // Test if shaders are supported
-            ShaderSupport();
+            //ShaderSupport();
 
             if (shaderModel == 0) return;
 
