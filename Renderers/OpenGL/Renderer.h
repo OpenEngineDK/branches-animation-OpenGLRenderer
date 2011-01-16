@@ -137,6 +137,7 @@ public:
     virtual void RebindTexture(ITexture3D* texr, unsigned int x, unsigned int y, unsigned int z, unsigned int w, unsigned int h, unsigned int d);
     virtual void BindFrameBuffer(FrameBuffer* fb);
     virtual void BindDataBlock(IDataBlock* bo);
+    virtual void RebindDataBlock(Resources::IDataBlockPtr ptr, unsigned int start, unsigned int end);
     virtual void DrawFace(FacePtr face);
     virtual void DrawFace(FacePtr face, Vector<3,float> color, float width = 1);
     virtual void DrawLine(Line line, Vector<3,float> color, float width = 1);

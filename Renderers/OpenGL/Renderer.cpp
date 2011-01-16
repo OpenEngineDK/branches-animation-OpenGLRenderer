@@ -693,6 +693,34 @@ void Renderer::BindDataBlock(IDataBlock* bo){
     // graphics card..
 }
 
+void Renderer::RebindDataBlock(IDataBlockPtr ptr, unsigned int start, unsigned int end) {
+    IDataBlock* bo = ptr.get();
+    if (bufferSupport){
+        GLuint id;
+        id = bo->GetID();
+
+        glBindBuffer(bo->GetBlockType(), id);
+        CHECK_FOR_GL_ERROR();
+    
+        unsigned int size = GLTypeSize(bo->GetType()) * bo->GetSize() * bo->GetDimension();
+        GLenum access = GLAccessType(bo->GetBlockType(), bo->GetUpdateMode());
+        // glBufferSubData(bo->GetBlockType(), 
+        //                 start,
+        //                 end-start,
+        //                 bo->GetVoidDataPtr());
+        glBufferData(bo->GetBlockType(), 
+                     size,
+                     bo->GetVoidDataPtr(), access);
+        
+        if (bo->GetUnloadPolicy() == UNLOAD_AUTOMATIC)
+            bo->Unload();
+    }
+    // Do not unload if there's no buffer support. We will need the
+    // data in memory client side to be able to pass it to the
+    // graphics card..
+}
+
+
 void Renderer::DrawFace(FacePtr f) {
     if (f->mat->Get2DTextures().size() == 0) {
         glBindTexture(GL_TEXTURE_2D, 0);
