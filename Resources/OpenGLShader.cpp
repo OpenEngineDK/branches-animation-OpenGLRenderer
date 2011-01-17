@@ -84,26 +84,6 @@ namespace OpenEngine {
             logger.info << "Fragment shader support: " << fragmentSupport << logger.end;
         }
 
-        void OpenGLShader::AddShaderSource(ShaderType type, string source){
-#if OE_SAFE
-            if (shaderProgram != 0){
-                logger.warning << "Shader was already compiled. Adding source has no effect." << logger.end;
-                logger.warning << "Source was: \n" << source << logger.end;
-            }
-#endif
-            switch(type){
-            case VERTEX:
-                vertexShaders.push_back(source);
-                break;
-            case GEOMETRY:
-                geometryShaders.push_back(source);
-                break;
-            case FRAGMENT:
-                fragmentShaders.push_back(source);
-                break;
-            }
-        }
-
         void OpenGLShader::Load() {
             if (shaderModel == 0) return;
 
