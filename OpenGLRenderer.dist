@@ -1,7 +1,7 @@
 # source
-darcs /extensions/OpenGLRenderer         http://openengine.dk/code/branches/animation-OpenGLRenderer
-darcs /extensions/OpenGLRenderer         http://openengine.dk/code/extensions/OpenGLRenderer
-darcs-dev /extensions/OpenGLRenderer	 fh.daimi.au.dk:/users/cgd/code/branches/animation-OpenGLRenderer
+git /extensions/OpenGLRenderer         https://github.com/OpenEngineDK/branches-animation-OpenGLRenderer.git
+git /extensions/OpenGLRenderer         https://github.com/OpenEngineDK/extensions-OpenGLRenderer.git
+git-dev /extensions/OpenGLRenderer	 git@github.com:OpenEngineDK/branches-animation-OpenGLRenderer.git
 
 # win lib
 win32 /libraries http://openengine.dk/data/libraries/glew-win32.zip
